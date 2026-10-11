@@ -1,0 +1,344 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "自媒体创作运营闭环 · 整体运营流程",
+    "output": ".archify/FLOW-OVERALL-20261012/overall-operations.html",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "subtitle": "DeepSeekHarness 三层架构 · 稿件制造 → 素材成形 → 分发发布 → 数据复盘"
+  },
+  "layout": {
+    "mode": "grid"
+  },
+  "components": [
+    {
+      "id": "human",
+      "type": "external",
+      "label": "真人运营人员（三处关口）",
+      "sublabel": "选题输入 · 选文案 · 剪辑确认 · 发布授权",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        260,
+        72
+      ]
+    },
+    {
+      "id": "orch",
+      "type": "backend",
+      "label": "编排者（唯一）",
+      "sublabel": "拆解派单 / 汇总回报 / 复盘建议",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        260,
+        72
+      ]
+    },
+    {
+      "id": "copy",
+      "type": "frontend",
+      "label": "文案线 Agent",
+      "sublabel": "3 套文案 + 24 分镜",
+      "pos": [
+        400,
+        120
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "visual",
+      "type": "frontend",
+      "label": "视觉线 Agent",
+      "sublabel": "参考图 + 24 张独立图",
+      "pos": [
+        400,
+        300
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "video",
+      "type": "frontend",
+      "label": "视频线 Agent",
+      "sublabel": "图文打包 + 图生视频 + 自动剪辑",
+      "pos": [
+        400,
+        480
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "data",
+      "type": "frontend",
+      "label": "分发数据线 Agent",
+      "sublabel": "标题标签封面 + 浏览器发布 + 采集",
+      "pos": [
+        400,
+        660
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "本地数据库",
+      "sublabel": "任务 / 产物 / 指标 / 操作留痕",
+      "pos": [
+        820,
+        120
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "gen",
+      "type": "cloud",
+      "label": "生图服务适配器",
+      "sublabel": "Flow / 豆包 / ComfyUI + 降级链",
+      "pos": [
+        820,
+        300
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "i2v",
+      "type": "cloud",
+      "label": "图生视频适配器",
+      "sublabel": "图生视频 + 剪辑兜底",
+      "pos": [
+        820,
+        480
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "browser",
+      "type": "cloud",
+      "label": "浏览器自动化",
+      "sublabel": "登录会话 + 填写信息",
+      "pos": [
+        820,
+        660
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "feishu",
+      "type": "external",
+      "label": "飞书文档",
+      "sublabel": "热点汇总与最终文档",
+      "pos": [
+        40,
+        520
+      ],
+      "size": [
+        260,
+        72
+      ]
+    },
+    {
+      "id": "hot",
+      "type": "external",
+      "label": "热点源",
+      "sublabel": "公开源优先 · 需登录走人工授权",
+      "pos": [
+        40,
+        660
+      ],
+      "size": [
+        260,
+        72
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "环节 Agent 执行层",
+      "wraps": [
+        "copy",
+        "visual",
+        "video",
+        "data"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "外部服务适配层（可替换 / 可降级）",
+      "wraps": [
+        "gen",
+        "i2v",
+        "browser"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "本地留痕与外部文档",
+      "wraps": [
+        "db",
+        "feishu",
+        "hot"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "human",
+      "to": "orch",
+      "label": "需求与授权"
+    },
+    {
+      "id": "c2",
+      "from": "orch",
+      "to": "copy",
+      "label": "派单文案线"
+    },
+    {
+      "id": "c3",
+      "from": "orch",
+      "to": "visual",
+      "label": "派单视觉线"
+    },
+    {
+      "id": "c4",
+      "from": "orch",
+      "to": "video",
+      "label": "派单视频线"
+    },
+    {
+      "id": "c5",
+      "from": "orch",
+      "to": "data",
+      "label": "派单分发数据线"
+    },
+    {
+      "id": "c6",
+      "from": "copy",
+      "to": "human",
+      "label": "3 套候选待选定"
+    },
+    {
+      "id": "c7",
+      "from": "visual",
+      "to": "copy",
+      "label": "24 张独立图"
+    },
+    {
+      "id": "c8",
+      "from": "video",
+      "to": "human",
+      "label": "成片待确认"
+    },
+    {
+      "id": "c9",
+      "from": "data",
+      "to": "human",
+      "label": "待发布授权"
+    },
+    {
+      "id": "c10",
+      "from": "copy",
+      "to": "db",
+      "label": "文案分镜入仓"
+    },
+    {
+      "id": "c11",
+      "from": "visual",
+      "to": "gen",
+      "label": "文生图 / 切图"
+    },
+    {
+      "id": "c12",
+      "from": "video",
+      "to": "i2v",
+      "label": "图生视频"
+    },
+    {
+      "id": "c13",
+      "from": "data",
+      "to": "browser",
+      "label": "填写发布信息"
+    },
+    {
+      "id": "c14",
+      "from": "data",
+      "to": "feishu",
+      "label": "热点汇总"
+    },
+    {
+      "id": "c15",
+      "from": "hot",
+      "to": "orch",
+      "label": "热点池输入"
+    },
+    {
+      "id": "c16",
+      "from": "db",
+      "to": "orch",
+      "label": "状态与指标读回"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "三层职责边界",
+      "items": [
+        "真人运营人员：只在三处关口做决定",
+        "编排者：唯一，拆解派单与汇总回报",
+        "环节 Agent 四个：文案线 / 视觉线 / 视频线 / 分发数据线",
+        "Skill：模块化执行，每个 skill 独立 README.md"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "三处人工关口（HITL）",
+      "items": [
+        "关口① 选定文案：三选一对比卡（选择态）",
+        "关口② 剪辑干预：改顺序 / 时长 / 素材（调整态）",
+        "关口③ 发布授权：停在发布前，人工点击（授权态）",
+        "全部写入 hitl_events 留痕"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "红线与回写",
+      "items": [
+        "C-01：未经人工授权绝不发布",
+        "C-08：发布前必须停在待发布态",
+        "C-09：默认零付费，付费需显式批准",
+        "复盘结论回写为下一轮提示词版本"
+      ]
+    }
+  ]
+}
