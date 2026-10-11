@@ -1,0 +1,350 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "文案线 · 分环节操作流程",
+    "output": ".archify/FLOW-COPY-20261012/copy-line.html",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "subtitle": "FLOW-1：输入 → 3 套文案 → 关口①选定 → 24 条分镜 → 入仓"
+  },
+  "layout": {
+    "mode": "grid"
+  },
+  "components": [
+    {
+      "id": "i1",
+      "type": "external",
+      "label": "运营人员",
+      "sublabel": "给思路 / 选题 / 一段话 / 剧情脚本",
+      "pos": [
+        40,
+        120
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "o1",
+      "type": "backend",
+      "label": "编排者",
+      "sublabel": "派单给 copy-writer · 校验返回值",
+      "pos": [
+        40,
+        260
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s1",
+      "type": "frontend",
+      "label": "copy-writer",
+      "sublabel": "一套输入 → 3 套不同侧重点",
+      "pos": [
+        40,
+        400
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "g1",
+      "type": "security",
+      "label": "关口① 选定文案",
+      "sublabel": "选择态：三选一对比卡",
+      "pos": [
+        40,
+        540
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s2",
+      "type": "frontend",
+      "label": "storyboard-builder",
+      "sublabel": "选定文案 → 24 条分镜场景",
+      "pos": [
+        40,
+        680
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "d1",
+      "type": "database",
+      "label": "入库与留痕",
+      "sublabel": "文案 / 分镜 / 版本 / 关口记录",
+      "pos": [
+        380,
+        120
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "k1",
+      "type": "cloud",
+      "label": "llm-adapter",
+      "sublabel": "文本生成适配器（可换模型）",
+      "pos": [
+        380,
+        400
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "k2",
+      "type": "cloud",
+      "label": "prompt-registry",
+      "sublabel": "提示词版本注册表",
+      "pos": [
+        380,
+        680
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "k3",
+      "type": "backend",
+      "label": "skill-readme",
+      "sublabel": "每个 skill 自带 README.md",
+      "pos": [
+        380,
+        960
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a1",
+      "type": "database",
+      "label": "3 套候选文案",
+      "sublabel": "侧重点 / 理由 / 字数区间",
+      "pos": [
+        720,
+        400
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a2",
+      "type": "security",
+      "label": "选定记录",
+      "sublabel": "hitl_events：选择态留痕",
+      "pos": [
+        720,
+        540
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a3",
+      "type": "database",
+      "label": "storyboard.json",
+      "sublabel": "24 条 · 连续编号",
+      "pos": [
+        720,
+        680
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a4",
+      "type": "database",
+      "label": "版本字段",
+      "sublabel": "model_version / prompt_version",
+      "pos": [
+        720,
+        120
+      ],
+      "size": [
+        230,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "流程步骤（人与 Agent 的动作）",
+      "wraps": [
+        "i1",
+        "o1",
+        "s1",
+        "g1",
+        "s2"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "执行的 Skill 与依赖（模块化执行）",
+      "wraps": [
+        "d1",
+        "k1",
+        "k2",
+        "k3"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "产出物与留痕（可追溯）",
+      "wraps": [
+        "a1",
+        "a2",
+        "a3",
+        "a4"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "e0",
+      "from": "i1",
+      "to": "o1",
+      "label": "思路 / 选题 / 脚本"
+    },
+    {
+      "id": "e1",
+      "from": "o1",
+      "to": "s1",
+      "label": "派单 copy-writer"
+    },
+    {
+      "id": "e2",
+      "from": "s1",
+      "to": "g1",
+      "label": "3 套候选待选"
+    },
+    {
+      "id": "e3",
+      "from": "g1",
+      "to": "s2",
+      "label": "确认后继续"
+    },
+    {
+      "id": "e4",
+      "from": "s2",
+      "to": "d1",
+      "label": "文案与分镜入仓"
+    },
+    {
+      "id": "e5",
+      "from": "o1",
+      "to": "d1",
+      "label": "任务与流水入库"
+    },
+    {
+      "id": "e6",
+      "from": "s1",
+      "to": "k1",
+      "label": "调用文本模型"
+    },
+    {
+      "id": "e7",
+      "from": "s2",
+      "to": "k2",
+      "label": "取提示词版本"
+    },
+    {
+      "id": "e8",
+      "from": "d1",
+      "to": "a1",
+      "label": "产出登记"
+    },
+    {
+      "id": "e9",
+      "from": "g1",
+      "to": "a2",
+      "label": "写入口关记录"
+    },
+    {
+      "id": "e10",
+      "from": "s2",
+      "to": "a3",
+      "label": "产出分镜文件"
+    },
+    {
+      "id": "e11",
+      "from": "d1",
+      "to": "a4",
+      "label": "写入版本字段"
+    },
+    {
+      "id": "e12",
+      "from": "g1",
+      "to": "s1",
+      "label": "不满意 → 带反馈重生成"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "输入校验（进场前）",
+      "items": [
+        "必有：topic 名称 + 内容方向 + 目标平台（Q-3 三类之一）",
+        "缺字段不派单，退回运营人员补齐（R-L1-18）",
+        "生成本次 prompt_version 并登记"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "完成判据（交由下游前）",
+      "items": [
+        "文案：恰好 3 套，侧重点互不重复，各在平台字数区间内，每套附侧重点说明",
+        "分镜：恰好 24 条，编号 1–24 连续，每条含场景 / 风格 / 时长 / 拍摄提示",
+        "24 条整体风格一致、场景不重复"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "接口与依赖",
+      "items": [
+        "调用形态：generate_copy(brief, count=3) -> [draft]",
+        "convert_to_storyboard(copy, grid='6x4') -> [shot]（R-L2-15）",
+        "失败处理：模型失败按适配器降级链重试并记录（R-L2-17）",
+        "skill 之间不互相调用，统一由编排者派单（S1 边界）"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "关口① 三态规则",
+      "items": [
+        "选择态：从 3 套里选 1 套，或要求重生成（带回退理由）",
+        "重生成时把上一次的反馈一并交给 copy-writer",
+        "选定结果写 hitl_events，未选定不得进入分镜环节"
+      ]
+    }
+  ]
+}

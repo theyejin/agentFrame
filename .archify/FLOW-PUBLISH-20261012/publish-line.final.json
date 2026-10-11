@@ -1,0 +1,412 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "分发数据线 · 分环节操作流程",
+    "output": ".archify/FLOW-PUBLISH-20261012/publish-line.html",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "subtitle": "FLOW-6 / FLOW-7 / FLOW-8：账号准备 → 热点表 → 发布准备 → 关口③授权 → 采集 → 复盘"
+  },
+  "layout": {
+    "mode": "grid"
+  },
+  "components": [
+    {
+      "id": "i4",
+      "type": "external",
+      "label": "运营人员提供平台账号",
+      "sublabel": "登录会话与授权（Q-13：需登录走人工）",
+      "pos": [
+        40,
+        120
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "o4",
+      "type": "backend",
+      "label": "编排者",
+      "sublabel": "派单分发数据线 · 汇总本期结论",
+      "pos": [
+        40,
+        260
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s11",
+      "type": "frontend",
+      "label": "hotspot-collector",
+      "sublabel": "按周期 / 自定义关键词搜热点",
+      "pos": [
+        40,
+        400
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s12",
+      "type": "frontend",
+      "label": "table-builder",
+      "sublabel": "分类汇总成表格",
+      "pos": [
+        40,
+        540
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s13",
+      "type": "frontend",
+      "label": "feishu-sync",
+      "sublabel": "同步到飞书文档",
+      "pos": [
+        40,
+        680
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s14",
+      "type": "frontend",
+      "label": "title-cover-prep",
+      "sublabel": "标题 / 标签 / 封面走平台模板",
+      "pos": [
+        40,
+        820
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s15",
+      "type": "frontend",
+      "label": "browser-publisher",
+      "sublabel": "自动登录并填写，停在发布前",
+      "pos": [
+        40,
+        960
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "g4",
+      "type": "security",
+      "label": "关口③ 发布授权",
+      "sublabel": "授权态：核对信息 → 人工点击发布",
+      "pos": [
+        40,
+        1100
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s16",
+      "type": "frontend",
+      "label": "metrics-collector",
+      "sublabel": "按周期采集播放 / 互动 / 涨粉",
+      "pos": [
+        380,
+        120
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s17",
+      "type": "frontend",
+      "label": "review-reporter",
+      "sublabel": "出复盘报告与优化建议",
+      "pos": [
+        380,
+        400
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "d4",
+      "type": "database",
+      "label": "指标与流水入库",
+      "sublabel": "含采集时间与统计周期",
+      "pos": [
+        380,
+        680
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "k3",
+      "type": "backend",
+      "label": "skill-readme",
+      "sublabel": "每个 skill 自带 README.md",
+      "pos": [
+        380,
+        960
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a11",
+      "type": "database",
+      "label": "热点表",
+      "sublabel": "分类 / 关键词 / 时间",
+      "pos": [
+        720,
+        400
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a12",
+      "type": "database",
+      "label": "发布包",
+      "sublabel": "标题 / 标签 / 封面 / 账号",
+      "pos": [
+        720,
+        680
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a13",
+      "type": "security",
+      "label": "待发布态",
+      "sublabel": "只填不发（C-08 红线）",
+      "pos": [
+        720,
+        960
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a14",
+      "type": "database",
+      "label": "复盘报告",
+      "sublabel": "结论回写下一轮提示词版本",
+      "pos": [
+        720,
+        1100
+      ],
+      "size": [
+        230,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "流程步骤（全流程停在发布前）",
+      "wraps": [
+        "i4",
+        "o4",
+        "s11",
+        "s12",
+        "s13",
+        "s14",
+        "s15",
+        "g4"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "执行的 Skill 与依赖",
+      "wraps": [
+        "s16",
+        "s17",
+        "d4",
+        "k3"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "产出物与留痕",
+      "wraps": [
+        "a11",
+        "a12",
+        "a13",
+        "a14"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "e0",
+      "from": "i4",
+      "to": "o4",
+      "label": "账号与会话"
+    },
+    {
+      "id": "e1",
+      "from": "o4",
+      "to": "s11",
+      "label": "派单 hotspot-collector"
+    },
+    {
+      "id": "e2",
+      "from": "s11",
+      "to": "s12",
+      "label": "热点原始数据"
+    },
+    {
+      "id": "e3",
+      "from": "s12",
+      "to": "s13",
+      "label": "表格就绪"
+    },
+    {
+      "id": "e4",
+      "from": "s13",
+      "to": "o4",
+      "label": "汇总完成"
+    },
+    {
+      "id": "e5",
+      "from": "o4",
+      "to": "s14",
+      "label": "派单 title-cover-prep"
+    },
+    {
+      "id": "e6",
+      "from": "s14",
+      "to": "s15",
+      "label": "发布包就绪"
+    },
+    {
+      "id": "e7",
+      "from": "s15",
+      "to": "g4",
+      "label": "待核对"
+    },
+    {
+      "id": "e8",
+      "from": "g4",
+      "to": "s16",
+      "label": "发布后开始采集"
+    },
+    {
+      "id": "e9",
+      "from": "s16",
+      "to": "d4",
+      "label": "指标入库"
+    },
+    {
+      "id": "e10",
+      "from": "d4",
+      "to": "s17",
+      "label": "按周期取数"
+    },
+    {
+      "id": "e11",
+      "from": "s17",
+      "to": "a14",
+      "label": "产出报告"
+    },
+    {
+      "id": "e12",
+      "from": "s11",
+      "to": "a11",
+      "label": "产出热点表"
+    },
+    {
+      "id": "e13",
+      "from": "s14",
+      "to": "a12",
+      "label": "产出发布包"
+    },
+    {
+      "id": "e14",
+      "from": "g4",
+      "to": "a13",
+      "label": "写待发布记录"
+    },
+    {
+      "id": "e15",
+      "from": "s17",
+      "to": "o4",
+      "label": "优化建议回写"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "输入校验（进场前）",
+      "items": [
+        "发布：成片 + 发布包（标题 / 标签 / 封面齐备）",
+        "采集：已发布内容清单 + 统计周期",
+        "热点：关键词 / 分类 / 周期；公开源优先，需登录走人工授权（Q-13）"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "完成判据",
+      "items": [
+        "热点表：按类汇总、每行带关键词与时间，已存飞书",
+        "指标：三项（播放量 / 互动量=赞藏评合计 / 涨粉数）+ 采集时间 + 统计周期（Q-14）",
+        "复盘：含结论与可执行的优化建议，且已回写为下一轮提示词版本"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "浏览器自动化边界（§5.2.1）",
+      "items": [
+        "只做：打开后台、填标题 / 标签 / 封面、上传成片、停在发布按钮前",
+        "不做：自动点发布、批量养号、绕过验证码",
+        "登录会话由运营人员提供；过期时暂停并通知，不自动重试登录"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "红线（发布与数据）",
+      "items": [
+        "C-01：未经人工授权绝不发布",
+        "C-08：必须停在待发布态，等待人工点击",
+        "C-09：采集与同步优先用免费额度；计费调用须先批准"
+      ]
+    }
+  ]
+}

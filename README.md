@@ -9,13 +9,14 @@
 
 | 项      | 值                                                            |
 | ------ | ------------------------------------------------------------ |
-| 阶段     | 需求规格已冻结（v2.1-frozen），正在设计流程图                                |
-| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)      |
-| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)      |
-| 实施进度   | 约 30%（详见需求规格 §12 总进度台账）                                     |
+| 阶段     | 设计阶段收尾：流程图与 Skill 岗位设计已完成，等待**目录结构提案**确认后开始搭建                     |
+| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.2） |
+| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N004） |
+| Skill 名册 | [`docs/skill-roster.md`](docs/skill-roster.md)（18 岗位 + 7 支撑件） |
+| 实施进度   | 约 55%（详见需求规格 §12 总进度台账）                                     |
 
 > ⚠️ 本轮处于「先讨论、后动手」阶段：**基础环境（业务目录）尚未创建**。
-> 目录会在需求规格 §5.3 的第四步（R-L1-13）确认后按实施步骤逐个建立，不提前铺开。
+> 目录草案见 [`docs/directory-structure-plan.md`](docs/directory-structure-plan.md)，**经确认后**才按其中的 9 步顺序逐个建立，不提前铺开。
 
 ---
 
@@ -23,8 +24,25 @@
 
 1. [`docs/requirements-spec.md`](docs/requirements-spec.md) — **唯一需求来源**。要看懂项目做什么、有哪些红线、哪些决议已定，读这一份。
 2. [`docs/discussion-record.md`](docs/discussion-record.md) — 过程留痕。要知道「为什么这么做、做到哪、还剩什么」，读这一份。
+3. [`docs/skill-roster.md`](docs/skill-roster.md) — 有哪些 Skill 岗位、各自输入输出与判据。
+4. [`docs/skill-readme-contract.md`](docs/skill-readme-contract.md) — 每个 skill 的 README 必须怎么写（含机器可判定的校验表达式）。
+5. [`docs/directory-structure-plan.md`](docs/directory-structure-plan.md) — 目录树提案与分步落地顺序。
 
-两份合起来可完整还原项目状态（成功判据 AC-6）。
+前两份合起来可完整还原项目状态（成功判据 AC-6）。
+
+---
+
+## 流程图一览（全部由 archify 生成）
+
+| 图 | 内容 | 源与产物 |
+| -- | ---- | -------- |
+| 整体运营流程 | 三层职责、四条环节线、外部适配器、三处人工关口 | [`.archify/FLOW-OVERALL-20261012/overall-operations.html`](.archify/FLOW-OVERALL-20261012/overall-operations.html) |
+| 文案线 | FLOW-1：3 套文案 → 关口① 选定 → 24 条分镜 | [`.archify/FLOW-COPY-20261012/copy-line.html`](.archify/FLOW-COPY-20261012/copy-line.html) |
+| 视觉线 | FLOW-2/3：参考图 → 6×4 整图 → 切 24 张 | [`.archify/FLOW-VISUAL-20261012/visual-line.html`](.archify/FLOW-VISUAL-20261012/visual-line.html) |
+| 视频线 | FLOW-4/5：打包 → 图生视频 → 关口② 剪辑 → 导出 | [`.archify/FLOW-VIDEO-20261012/video-line.html`](.archify/FLOW-VIDEO-20261012/video-line.html) |
+| 分发数据线 | FLOW-6/7/8：热点 → 发布准备 → 关口③ 授权 → 指标 → 复盘 | [`.archify/FLOW-PUBLISH-20261012/publish-line.html`](.archify/FLOW-PUBLISH-20261012/publish-line.html) |
+
+每张图目录内都有 `README.md`（画什么、为什么、怎么重新生成与校验）；改图必须重新跑 `archify check` 并保持 `ok:true`（R-L2-13）。
 
 ---
 

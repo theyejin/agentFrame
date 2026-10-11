@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "视觉线 · 分环节操作流程",
+    "output": ".archify/FLOW-VISUAL-20261012/visual-line.html",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "subtitle": "FLOW-2 / FLOW-3：分镜 → 参考图 → 6×4 整图 → 切分 24 张 → 抽查"
+  },
+  "layout": {
+    "mode": "grid"
+  },
+  "components": [
+    {
+      "id": "i2",
+      "type": "database",
+      "label": "选定文案 + 24 条分镜",
+      "sublabel": "上游交接物（文案线产出）",
+      "pos": [
+        40,
+        120
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "o2",
+      "type": "backend",
+      "label": "编排者",
+      "sublabel": "派单视觉线 · 校验 24 张一致性",
+      "pos": [
+        40,
+        260
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s3",
+      "type": "frontend",
+      "label": "reference-image-builder",
+      "sublabel": "文案 → 1–3 张风格参考图",
+      "pos": [
+        40,
+        400
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "g2",
+      "type": "security",
+      "label": "人的风格确认",
+      "sublabel": "参考图是风格基准，错了整组返工",
+      "pos": [
+        40,
+        540
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s4",
+      "type": "frontend",
+      "label": "grid-image-builder",
+      "sublabel": "6×4 整图（空格位对齐分镜）",
+      "pos": [
+        40,
+        680
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s5",
+      "type": "frontend",
+      "label": "image-splitter",
+      "sublabel": "整图 → 24 张独立图",
+      "pos": [
+        40,
+        820
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "w1",
+      "type": "external",
+      "label": "人工修图关口",
+      "sublabel": "可只重生成某一张（保留逐张重生成）",
+      "pos": [
+        40,
+        960
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "k4",
+      "type": "cloud",
+      "label": "text-to-image 适配器",
+      "sublabel": "Flow（首选）/ 豆包 / ComfyUI + 降级链",
+      "pos": [
+        380,
+        400
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "k5",
+      "type": "cloud",
+      "label": "image-split 适配器",
+      "sublabel": "切分能力，可换服务",
+      "pos": [
+        380,
+        680
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "d2",
+      "type": "database",
+      "label": "产物登记",
+      "sublabel": "分辨率 / 张数 / 实际适配器",
+      "pos": [
+        380,
+        120
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "k3",
+      "type": "backend",
+      "label": "skill-readme",
+      "sublabel": "每个 skill 自带 README.md",
+      "pos": [
+        380,
+        960
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a5",
+      "type": "database",
+      "label": "参考图",
+      "sublabel": "1–3 张，风格基准",
+      "pos": [
+        720,
+        400
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a6",
+      "type": "database",
+      "label": "整图 6×4",
+      "sublabel": "24 个格子对应 24 条分镜",
+      "pos": [
+        720,
+        540
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a7",
+      "type": "database",
+      "label": "独立图 ×24",
+      "sublabel": "命名 shot-01…shot-24",
+      "pos": [
+        720,
+        820
+      ],
+      "size": [
+        230,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "流程步骤（整图优先 → 再切分）",
+      "wraps": [
+        "i2",
+        "o2",
+        "s3",
+        "g2",
+        "s4",
+        "s5",
+        "w1"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "执行的 Skill 与依赖（适配器可换 / 可降级）",
+      "wraps": [
+        "k4",
+        "k5",
+        "d2",
+        "k3"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "产出物与留痕",
+      "wraps": [
+        "a5",
+        "a6",
+        "a7"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "e0",
+      "from": "i2",
+      "to": "o2",
+      "label": "交接物进场"
+    },
+    {
+      "id": "e1",
+      "from": "o2",
+      "to": "s3",
+      "label": "派单 reference-image-builder"
+    },
+    {
+      "id": "e2",
+      "from": "s3",
+      "to": "g2",
+      "label": "参考图待确认"
+    },
+    {
+      "id": "e3",
+      "from": "g2",
+      "to": "s4",
+      "label": "确认后继续"
+    },
+    {
+      "id": "e4",
+      "from": "s4",
+      "to": "s5",
+      "label": "整图交给切分"
+    },
+    {
+      "id": "e5",
+      "from": "s5",
+      "to": "w1",
+      "label": "待抽查"
+    },
+    {
+      "id": "e6",
+      "from": "s4",
+      "to": "k4",
+      "label": "调用生图适配器"
+    },
+    {
+      "id": "e7",
+      "from": "s5",
+      "to": "k5",
+      "label": "调用切分适配器"
+    },
+    {
+      "id": "e8",
+      "from": "o2",
+      "to": "d2",
+      "label": "任务与产物登记"
+    },
+    {
+      "id": "e9",
+      "from": "s3",
+      "to": "a5",
+      "label": "产出参考图"
+    },
+    {
+      "id": "e10",
+      "from": "s4",
+      "to": "a6",
+      "label": "产出整图"
+    },
+    {
+      "id": "e11",
+      "from": "s5",
+      "to": "a7",
+      "label": "产出 24 张独立图"
+    },
+    {
+      "id": "e12",
+      "from": "w1",
+      "to": "s5",
+      "label": "单张返工"
+    },
+    {
+      "id": "e13",
+      "from": "w1",
+      "to": "o2",
+      "label": "整组返工"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "输入校验（进场前）",
+      "items": [
+        "必有：选定文案 + 24 条分镜（编号连续、风格一致）",
+        "缺分镜或条数≠24 直接退回文案线，不生成图片",
+        "确认平台封面比例，推算整图与单张尺寸"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "完成判据（交由下游前）",
+      "items": [
+        "24 张独立图，编号齐全，分辨率一致，无空格位残留",
+        "风格与参考图一致（色彩 / 构图 / 人物一致性）",
+        "每张能追溯到对应分镜编号与适配器记录"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "为什么先整图再切分（Q-11）",
+      "items": [
+        "整图一次生成，人物、场景、色调在同一张里天然一致",
+        "切分后再逐张重生成：只改不满意的那张，省时省钱",
+        "切分服务不可用时，可退回人工按格裁切，不阻断流程"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "适配器与红线（C-09）",
+      "items": [
+        "首选 Flow；失败按降级链自动重试：豆包 → ComfyUI → 本地兜底",
+        "实际生效的适配器写入步骤流水表（R-L2-17）",
+        "默认只用免费额度；可能计费的调用须先取得批准"
+      ]
+    }
+  ]
+}

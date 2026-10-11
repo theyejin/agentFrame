@@ -207,3 +207,66 @@
 ### 下次讨论前置条件
 
 用户对整体运营流程图给出意见（通过 / 修改）。若无修改，N004 议题为：确认进入 WP-04 Skill 岗位与数量设计，并同时启动 A-07 分环节流程图。
+
+---
+
+## N004
+
+| 字段         | 内容                                                                                        |
+| ---------- | ----------------------------------------------------------------------------------------- |
+| 节点编号       | N004                                                                                      |
+| 日期时间       | 2026-10-12 04:40（本地）                                                                      |
+| 讨论主题       | 产出 4 张分环节操作流程图（A-07），并完成 Skill 岗位与数量设计（WP-04）                                                |
+| 背景与动机      | N003 的整体运营流程图经用户确认；据此把「四条线」各自展开成可执行的操作流程图（含 Skill 与依赖、产出物与留痕），同时把图上出现的每个 Skill 落成有数量、有输入输出判据的岗位名册，为 WP-05 目录搭建提供依据 |
+
+### 讨论内容
+
+1. **4 张分环节操作流程图（A-07 完成）**：沿用 N003 确定的 `architecture` 类型与「三列 + 宽行距」骨架（三列 region 边界固定为「流程步骤 / 执行的 Skill 与依赖 / 产出物与留痕」，列 x=40/380/720，行距 140），每图配 4 张卡片（输入校验 / 完成判据 / 机制说明 / 红线或规则）：
+   - `.archify/FLOW-COPY-20261012/copy-line.html` — 文案线（FLOW-1）：运营人员给思路 → 编排者派单 `copy-writer` 出 3 套不同侧重点 → **关口① 选定文案（选择态：三选一对比卡）** → `storyboard-builder` 转 24 条分镜 → 入库留痕；含 `llm-adapter`、`prompt-registry`、`skill-readme` 依赖节点与「不满意 → 带反馈重生成」回边。
+   - `.archify/FLOW-VISUAL-20261012/visual-line.html` — 视觉线（FLOW-2/3）：选定文案 + 24 分镜 → `reference-image-builder` 出参考图 → 人工风格确认 → `grid-image-builder` 出 6×4 整图 → `image-splitter` 切 24 张独立图 → 修图关口（可只重生成某一张）；标注生图适配器降级链（Flow / 豆包 / ComfyUI）。
+   - `.archify/FLOW-VIDEO-20261012/video-line.html` — 视频线（FLOW-4/5）：`asset-packager` 打包图文 → `image-to-video` 出草稿 → **关口② 剪辑干预（调整态：顺序 / 时长 / 素材替换 + 实时预览）** → `auto-editor` 参数化剪辑 → `video-exporter` 导出 mp4 与封面帧 → `title-cover-prep` 套平台模板。
+   - `.archify/FLOW-PUBLISH-20261012/publish-line.html` — 分发数据线（FLOW-6/7/8）：`hotspot-collector` → `table-builder` → `feishu-sync`（汇回编排者）→ `title-cover-prep` → `browser-publisher` 自动填写并**停在发布前** → **关口③ 发布授权（授权态：核对后人工点击发布）** → `metrics-collector` 采集三项指标入库 → `review-reporter` 出复盘报告回写。
+   - 4 张图均 `render` 成功、`archify check` 返回 `ok=true` 且 `composition=pass`，并用 headless Chrome 截图（`.tmp/shots/*.png`）人工核对布局。
+2. **Skill 岗位与数量设计（WP-04 完成）**：见新增 `docs/skill-roster.md`，结论是 **18 个执行岗位 + 7 个支撑件 = `.dsh/skills/` 下 25 个目录**；每个岗位都写明输入 / 输出 / 输入校验 / 完成判据 / 失败处理 / 不做，并统一「取任务 → 输入校验 → 执行 → 自检 → 登记产物 → 交回编排者」六步执行流程（skill 之间不互相调用，只由编排者或环节 Agent 派单）。
+3. **Skill README 契约（新增文档）**：`docs/skill-readme-contract.md` 把「每个 skill 都要有通俗 README」落成可执行模板——九段固定结构，其中「输入校验 / 完成判据」必须是机器可判定的表达式，并给出最小词汇表（`count`、`ids_continuous`、`unique`、`in_range`、`all_resolution_equal`、`file_exists`、`non_empty`、`enum_in`、`no_auto_publish`）与校验器映射（`storyboard-validator` / `image-consistency-checker` / `publish-guard` / `artifact-recorder`）。
+4. **目录结构提案（新增文档，待确认）**：`docs/directory-structure-plan.md` 给出完整目录树与「路径 + 用途」逐行注释，并给出分 9 步的落地顺序。**本节点未创建任何业务目录**——遵守 m00001 的约定「讨论确认后才做基础环境搭建」。
+
+### 本次结论
+
+- 已达成一致：A-07 的 4 张分环节操作流程图全部产出并通过校验；WP-04 Skill 岗位与数量设计完成（18 + 7）。
+- 已确定：Skill 命名与目录规则、README 九段契约、代码文件头注释四行规范；目录树与 9 步落地顺序作为**提案**提交用户确认。
+- 未达成一致：无。
+- **待用户确认**：目录树是否照此建立；顶层目录是否更名（建议保留 `.dsh/skills/` 以便 DSH 自动发现）；是否同意「先建骨架 + 各目录 README，再逐步填内容」。
+- 前置提醒：逐环节讲解（A-08）在本次回复中一并给出，用户若有异议按 N005 处理。
+
+### 落实事项（Action）
+
+| 编号   | 动作                                          | 负责人    | 触发时机       | 验收方式                            | 状态   |
+| ---- | ------------------------------------------- | ------ | ---------- | ------------------------------- | ---- |
+| A-07 | 逐环节操作流程图（文案线 / 视觉线 / 视频线 / 分发数据线）             | 执行 Agent | N003 图确认后  | 每张图独立目录 + `archify check` 通过     | ✅ 完成（4 张） |
+| A-08 | 向用户逐环节讲解各流程图的作用                             | 执行 Agent | A-07 产出后   | 用户在聊天中确认理解                      | ✅ 完成（见 N004 回复） |
+| A-11 | Skill 岗位与数量设计（名册 + README 契约）                | 执行 Agent | N004       | `docs/skill-roster.md`、`docs/skill-readme-contract.md` 产出 | ✅ 完成 |
+| A-12 | 目录结构提案（含 9 步落地顺序）                            | 执行 Agent | N004       | `docs/directory-structure-plan.md` 产出 | ✅ 完成（待用户确认） |
+| A-13 | 基础环境搭建：按确认后的目录树建目录与文件                       | 执行 Agent | 用户确认 A-12  | 目录说明与磁盘一致、每目录有 README            | ⏳ 待开始 |
+| A-09 | 排查本机 Chrome 沙箱限制，使 `browser-check`/`visual-check` 可用 | 执行 Agent | 环境允许时      | `finalize ... --quality showcase` 的 browser-check 通过 | ⏳ 待开始 |
+| A-14 | 提交并推送本节点产出                                  | 执行 Agent | N004 收尾    | 远端可见提交与文件                       | ⏳ 进行中 |
+| A-06 | 每次讨论后回填本文件与规格 §12 台账的状态                      | 执行 Agent | 每次讨论结束     | 台账状态与讨论节点一一对应，无无来源状态            | 持续   |
+
+### 完成进度
+
+约 **55%**（相对「规格冻结 → L1 → L2 → L3」全程）。新增完成：4 张分环节操作流程图、Skill 岗位名册、README 契约、目录结构提案。
+
+### 剩余进度
+
+- 基础环境搭建：目录与文件（WP-05 / A-13，**待用户确认目录提案**）
+- 数据库结构与迁移（WP-06）
+- Agent/Skill 落地与单测（WP-07）
+- build-log 报告页（WP-08）
+- 目录及文件说明文档（WP-09）
+- 运营控制台多页面（WP-11）
+- 端到端模拟测试与验收（WP-12）
+- A-09 浏览器校验环境排查（不阻断主线）
+
+### 下次讨论前置条件
+
+用户对目录结构提案（A-12）给出确认或修改意见。若确认，N005 议题为：按 9 步落地顺序开始 WP-05 基础环境搭建，并同步更新 `docs/directory-and-files.md`。

@@ -26,6 +26,9 @@ outputs/
 *.jpeg
 *.webp
 
+# ---- 本地临时目录（archify 截图、headless Chrome 用户目录等，绝不入仓） ----
+.tmp/
+
 # ---- Python ----
 __pycache__/
 *.py[cod]

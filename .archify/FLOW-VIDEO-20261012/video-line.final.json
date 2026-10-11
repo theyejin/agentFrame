@@ -1,0 +1,392 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "视频线 · 分环节操作流程",
+    "output": ".archify/FLOW-VIDEO-20261012/video-line.html",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "subtitle": "FLOW-4 / FLOW-5：图文打包 → 图生视频 → 关口②剪辑 → 导出成片 → 发布准备"
+  },
+  "layout": {
+    "mode": "grid"
+  },
+  "components": [
+    {
+      "id": "i3",
+      "type": "database",
+      "label": "图文包",
+      "sublabel": "24 张独立图 + 选定文案（上游交接物）",
+      "pos": [
+        40,
+        120
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "o3",
+      "type": "backend",
+      "label": "编排者",
+      "sublabel": "派单视频线 · 校验成片规格",
+      "pos": [
+        40,
+        260
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s6",
+      "type": "frontend",
+      "label": "asset-packager",
+      "sublabel": "按分镜顺序命名 → 素材清单",
+      "pos": [
+        40,
+        400
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s7",
+      "type": "frontend",
+      "label": "image-to-video",
+      "sublabel": "文生视频（首帧 / 尾帧可选）",
+      "pos": [
+        40,
+        540
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "g3",
+      "type": "security",
+      "label": "关口② 剪辑干预",
+      "sublabel": "调整态：顺序 / 时长 / 素材替换",
+      "pos": [
+        40,
+        680
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s8",
+      "type": "frontend",
+      "label": "auto-editor",
+      "sublabel": "参数化编辑 + 实时预览",
+      "pos": [
+        40,
+        820
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s9",
+      "type": "frontend",
+      "label": "video-exporter",
+      "sublabel": "导出成片 + 封面帧",
+      "pos": [
+        40,
+        960
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "s10",
+      "type": "frontend",
+      "label": "publish-prep",
+      "sublabel": "标题 / 标签 / 封面（走平台模板）",
+      "pos": [
+        40,
+        1100
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "k6",
+      "type": "cloud",
+      "label": "image-to-video 适配器",
+      "sublabel": "Remotion 为主 / ffmpeg 兜底",
+      "pos": [
+        380,
+        540
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "k7",
+      "type": "cloud",
+      "label": "render-adapter",
+      "sublabel": "渲染与导出适配器",
+      "pos": [
+        380,
+        960
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "d3",
+      "type": "database",
+      "label": "工程与产物登记",
+      "sublabel": "时长 / 分辨率 / 素材来源",
+      "pos": [
+        380,
+        120
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "k3",
+      "type": "backend",
+      "label": "skill-readme",
+      "sublabel": "每个 skill 自带 README.md",
+      "pos": [
+        380,
+        1100
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a8",
+      "type": "database",
+      "label": "打包文件夹",
+      "sublabel": "文案 + 图片 + 素材清单",
+      "pos": [
+        720,
+        400
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a9",
+      "type": "database",
+      "label": "剪辑参数单",
+      "sublabel": "顺序 / 时长 / 替换记录",
+      "pos": [
+        720,
+        680
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "a10",
+      "type": "database",
+      "label": "成片 mp4",
+      "sublabel": "分辨率 / 时长 / 封面帧",
+      "pos": [
+        720,
+        960
+      ],
+      "size": [
+        230,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "流程步骤（自动为主，人工可干预）",
+      "wraps": [
+        "i3",
+        "o3",
+        "s6",
+        "s7",
+        "g3",
+        "s8",
+        "s9",
+        "s10"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "执行的 Skill 与依赖（Remotion 为主 / ffmpeg 兜底）",
+      "wraps": [
+        "k6",
+        "k7",
+        "d3",
+        "k3"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "产出物与留痕",
+      "wraps": [
+        "a8",
+        "a9",
+        "a10"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "e0",
+      "from": "i3",
+      "to": "o3",
+      "label": "交接物进场"
+    },
+    {
+      "id": "e1",
+      "from": "o3",
+      "to": "s6",
+      "label": "派单 asset-packager"
+    },
+    {
+      "id": "e2",
+      "from": "s6",
+      "to": "s7",
+      "label": "打包完成"
+    },
+    {
+      "id": "e3",
+      "from": "s7",
+      "to": "g3",
+      "label": "待调整"
+    },
+    {
+      "id": "e4",
+      "from": "g3",
+      "to": "s8",
+      "label": "确认参数"
+    },
+    {
+      "id": "e5",
+      "from": "s8",
+      "to": "s9",
+      "label": "参数定稿"
+    },
+    {
+      "id": "e6",
+      "from": "s9",
+      "to": "s10",
+      "label": "成片就绪"
+    },
+    {
+      "id": "e7",
+      "from": "s7",
+      "to": "k6",
+      "label": "调用图生视频"
+    },
+    {
+      "id": "e8",
+      "from": "s9",
+      "to": "k7",
+      "label": "调用渲染导出"
+    },
+    {
+      "id": "e9",
+      "from": "o3",
+      "to": "d3",
+      "label": "任务与产物登记"
+    },
+    {
+      "id": "e10",
+      "from": "s6",
+      "to": "a8",
+      "label": "产出文件夹"
+    },
+    {
+      "id": "e11",
+      "from": "g3",
+      "to": "a9",
+      "label": "记录调整"
+    },
+    {
+      "id": "e12",
+      "from": "s9",
+      "to": "a10",
+      "label": "产出成片"
+    },
+    {
+      "id": "e13",
+      "from": "s8",
+      "to": "g3",
+      "label": "不满意 → 改参数再预览"
+    },
+    {
+      "id": "e14",
+      "from": "s10",
+      "to": "o3",
+      "label": "交回编排者"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "输入校验（进场前）",
+      "items": [
+        "必有：24 张独立图（编号齐全）+ 选定文案",
+        "数量不足或编号断档 → 退回视觉线，不进入打包",
+        "确认目标平台比例（横屏 16:9 / 竖屏 9:16）与时长上限"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "完成判据（交由下游前）",
+      "items": [
+        "成片可播放，分辨率与平台要求一致，时长在平台上限内",
+        "每个镜头能追溯到具体分镜编号与素材文件",
+        "剪辑参数单与成片一一对应，可复现同一版本"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "关口② 调整态支持什么（§8.3）",
+      "items": [
+        "改顺序：拖拽镜头，实时预览",
+        "改时长：单镜头时长与整体节奏",
+        "换素材：替换某个镜头的图片或片段",
+        "不满意可反复调整，直到点「确认导出」；全过程写 hitl_events"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "导出与兜底",
+      "items": [
+        "首选 Remotion 渲染；环境异常时 ffmpeg 兜底（Q-7）",
+        "导出失败重试上限写进 skill README，超限转人工",
+        "成片只落在本地，不自动上传任何平台（C-01）"
+      ]
+    }
+  ]
+}
