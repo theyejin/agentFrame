@@ -422,7 +422,7 @@
 | A-27 | `llm-adapter` skill（统一调用入口）        | 执行 Agent | N007    | `chains`/`adapters`/`generate`/`call` 四命令可用；默认零付费 | ✅ 完成 |
 | A-28 | 适配器同步脚本 `scripts/seed_adapters.py`  | 执行 Agent | N007    | 同步 19 条；`--check` 一致                | ✅ 完成 |
 | A-29 | 适配器层模拟测试 `tests/test_adapters.py`   | 执行 Agent | N007    | 34 项全部通过（退出码 0）；全套 62 项             | ✅ 完成 |
-| A-30 | 提交并推送本节点产出                       | 执行 Agent | N007 收尾 | 远端可见提交与 tag                         | ✅ 完成（见下方提交记录） |
+| A-30 | 提交并推送本节点产出                       | 执行 Agent | N007 收尾 | 远端可见提交与 tag                         | ✅ 完成（c750791 + tag v0.6.0-adapter-layer） |
 | A-09 | 排查本机 Chrome 沙箱限制                  | 执行 Agent | 环境允许时   | archify browser-check 通过            | ⏳ 待开始 |
 | A-06 | 每次讨论后回填本文件与规格 §12 台账的状态           | 执行 Agent | 每次讨论结束  | 台账状态与讨论节点一一对应                       | 持续   |
 
