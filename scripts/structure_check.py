@@ -55,6 +55,12 @@ EXPECTED_ROOT_FILES = [
     "docs/directory-structure-plan.md",
     "docs/decision-log.md",
     "scripts/structure_check.py",
+    "scripts/db_init.py",
+    "db/schema.sql",
+    "db/migrations/0001_init.sql",
+    "db/seed/0001_platform_templates.sql",
+    "tests/test_db.py",
+    "logs/2026-10-12.jsonl",
 ]
 
 # 绝不允许出现在仓库工作区的路径/后缀（C-05 密钥、R-L1-04 数据库二进制、本地临时目录）

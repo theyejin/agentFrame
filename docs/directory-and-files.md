@@ -2,7 +2,7 @@
 
 > 对应需求：R-L2-09（生成一份目录及文件说明文档，供其他运营人员查看；增删改必须同步更新）、R-L1-14（目录与文件名都要有注释说明）。
 > 维护规则：**任何目录、文件的增 / 删 / 改，必须在同一次提交内更新本文件**；体检脚本 `scripts/structure_check.py` 会检查本文件是否覆盖了全部顶层目录。
-> 最近更新：N005（2026-10-12，WP-05 步骤 1：目录骨架建成）。
+> 最近更新：WP-05 步骤 2（2026-10-12：数据库结构与迁移、建库脚本、数据库模拟测试）。
 
 ---
 
@@ -26,12 +26,12 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 ├── .archify/                   图表区：全部 archify 生成的图（一张图一个目录）
 ├── agents/                     Agent 定义：编排者 + 四条环节 Agent
 ├── .dsh/skills/                Skill 模块：25 个可独立执行的 skill（DSH 技能根目录）
-├── db/                         数据库：结构 DDL + 迁移 + 种子数据
+├── db/                         数据库：结构 DDL + 迁移 + 种子数据（app.db 不入库）
 ├── dashboard/                  运营控制台页面 + 执行轨迹报告页
 ├── workflows/                  流程编排定义
 ├── templates/                  平台预设模板与可复用模板
-├── scripts/                    辅助脚本：报告生成、结构体检
-├── tests/                      模拟测试：不调用真实外部服务
+├── scripts/                    辅助脚本：建库、结构体检、报告生成
+├── tests/                      模拟测试：不调用真实外部服务（tests/test_db.py…）
 ├── logs/                       运行记录（按日期分文件，build-log 数据源）
 └── workspace/                  运行期工作区（产物目录，不入库）
 ```
@@ -46,7 +46,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `.archify/` | 图表区 | 全部 archify 图（整体流程图 + 4 张分环节图），一图一目录 | Mermaid 交付图、中间候选 JSON | N003（已有） |
 | `agents/` | Agent 定义 | 编排者与四条环节 Agent 的职责、派单契约、边界 | Skill 实现、运行期数据 | WP-07 |
 | `.dsh/skills/` | Skill 模块 | 25 个 skill（18 执行岗 + 7 支撑件），每个只做一件事 | 流程判断、跨 skill 编排 | WP-05 建骨架；WP-07 起逐个落地 |
-| `db/` | 数据库 | `schema.sql` 唯一结构来源、`migrations/` 迁移、`seed/` 种子数据 | `*.db` 二进制（不入库） | WP-06 |
+| `db/` | 数据库 | `schema.sql` 唯一结构来源、`migrations/` 迁移、`seed/` 种子数据 | `*.db` 二进制（不入库） | **WP-05 步骤 2（已建成）** |
 | `dashboard/` | 运营控制台 | L3 多人任务管理页面 + L2 执行轨迹报告页 | 业务逻辑实现（页面只调本地数据与 Agent 接口） | WP-08 / WP-11 |
 | `workflows/` | 流程编排定义 | 四条线流程与端到端流程：每步交给哪个 skill、何时推进 | Skill 内部逻辑（在 skill 的 README.md） | WP-07 |
 | `templates/` | 模板库 | 平台预设模板（字数区间/标题写法/标签数/封面比例）、可复用提示词 | 密钥、账号信息 | WP-06 / WP-07 |
@@ -96,7 +96,25 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
 | `structure_check.py` | 目录结构体检：目录/README/说明文档三者一致性 + 禁止项扫描 | R-L1-14、R-L2-09 |
+| `db_init.py` | 建库脚本：按 `db/schema.sql`（或 `--from-migrations`）建库并灌种子 | R-L1-04、§7、R-8-01 |
 | `build_log_report.py` | 扫 `logs/` 生成 `dashboard/build-log.html` 报告页 | R-L2-05、R-L2-06（WP-08） |
+
+### 3.4.1 `db/`
+
+| 文件 | 用途 | 对应需求 |
+| ---- | ---- | -------- |
+| `schema.sql` | **结构唯一参考**：13 张表 + 2 个视图 + 3 个一致性触发器 | §7、R-7-01~R-7-05 |
+| `migrations/0001_init.sql` | 首次建库迁移（与 `schema.sql` 一致 + 登记 `schema_migrations`）；历史文件不得再改 | R-L1-04 |
+| `seed/0001_platform_templates.sql` | 平台预设模板：抖音 / 小红书 / B站 / 视频号 | R-8-01、Q-18 |
+| `app.db` | 运行期数据库（不入库，`python3 scripts/db_init.py` 生成） | R-L1-04 |
+| `README.md` | 表清单、枚举取值总表、建库与改结构流程 | R-L1-14、R-7-02 |
+
+### 3.4.2 `tests/`
+
+| 文件 | 用途 | 对应需求 |
+| ---- | ---- | -------- |
+| `test_db.py` | 数据库模拟测试 28 项：结构可建 / 迁移链与 schema 一致 / 种子幂等 / 24 条分镜与编号唯一 / 3 套文案与侧重 / 软删 / 枚举与触发器 / 视图可用 / 建库脚本可用 | R-L2-02、R-L1-19 |
+| `fixtures/` | 模拟测试的假数据（随步骤新增） | R-L2-02 |
 
 ### 3.5 `logs/`
 
@@ -131,7 +149,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | 新增 / 删除 / 改名目录 | 本文件第 1、2 节 + 该目录的 `README.md` + 受影响的 archify 图 + 规格 §12 台账 |
 | 新增 / 删除文件 | 本文件第 3 节对应表 + 该目录 `README.md`（若改变了目录职责） |
 | 改 skill 接口或判据 | 该 skill 的 `README.md` / `SKILL.md` + `docs/skill-roster.md` + 相关流程图 + 本文件 |
-| 改数据库结构 | 新增 `db/migrations/NNNN_*.sql` + `db/README.md` + 本文件 + 规格 §7 相关条款 |
+| 改数据库结构 | 新增 `db/migrations/NNNN_*.sql`（不改旧迁移）+ 同步 `db/schema.sql` + `db/README.md` 表与枚举清单 + 本文件 + 规格 §7；再跑 `python3 tests/test_db.py` |
 | 改图表 | 用 archify 重新 `render` + `check`（R-L2-13）+ 图的 `README.md` |
 | 任何改动 | 追加 `logs/YYYY-MM-DD.jsonl` 一条；跑一次 `scripts/structure_check.py` |
 

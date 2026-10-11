@@ -9,12 +9,13 @@
 
 | 项      | 值                                                            |
 | ------ | ------------------------------------------------------------ |
-| 阶段     | **基础环境搭建中**：目录骨架已建成（WP-05 步骤 1），按 9 步顺序逐步填内容                     |
-| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.3） |
-| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N005） |
+| 阶段     | **基础环境搭建中**：目录骨架（步骤 1）+ 数据库结构与迁移（步骤 2）已完成，按 9 步顺序继续                     |
+| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.4） |
+| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N006） |
 | Skill 名册 | [`docs/skill-roster.md`](docs/skill-roster.md)（18 岗位 + 7 支撑件 = 25 个目录） |
 | 目录与文件  | [`docs/directory-and-files.md`](docs/directory-and-files.md)（增删改必须同步） |
-| 实施进度   | 约 60%（详见需求规格 §12 总进度台账）                                     |
+| 数据模型   | [`db/README.md`](db/README.md)（13 表 / 2 视图 / 枚举取值总表）；模拟测试 `python3 tests/test_db.py` |
+| 实施进度   | 约 65%（详见需求规格 §12 总进度台账）                                     |
 
 > ✅ 目录方案已确认（N005）并按 9 步顺序落地，**顶层目录已建成**；各步只建「本步真正要用的子目录」，不留空壳。
 > 每一步的完成门：`python3 scripts/structure_check.py` 退出码 0（目录 / 各目录 README / 目录说明三者一致）**且**该步模拟测试通过，才进入下一步。
@@ -95,6 +96,7 @@
 
 ```bash
 python3 scripts/structure_check.py          # 必须退出码 0
+python3 tests/test_db.py                    # 本步模拟测试（数据库相关改动必跑）
 git add -A && git commit -m "..." && git push origin main --tags
 ```
 

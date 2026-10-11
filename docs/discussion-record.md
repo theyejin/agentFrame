@@ -331,3 +331,67 @@
 ### 下次讨论前置条件
 
 无硬前置。下一步直接进 **WP-05 步骤 2（数据库结构与迁移）**，完成后带证据（`structure_check.py` 通过 + 模拟测试结果 + 目录说明已同步）开 N006；若用户对目录骨架或三件套规则有异议，先按异议修订再开工。
+
+---
+
+## N006
+
+| 字段           | 内容                                                                                        |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| 日期时间         | 2026-10-12 06:15（本地）                                                                       |
+| 讨论主题         | WP-05 步骤 2 / WP-06：数据库结构与迁移落盘（13 表 + 2 视图 + 3 触发器 + 建库脚本 + 28 项模拟测试）                          |
+| 背景与动机        | N005 已建成目录骨架并定了「每一步跑体检 + 模拟测试通过再下一步」；数据结构是后续所有 Skill、控制台页面的共同地基，必须先冻结，否则每条线各写各的字段必然对不上 |
+
+### 讨论内容
+
+1. **结构来源单一化**：`db/schema.sql` 是**唯一结构参考**，`db/migrations/0001_init.sql` 是它的首次落地副本（内容同构 + 登记 `schema_migrations`）。为防止「迁移链」与「schema」长期漂移，新增 `tests/test_db.py::test_migrations_match_schema` 断言两者建出的 `sqlite_master` 结构完全一致——这是把「文档/脚本一致性」变成可执行检查，而不是靠人记得。
+2. **13 张表覆盖规格 §7 的全部信息对象**：
+   - `topics`（话题，`source` 枚举 `manual`/`hotspot`，R-7-05 一对多）→ `tasks`（任务，`stage`/`status`/`priority`/`content_type` + 字数区间 + `selected_plan`/`selected_at` + `operator`/`locked_at` 软锁，R-8-03）
+   - `copy_variants`（3 套文案 + `focus` 侧重维度 `hook`/`emotion`/`cta`，软删 `status`，不物理删除）
+   - `storyboards`（24 条分镜，`shot_no` 1–24 且每任务唯一）
+   - `step_runs`（步骤流水：第几步、哪个 skill、**实际使用的适配器** `adapter_used`、耗时、失败原因）
+   - `artifacts`（产物：类型/路径/大小/`sha256`/`model_version`/`prompt_version`，R-7-01 大文件不入库、R-7-03 可复现）
+   - `hitl_events`（三类关口 `gate1_select_copy`/`gate2_edit_video`/`gate3_publish_auth` + `snapshot_json`/`diff_json`）
+   - `metrics`（`views`/`engagements`/`follower_gain` 三项 + 统计周期 + 采集时间，R-7-04）
+   - `adapter_registry`（能力/是否要密钥/是否计费/失败特征/降级顺序，R-L2-16）
+   - `platform_templates`（平台模板，R-8-01）
+   - `prompt_versions`（提示词文件名 + 版本，R-7-03 提示词入仓不写死）
+   - `versions`（备份点 commit/tag）、`schema_migrations`（迁移台账）
+3. **把「字段级一致性」交给数据库兜底（3 个触发器）**：① `step_runs.status='failed'` 必须填 `error`；② `tasks.selected_plan` 只能是 1/2/3；③ 图片/视频产物 `size_bytes` 必须 > 0。理由：这些规则每条线都会用到，写在每处业务代码里迟早漏一处。
+4. **两个看板视图**（控制台后续直接读视图，页面不拼 SQL）：`v_task_progress`（走到第几步 / 成功几步 / 失败几步）、`v_pending_publish`（待发布清单：分镜数 / 成片数 / 最近一次发布授权时间）。
+5. **可执行的三道门**：`python3 scripts/db_init.py`（建库 + 灌种子）→ `python3 tests/test_db.py`（28 项）→ `python3 scripts/structure_check.py`（目录说明一致）。数据库二进制 `db/app.db` 按 R-L1-04 不入库，换机器一条命令重建。
+
+### 本次结论
+
+- 已达成一致：数据结构冻结为 `db/schema.sql`；后续任何表/字段/枚举变更必须「新增迁移 + 同步 schema + 更新 `db/README.md` 枚举表 + 跑 `tests/test_db.py`」，四件事缺一不可。
+- 已确定：文案删除/重生成一律**软删**（`copy_variants.status`），保留行以便复盘「当时为什么不选它」。
+- 已确定：枚举取值一律「代码里有 CHECK、文档里有总表」，未在 `db/README.md` 第 3 节列出的取值即非法（R-7-02）。
+- 未达成一致：无。
+- 遗留提醒：`adapter_registry` 的种子数据（Flow / 豆包 / ComfyUI / Remotion / ffmpeg / DeepSeek 等）留到适配器层那一步一起灌，避免现在写死错误的降级顺序。
+
+### 落实事项（Action）
+
+| 编号   | 动作                             | 负责人    | 触发时机    | 验收方式                            | 状态   |
+| ---- | ------------------------------ | ------ | ------- | ------------------------------- | ---- |
+| A-19 | 数据库结构 `db/schema.sql`           | 执行 Agent | N005 步骤 2 | 13 表 + 2 视图 + 3 触发器；枚举全部带 CHECK | ✅ 完成 |
+| A-20 | 首次迁移与种子数据                      | 执行 Agent | N006    | `migrations/0001_init.sql` 与 `schema.sql` 同构；4 条平台模板 | ✅ 完成 |
+| A-21 | 建库脚本 `scripts/db_init.py`       | 执行 Agent | N006    | 可重建本地库；支持 `--from-migrations` / `--force` | ✅ 完成 |
+| A-22 | 数据库模拟测试 `tests/test_db.py`      | 执行 Agent | N006    | 28 项全部通过（退出码 0）                 | ✅ 完成 |
+| A-23 | 提交并推送本节点产出                     | 执行 Agent | N006 收尾 | 远端可见提交与 tag                       | ✅ 完成（见下） |
+| A-09 | 排查本机 Chrome 沙箱限制                | 执行 Agent | 环境允许时   | archify browser-check 通过          | ⏳ 待开始 |
+| A-06 | 每次讨论后回填本文件与规格 §12 台账的状态        | 执行 Agent | 每次讨论结束  | 台账状态与讨论节点一一对应                    | 持续   |
+
+### 完成进度
+
+约 **65%**（相对「规格冻结 → L1 → L2 → L3」全程）。新增完成：数据库结构、迁移与种子、建库脚本、28 项数据库模拟测试。
+
+### 剩余进度
+
+- WP-05 步骤 3–9：适配器层（`llm-adapter`/`prompt-registry`）→ 文案线 → 视觉线 → 视频线 → 分发数据线 → 控制台（WP-11）→ 端到端（WP-12）
+- WP-07 Agent 定义与 25 个 skill 目录落地（含 `SKILL.md` + `README.md` + `run.py`）
+- WP-08 build-log 报告页 `dashboard/build-log.html`
+- A-09 浏览器校验环境排查（不阻断主线）
+
+### 下次讨论前置条件
+
+无硬前置。下一步进 **WP-05 步骤 3：外部服务适配器层 + 提示词注册表**（`llm-adapter`、`prompt-registry`，并把 `adapter_registry` 种子数据一次灌全）；完成后带证据（测试通过 + 目录说明已同步）开 N007。

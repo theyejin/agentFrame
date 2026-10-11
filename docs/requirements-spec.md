@@ -26,6 +26,7 @@
 | v1.0 | 初稿：三层架构、FLOW 1–9、表单字段、待确认问题                                                                                                    | 原始口头需求    |
 | v2.0 | ① 修正基线真实性（v1.0 声称的 `agents/`、`.dsh/skills/`、`db/`、`dashboard/` 磁盘上不存在）；② 新增「讨论机制与留痕」制度（§3）；③ 图表工具由 Mermaid 改为强制 archify；④ 新增 §4.2 编排者与 Agent/Skill 边界分层；⑤ 新增 §5.3.1 文件头注释块规范；⑥ 新增 §7 数据模型要求（话题→内容资产）；⑦ 新增 C-08 发布红线；⑧ 待确认问题扩展至 Q-19 | 本轮讨论 N001 |
 | **v2.1-frozen** | ① 建议 S1～S14 全部采纳并转为强制约束（附录 A）；② Q-1～Q-19 全部落定（§11）；③ 新增 C-09 零付费门禁；④ 补充 §6.5 交接契约、§7 指标口径与版本字段、§8 三类 HITL 形态与处理人字段；⑤ 新增 §15 变更同步检查表；⑥ GitHub 远端确定为 `https://github.com/theyejin/agentFrame.git` | 讨论节点 N002 |
+| **v2.1.4** | 台账同步：WP-06 **已完成**（数据库结构与迁移：13 表 + 2 视图 + 3 触发器，迁移链与 `schema.sql` 结构一致，28 项模拟测试通过）。需求条款本身无改动 | 讨论节点 N006 |
 | **v2.1.3** | ① 新增 **R-L1-20**：skill 目录固定三件套 `SKILL.md`（DSH 自动发现入口，frontmatter `name` 必须等于目录名、`description` 必须含「什么时候用」）+ `README.md`（九段模板）+ `run.py`；② 台账同步：WP-05 **进行中**（步骤 1 目录骨架完成）、WP-09 **已完成**（`docs/directory-and-files.md` 产出并实时维护）；③ 新增 §12 备注：每一步结束必须跑 `scripts/structure_check.py` 且退出码 0 才可进入下一步。需求条款改动仅 R-L1-20 | 讨论节点 N005 |
 | v2.1.2 | 台账同步：WP-03 **已完成**（整体流程图 + 4 张分环节流程图）；WP-04 **已完成**（Skill 岗位与数量设计，18 岗位 + 7 支撑件）；WP-05 备注改为「等待用户确认目录结构提案（`docs/directory-structure-plan.md`）」；新增 §16 Skill 岗位与 README 契约索引。需求条款本身无改动 | 讨论节点 N004 |
 | v2.1.1 | 台账同步：WP-03 备注更新为「整体流程图已产出（N003）；4 张分环节图待做」；新增 R-L2-18 图表交付与浏览器校验的环境约定（archify `render`+`check`，`browser-check` 受本机沙箱限制时的替代验证方式）。需求条款本身无改动 | 讨论节点 N003 |
@@ -422,8 +423,8 @@ L3 依赖 L1 的数据表结构，故必须在 L1 数据结构稳定后开工。
 | WP-02  | 建议清单与方案对比       | L1  | **已完成** | R-L1-10              | S1～S14 全部采纳，见附录 A     |
 | WP-03  | 整体与分环节流程图（archify） | L1  | **已完成** | R-L1-11、R-L2-11~13   | 整体图（N003）+ 4 张分环节图（N004）均已校验通过 |
 | WP-04  | Skill 岗位与数量设计   | L1  | **已完成** | R-L1-12              | 18 岗位 + 7 支撑件，见 `docs/skill-roster.md` |
-| WP-05  | 基础环境搭建（目录与文件）   | L1  | **进行中** | R-L1-13              | 用户已确认目录提案（N005）；步骤 1 完成：目录骨架 + 各目录 README + `docs/directory-and-files.md` + `scripts/structure_check.py`（体检退出码 0）；步骤 2–9 待做 |
-| WP-06  | 数据库结构与迁移        | L1  | 未开始   | §7                   | 依赖 WP-05              |
+| WP-05  | 基础环境搭建（目录与文件）   | L1  | **进行中** | R-L1-13              | 用户已确认目录提案（N005）；步骤 1 完成：目录骨架 + 各目录 README + `docs/directory-and-files.md` + `scripts/structure_check.py`（体检退出码 0）；步骤 2（数据库）已完成，步骤 3–9 待做 |
+| WP-06  | 数据库结构与迁移        | L1  | **已完成** | §7                   | `db/schema.sql`（13 表/2 视图/3 触发器）+ `migrations/0001_init.sql` + `seed/0001_platform_templates.sql`；`tests/test_db.py` 28 项通过；`scripts/db_init.py` 可重建 |
 | WP-07  | Agent/Skill 落地与单测 | L1  | 未开始   | R-L1-05~09、R-L1-18~19 | 依赖 WP-06              |
 | WP-08  | build-log 报告页    | L2  | 未开始   | R-L2-05、R-L2-06      | 依赖 WP-05              |
 | WP-09  | 目录及文件说明文档       | L2  | **已完成** | R-L2-09              | `docs/directory-and-files.md`（N005 产出）；此后随每次增删改同步，`structure_check.py` 第 3 项检查覆盖 |
