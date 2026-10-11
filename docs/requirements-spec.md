@@ -26,6 +26,7 @@
 | v1.0 | 初稿：三层架构、FLOW 1–9、表单字段、待确认问题                                                                                                    | 原始口头需求    |
 | v2.0 | ① 修正基线真实性（v1.0 声称的 `agents/`、`.dsh/skills/`、`db/`、`dashboard/` 磁盘上不存在）；② 新增「讨论机制与留痕」制度（§3）；③ 图表工具由 Mermaid 改为强制 archify；④ 新增 §4.2 编排者与 Agent/Skill 边界分层；⑤ 新增 §5.3.1 文件头注释块规范；⑥ 新增 §7 数据模型要求（话题→内容资产）；⑦ 新增 C-08 发布红线；⑧ 待确认问题扩展至 Q-19 | 本轮讨论 N001 |
 | **v2.1-frozen** | ① 建议 S1～S14 全部采纳并转为强制约束（附录 A）；② Q-1～Q-19 全部落定（§11）；③ 新增 C-09 零付费门禁；④ 补充 §6.5 交接契约、§7 指标口径与版本字段、§8 三类 HITL 形态与处理人字段；⑤ 新增 §15 变更同步检查表；⑥ GitHub 远端确定为 `https://github.com/theyejin/agentFrame.git` | 讨论节点 N002 |
+| **v2.1.3** | ① 新增 **R-L1-20**：skill 目录固定三件套 `SKILL.md`（DSH 自动发现入口，frontmatter `name` 必须等于目录名、`description` 必须含「什么时候用」）+ `README.md`（九段模板）+ `run.py`；② 台账同步：WP-05 **进行中**（步骤 1 目录骨架完成）、WP-09 **已完成**（`docs/directory-and-files.md` 产出并实时维护）；③ 新增 §12 备注：每一步结束必须跑 `scripts/structure_check.py` 且退出码 0 才可进入下一步。需求条款改动仅 R-L1-20 | 讨论节点 N005 |
 | v2.1.2 | 台账同步：WP-03 **已完成**（整体流程图 + 4 张分环节流程图）；WP-04 **已完成**（Skill 岗位与数量设计，18 岗位 + 7 支撑件）；WP-05 备注改为「等待用户确认目录结构提案（`docs/directory-structure-plan.md`）」；新增 §16 Skill 岗位与 README 契约索引。需求条款本身无改动 | 讨论节点 N004 |
 | v2.1.1 | 台账同步：WP-03 备注更新为「整体流程图已产出（N003）；4 张分环节图待做」；新增 R-L2-18 图表交付与浏览器校验的环境约定（archify `render`+`check`，`browser-check` 受本机沙箱限制时的替代验证方式）。需求条款本身无改动 | 讨论节点 N003 |
 
@@ -176,6 +177,11 @@ L3 依赖 L1 的数据表结构，故必须在 L1 数据结构稳定后开工。
 
 **R-L1-18**：交接契约写在每个环节 Agent 的 `README.md` 中，并由对应技能在运行时校验；校验失败必须退回，不得带缺陷继续。
 **R-L1-19**：典型校验例：分镜必须为 24 条且编号连续；图片必须 24 张且分辨率一致；文案必须 3 套且侧重点互不重复。
+**R-L1-20**（N005 新增，依据实测）：每个 skill 目录固定三件套，文件名不得更改——
+① `SKILL.md`：DSH 自动发现入口（工作区 `.dsh/skills/` 即 DSH 技能根目录）。必须为 YAML frontmatter + Markdown 正文；`name` 必须与目录名（= `skill_id`）一致；`description` 必须包含该 skill 的用途与「什么时候该用它」（决定编排者能否选中）；
+② `README.md`：给人看的通俗说明，按 `docs/skill-readme-contract.md` 九段模板填写——运行时校验的「输入校验 / 完成判据 / 失败处理」以此为准；
+③ `run.py`（或 `index.ts`）：实现入口。
+约定 `SKILL.md` 只写「是什么 + 什么时候用 + 入口在哪」，字段与判据全部留在 `README.md`，禁止两处分别维护同一口径（防漂移）。
 
 ### 5.3 工作方式（先讨论，后动手）
 
@@ -408,6 +414,7 @@ L3 依赖 L1 的数据表结构，故必须在 L1 数据结构稳定后开工。
 ## 12. 工作包与总进度台账
 
 > 状态取值：`未开始` / `进行中` / `已完成` / `已冻结`。状态只能通过讨论节点变更（R-D-06）。
+> **每一步的完成门（N005 定，对应 R-L2-02）**：`python3 scripts/structure_check.py` 退出码必须为 0（目录、各目录 README、`docs/directory-and-files.md` 三者一致，且无禁止项入库），并跑通该步的模拟测试，才可进入下一步。
 
 | 工作包 ID | 名称              | 阶段  | 状态    | 关联需求 ID              | 备注                    |
 | ------ | --------------- | --- | ----- | -------------------- | --------------------- |
@@ -415,11 +422,11 @@ L3 依赖 L1 的数据表结构，故必须在 L1 数据结构稳定后开工。
 | WP-02  | 建议清单与方案对比       | L1  | **已完成** | R-L1-10              | S1～S14 全部采纳，见附录 A     |
 | WP-03  | 整体与分环节流程图（archify） | L1  | **已完成** | R-L1-11、R-L2-11~13   | 整体图（N003）+ 4 张分环节图（N004）均已校验通过 |
 | WP-04  | Skill 岗位与数量设计   | L1  | **已完成** | R-L1-12              | 18 岗位 + 7 支撑件，见 `docs/skill-roster.md` |
-| WP-05  | 基础环境搭建（目录与文件）   | L1  | 未开始   | R-L1-13              | 提案见 `docs/directory-structure-plan.md`，**待用户确认** |
+| WP-05  | 基础环境搭建（目录与文件）   | L1  | **进行中** | R-L1-13              | 用户已确认目录提案（N005）；步骤 1 完成：目录骨架 + 各目录 README + `docs/directory-and-files.md` + `scripts/structure_check.py`（体检退出码 0）；步骤 2–9 待做 |
 | WP-06  | 数据库结构与迁移        | L1  | 未开始   | §7                   | 依赖 WP-05              |
 | WP-07  | Agent/Skill 落地与单测 | L1  | 未开始   | R-L1-05~09、R-L1-18~19 | 依赖 WP-06              |
 | WP-08  | build-log 报告页    | L2  | 未开始   | R-L2-05、R-L2-06      | 依赖 WP-05              |
-| WP-09  | 目录及文件说明文档       | L2  | 未开始   | R-L2-09              | 与每次提交同步              |
+| WP-09  | 目录及文件说明文档       | L2  | **已完成** | R-L2-09              | `docs/directory-and-files.md`（N005 产出）；此后随每次增删改同步，`structure_check.py` 第 3 项检查覆盖 |
 | WP-10  | GitHub 备份与打 tag | L2  | 进行中   | R-L2-04、Q-8          | 已推 main；每完成一个工作包打一个 tag（v0.1.0-spec-frozen、v0.2.0-flow-overall…） |
 | WP-11  | 运营控制台多页面        | L3  | 未开始   | §8                   | 依赖 WP-06              |
 | WP-12  | 端到端模拟测试与验收      | 全程  | 未开始   | AC-1~AC-7            | 每步都做                  |
@@ -508,7 +515,7 @@ L3 依赖 L1 的数据表结构，故必须在 L1 数据结构稳定后开工。
 
 - **执行岗位 18 个 + 支撑件 7 个 = `.dsh/skills/` 下 25 个 skill 目录**（名册：`docs/skill-roster.md`）。
 - 分布：文案线 2、视觉线 3、视频线 5、分发数据线 6、基础设施 2；支撑件 7（`artifact-recorder`、`hitl-gate`、`storyboard-validator`、`image-consistency-checker`、`publish-guard`、`task-decomposer`、`summary-writer`）。
-- 命名规则：目录名 = `skill_id`（小写英文 + 连字符，与名册完全一致）；每个目录固定 `README.md` + 入口 `run.py`（或 `index.ts`）。
+- 命名规则：目录名 = `skill_id`（小写英文 + 连字符，与名册完全一致）；每个目录固定三件套 `SKILL.md` + `README.md` + `run.py`（或 `index.ts`），见 R-L1-20 与 §16.5。
 - 首版范围：18 个岗位全部落地，但只做**单链路最小实现**；多平台批量、多模型投票、模板库、付费热点源、高级看板显式推迟。
 
 ### 16.2 每个 Skill 的统一执行流程（R-L1-07）
@@ -529,3 +536,15 @@ L3 依赖 L1 的数据表结构，故必须在 L1 数据结构稳定后开工。
 
 `archify render <type> <json> <out.html> --quality showcase` → `archify check <out.html> --json` 必须 `ok:true` 且 `composition=pass` → 人工/截图核对。
 本机 `browser-check` / `visual-check` 受 Chrome 沙箱限制时，允许用「render + check + 截图核对」替代，但必须登记为待办（当前 A-09），**不得静默跳过**。
+
+### 16.5 Skill 目录三件套与 DSH 发现机制（R-L1-20，N005 实测）
+
+| 文件 | 给谁看 | 作用 |
+| ---- | ------ | ---- |
+| `SKILL.md` | DSH 运行时 | 自动发现入口：YAML frontmatter（`name` = 目录名、`description` 含「什么时候用」）+ 简短用法正文 |
+| `README.md` | 运营人员 + 运行时校验 | 九段模板（`docs/skill-readme-contract.md`），判据与字段以此为准 |
+| `run.py` | 运行时 | 实现入口（或 `index.ts`） |
+
+- 实测依据：工作区 `.dsh/skills/` 即 DSH 技能根目录；用一个探针目录（含 `SKILL.md`）验证「建即可被加载、删即消失」，验证后探针已清理。
+- 因此**顶层目录名必须保持 `.dsh/skills/`**，改名会失去自动发现能力（用户 m00618 已确认保留）。
+- 防漂移约定：`SKILL.md` 不重复写字段与判据，只指向同目录 `README.md`。

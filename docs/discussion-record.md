@@ -270,3 +270,64 @@
 ### 下次讨论前置条件
 
 用户对目录结构提案（A-12）给出确认或修改意见。若确认，N005 议题为：按 9 步落地顺序开始 WP-05 基础环境搭建，并同步更新 `docs/directory-and-files.md`。
+
+---
+
+## N005
+
+| 字段           | 内容                                                                                        |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| 日期时间         | 2026-10-12 05:30（本地）                                                                       |
+| 讨论主题         | 目录方案确认并启动 WP-05 基础环境搭建（A-13 步骤 1：目录骨架 + 目录说明 + 结构体检脚本）                                        |
+| 背景与动机        | N004 把目录结构与 9 步落地顺序作为**提案**交给用户；用户确认后即可开工。开工前必须先解决一个技术前提：skill 目录到底叫什么、DSH 靠什么文件发现 skill |
+
+### 讨论内容
+
+1. **用户确认（逐字）**：m00618「目录按提案建 + 保留 .dsh/skills + 同意分步」→ N004 的三个待确认问题全部通过：① 目录树照 `docs/directory-structure-plan.md` 建立；② 顶层目录保留 `.dsh/skills/` 不改名；③ 同意「先建骨架 + 各目录 README，再逐步填内容」。
+2. **实测 DSH skill 发现机制（本次关键技术发现）**：工作区 `.dsh/skills/` **就是 DSH 的技能发现根目录**；DSH 读取的入口文件是 **`SKILL.md`**（不是 `README.md`），格式为 YAML frontmatter（`name` 必须与目录名一致、`description` 要写「什么时候用」）+ Markdown 正文。
+   - 验证方法：临时建探针 `.dsh/skills/_probe-discovery/SKILL.md`（`name: probe-discovery`）→ 调用 `skill` 工具成功加载并返回其正文，会话技能目录同时出现该项；删除探针后该项立即消失。探针已清理，未留在仓库。
+   - 参考实现：`archify` skill 的 `SKILL.md`（`name` / `license` / `metadata.version`）。
+   - 附带教训：不要用 `strings | grep` 去翻 121MB 的 `app.asar`（产出巨量二进制噪声、被截断写入 spill 文件）；`/Applications/DeepSeek Harness.app/Contents/Resources/app.asar` 是文件不是目录，不能 `cd` 进去。正确做法是「做一次最小实验验证」。
+   - **由此修订设计（决策 D-07）**：每个 skill 目录固定**三件套** = `SKILL.md`（DSH 入口）+ `README.md`（人读九段模板）+ `run.py`（实现入口）。已同步进 `docs/skill-roster.md` §2 与 `docs/skill-readme-contract.md` 新增的 §1.1。
+3. **WP-05 步骤 1 落盘内容**（A-13）：
+   - 顶层目录骨架 + 中文名 README：`agents/`、`.dsh/skills/`、`db/`、`dashboard/`、`workflows/`、`templates/`、`scripts/`、`tests/`、`logs/`、`workspace/`；每份 README 都含「用途：」行（R-L1-14）。
+   - 索引与约定文件：`docs/README.md`（文档区索引）、`docs/decision-log.md`（决议摘要 D-01～D-08）、`.archify/README.md`（图表区索引 + 命名与交付约定 + A-09 沙箱限制说明）、`.env.example`（只有键名：DB_PATH、LLM_*、IMAGE_*、VIDEO_*、FEISHU_*、BROWSER_CDP_URL、LOG_DIR、WORKSPACE_DIR）。
+   - 《目录及文件说明》正式版 `docs/directory-and-files.md`：§0 用法 / §1 顶层总览树 / §2 十二个目录逐条（中文名·用途·不放什么·何时建成）/ §3 文件清单 / §4 命名与注释规则表 / §5 同步规则表 / §6 验证命令。
+   - 结构体检脚本 `scripts/structure_check.py`：检查① 12 个顶层目录都在且各有含「用途：」的 README；② 11 个必需文件齐全非空；③ 说明文档覆盖全部顶层目录（R-L2-09）；④ `.env` / `*.db` / `.tmp` 等禁止项若存在必须已被 `.gitignore` 排除。跑一次结果：**全部通过，退出码 0**。
+   - 首日执行流水 `logs/2026-10-12.jsonl`（R-L2-05 的 build-log 数据源）。
+   - **刻意未创建**的子目录：5 个 Agent 目录（WP-07）、25 个 skill 目录（WP-07 起）、`db/migrations`·`db/seed`（WP-06）、`dashboard/pages`（WP-11）、`tests/fixtures`（随步骤）——避免留下空壳占位。
+
+### 本次结论
+
+- 已达成一致：目录方案按提案执行，`.dsh/skills/` 保留，先骨架后内容（用户 m00618 确认）。
+- 已确定：**skill 目录三件套 SKILL.md + README.md + run.py**（D-07）；目录与文件的「注释 + 说明文档 + 体检脚本」三者闭环，之后每一步都必须跑 `scripts/structure_check.py` 通过才进入下一步（R-L2-02）。
+- 未达成一致：无。
+- 风险提示：`SKILL.md` 与 `README.md` 内容重复度需要控制——约定 `SKILL.md` 只写「是什么 + 什么时候用 + 入口在哪」，判据与字段全部留在 `README.md`，避免两处口径漂移。
+
+### 落实事项（Action）
+
+| 编号   | 动作                                     | 负责人    | 触发时机      | 验收方式                                     | 状态   |
+| ---- | -------------------------------------- | ------ | --------- | ---------------------------------------- | ---- |
+| A-13 | 基础环境搭建：按确认后的目录树建目录与文件（9 步）            | 执行 Agent | 用户确认 A-12 | 目录说明与磁盘一致、每目录有 README                     | 🔄 进行中（步骤 1 完成，步骤 2–9 待做） |
+| A-15 | 结构体检脚本 `scripts/structure_check.py`      | 执行 Agent | N005      | 退出码 0 = 通过；`--json` 可被 agent 调用            | ✅ 完成 |
+| A-16 | 《目录及文件说明》`docs/directory-and-files.md`  | 执行 Agent | N005      | 覆盖全部顶层目录；增删改同步更新                         | ✅ 完成 |
+| A-17 | 依实测修订 skill 三件套规则并同步两份设计文档              | 执行 Agent | N005      | `docs/skill-roster.md` §2 与 `docs/skill-readme-contract.md` §1.1 一致 | ✅ 完成 |
+| A-18 | 提交并推送本节点产出                             | 执行 Agent | N005 收尾   | 远端可见提交与文件                                | ✅ 完成（见下） |
+| A-09 | 排查本机 Chrome 沙箱限制，使 `browser-check`/`visual-check` 可用 | 执行 Agent | 环境允许时     | `finalize ... --quality showcase` 的 browser-check 通过 | ⏳ 待开始 |
+| A-06 | 每次讨论后回填本文件与规格 §12 台账的状态                 | 执行 Agent | 每次讨论结束    | 台账状态与讨论节点一一对应，无无来源状态                     | 持续   |
+
+### 完成进度
+
+约 **60%**（相对「规格冻结 → L1 → L2 → L3」全程）。新增完成：目录骨架、目录及文件说明、结构体检脚本、skill 三件套规则修订、首日执行流水。
+
+### 剩余进度
+
+- WP-05 步骤 2～9：数据库结构与迁移（WP-06）→ `llm-adapter`/`prompt-registry` → 文案线 → 视觉线 → 视频线 → 分发数据线 → 控制台（WP-11）→ 端到端模拟测试（WP-12）
+- WP-07 Agent 定义（编排者 + 4 个环节 Agent）
+- WP-08 build-log 报告页 `dashboard/build-log.html`
+- 25 个 skill 目录逐个落地（含 `SKILL.md` + `README.md` + `run.py`）
+- A-09 浏览器校验环境排查（不阻断主线）
+
+### 下次讨论前置条件
+
+无硬前置。下一步直接进 **WP-05 步骤 2（数据库结构与迁移）**，完成后带证据（`structure_check.py` 通过 + 模拟测试结果 + 目录说明已同步）开 N006；若用户对目录骨架或三件套规则有异议，先按异议修订再开工。

@@ -13,6 +13,34 @@ Skill 是「模块化执行」单元，它的可替换性完全依赖 README 写
 
 ---
 
+## 1.1 每个 skill 目录的三件套（决策 D-07，N005 实测确认）
+
+> 实测结论：工作区 `.dsh/skills/` **就是 DSH 的技能发现根目录**，DSH 读取的入口文件是 `SKILL.md`（不是 `README.md`）。
+> 用一个探针 skill 验证过：建 `.dsh/skills/<id>/SKILL.md` 后即可被 `skill` 工具加载，删除后立即从技能目录消失。
+
+因此每个 skill 目录固定三件套，文件名不得更改：
+
+| 文件 | 给谁看 | 作用 | 是否必需 |
+| ---- | ------ | ---- | -------- |
+| `SKILL.md` | DSH 运行时 | 自动发现入口：YAML frontmatter（`name` = 目录名、`description` 含「什么时候用」）+ 简短用法正文 | 必需 |
+| `README.md` | 运营人员 + 运行时校验 | 按本文件第 2 节九段模板填写，机器可判定的判据从这里读 | 必需 |
+| `run.py` | 运行时 | 实现入口（或 `index.ts`） | 必需 |
+
+`SKILL.md` 最小形态：
+
+```markdown
+---
+name: copy-writer
+description: "按给定主题生成 3 套不同侧重点的文案，供人工选定。Use when 编排者需要新增一条内容的候选文案时。"
+---
+
+# 文案生成（copy-writer）
+
+用法与判据见同目录 `README.md`（人读说明）。入口：`run.py`。
+```
+
+---
+
 ## 2. 模板（复制到 `<skill 目录>/README.md` 后逐项填写）
 
 ```markdown
@@ -130,8 +158,9 @@ Skill 是「模块化执行」单元，它的可替换性完全依赖 README 写
 
 改任何一个 skill 的接口或判据，都必须同步：
 1. 该 skill 的 `README.md`；
-2. `docs/skill-roster.md` 对应行；
-3. 相关流程图用 archify 重新生成并通过 `archify check`；
-4. `docs/directory-and-files.md`（WP-09 产出后）；
-5. 本文件（若动了模板本身）；
-6. 讨论记录追加一条（若属结构级变更）。
+2. 该 skill 的 `SKILL.md`（若 `description` 或用法有变）；
+3. `docs/skill-roster.md` 对应行；
+4. 相关流程图用 archify 重新生成并通过 `archify check`；
+5. `docs/directory-and-files.md`（N005 已产出，实时维护）；
+6. 本文件（若动了模板本身）；
+7. 讨论记录追加一条（若属结构级变更）。

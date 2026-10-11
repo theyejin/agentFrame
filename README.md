@@ -9,14 +9,15 @@
 
 | 项      | 值                                                            |
 | ------ | ------------------------------------------------------------ |
-| 阶段     | 设计阶段收尾：流程图与 Skill 岗位设计已完成，等待**目录结构提案**确认后开始搭建                     |
-| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.2） |
-| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N004） |
-| Skill 名册 | [`docs/skill-roster.md`](docs/skill-roster.md)（18 岗位 + 7 支撑件） |
-| 实施进度   | 约 55%（详见需求规格 §12 总进度台账）                                     |
+| 阶段     | **基础环境搭建中**：目录骨架已建成（WP-05 步骤 1），按 9 步顺序逐步填内容                     |
+| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.3） |
+| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N005） |
+| Skill 名册 | [`docs/skill-roster.md`](docs/skill-roster.md)（18 岗位 + 7 支撑件 = 25 个目录） |
+| 目录与文件  | [`docs/directory-and-files.md`](docs/directory-and-files.md)（增删改必须同步） |
+| 实施进度   | 约 60%（详见需求规格 §12 总进度台账）                                     |
 
-> ⚠️ 本轮处于「先讨论、后动手」阶段：**基础环境（业务目录）尚未创建**。
-> 目录草案见 [`docs/directory-structure-plan.md`](docs/directory-structure-plan.md)，**经确认后**才按其中的 9 步顺序逐个建立，不提前铺开。
+> ✅ 目录方案已确认（N005）并按 9 步顺序落地，**顶层目录已建成**；各步只建「本步真正要用的子目录」，不留空壳。
+> 每一步的完成门：`python3 scripts/structure_check.py` 退出码 0（目录 / 各目录 README / 目录说明三者一致）**且**该步模拟测试通过，才进入下一步。
 
 ---
 
@@ -26,7 +27,9 @@
 2. [`docs/discussion-record.md`](docs/discussion-record.md) — 过程留痕。要知道「为什么这么做、做到哪、还剩什么」，读这一份。
 3. [`docs/skill-roster.md`](docs/skill-roster.md) — 有哪些 Skill 岗位、各自输入输出与判据。
 4. [`docs/skill-readme-contract.md`](docs/skill-readme-contract.md) — 每个 skill 的 README 必须怎么写（含机器可判定的校验表达式）。
-5. [`docs/directory-structure-plan.md`](docs/directory-structure-plan.md) — 目录树提案与分步落地顺序。
+5. [`docs/directory-structure-plan.md`](docs/directory-structure-plan.md) — 目录树与分步落地顺序（N005 已确认）。
+6. [`docs/directory-and-files.md`](docs/directory-and-files.md) — 《目录及文件说明》：每个目录/文件是干什么的，改东西要同步哪些地方。
+7. [`docs/decision-log.md`](docs/decision-log.md) — 决议摘要（D-01～D-08）：现在以什么为准。
 
 前两份合起来可完整还原项目状态（成功判据 AC-6）。
 
@@ -85,5 +88,33 @@
 ## 文档维护要求
 
 任何目录、文件的增 / 删 / 改，必须在**同一次提交**内同步更新：
-受影响目录的 `README.md`、代码文件头注释块（用途/输入/输出/依赖/对应需求 ID）、
-目录及文件说明文档、受影响的图、以及 build-log 记录。完整清单见需求规格 §15。
+受影响目录的 `README.md`、代码文件头注释块（`# 文件用途 / # 对应需求 / # 对应流程图 / # 维护提示`）、
+[`docs/directory-and-files.md`](docs/directory-and-files.md)、受影响的图、以及 `logs/` 流水。完整清单见需求规格 §15。
+
+收尾动作（每一步都做）：
+
+```bash
+python3 scripts/structure_check.py          # 必须退出码 0
+git add -A && git commit -m "..." && git push origin main --tags
+```
+
+---
+
+## 目录地图（一眼版）
+
+```
+docs/            文档区（需求 / 留痕 / 设计 / 目录说明 / 决议）
+.archify/        图表区（整体图 + 4 张分环节图，一图一目录）
+agents/          Agent 定义（编排者 + 四条环节 Agent）
+.dsh/skills/     Skill 模块（25 个 skill；DSH 技能根目录，入口 SKILL.md）
+db/              数据库结构与迁移
+dashboard/       运营控制台 + build-log 报告页
+workflows/       流程编排定义
+templates/       平台预设模板
+scripts/         辅助脚本（结构体检、报告生成）
+tests/           模拟测试与假数据
+logs/            运行流水（build-log 数据源）
+workspace/       运行期产物（不入库）
+```
+
+每个目录内都有 `README.md`（含「用途：」行）；完整说明见 [`docs/directory-and-files.md`](docs/directory-and-files.md)。

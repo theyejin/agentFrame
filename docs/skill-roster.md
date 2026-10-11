@@ -26,9 +26,18 @@
 ## 2. 命名规则（通俗、可读、可搜索）
 
 - Skill 目录名 = `skill_id`，使用**小写英文 + 连字符**，含义一眼可猜：`copy-writer`、`storyboard-builder`、`video-exporter`。
-- 每个 skill 目录内**必须**有 `README.md`（中文说明，见 `docs/skill-readme-contract.md`），文件名固定，不另起名字。
-- 不用缩写（`cw`、`sb` 一律禁止）、不用版本号进目录名（版本进 README 的 frontmatter）。
-- 一个 skill 对应一个 `python` 入口文件 `run.py`（或 `index.ts`），文件名固定，便于运行时统一加载。
+- 每个 skill 目录内**固定三件套，文件名固定，不另起名字**（决策 D-07，N005 实测确认）：
+  1. `SKILL.md` —— DSH 自动发现入口（工作区 `.dsh/skills/` 就是 DSH 的技能根目录）。必须是 YAML frontmatter + Markdown 正文：
+     ```markdown
+     ---
+     name: <skill_id>
+     description: "<一句话说明能力>。Use when <什么时候该用它>。"
+     ---
+     ```
+     `name` 必须与目录名一致；`description` 决定编排者能否选中它，必须写清「什么时候用」。
+  2. `README.md` —— 给人看的通俗说明，按 `docs/skill-readme-contract.md` 的九段模板填写（运行时校验规则也读这里）。
+  3. `run.py` —— 实现入口（或 `index.ts`），便于运行时统一加载。
+- 不用缩写（`cw`、`sb` 一律禁止）、不用版本号进目录名（版本进 `README.md` 的表格与 `SKILL.md` 的变更记录）。
 
 ---
 
