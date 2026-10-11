@@ -377,7 +377,7 @@
 | A-20 | 首次迁移与种子数据                      | 执行 Agent | N006    | `migrations/0001_init.sql` 与 `schema.sql` 同构；4 条平台模板 | ✅ 完成 |
 | A-21 | 建库脚本 `scripts/db_init.py`       | 执行 Agent | N006    | 可重建本地库；支持 `--from-migrations` / `--force` | ✅ 完成 |
 | A-22 | 数据库模拟测试 `tests/test_db.py`      | 执行 Agent | N006    | 28 项全部通过（退出码 0）                 | ✅ 完成 |
-| A-23 | 提交并推送本节点产出                     | 执行 Agent | N006 收尾 | 远端可见提交与 tag                       | ✅ 完成（见下） |
+| A-23 | 提交并推送本节点产出                     | 执行 Agent | N006 收尾 | 远端可见提交与 tag                       | ✅ 完成（3de73cb + tag v0.5.0-db-schema） |
 | A-09 | 排查本机 Chrome 沙箱限制                | 执行 Agent | 环境允许时   | archify browser-check 通过          | ⏳ 待开始 |
 | A-06 | 每次讨论后回填本文件与规格 §12 台账的状态        | 执行 Agent | 每次讨论结束  | 台账状态与讨论节点一一对应                    | 持续   |
 
