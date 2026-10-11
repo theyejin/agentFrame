@@ -14,6 +14,8 @@
 | D-06 | 目录结构按 `docs/directory-structure-plan.md` 建立，保留 `.dsh/skills/` 作顶层 | N005 | 结构级 |
 | D-07 | 每个 skill 目录含 `SKILL.md`（DSH 入口）+ `README.md`（人读）+ `run.py`；`.dsh/skills/` 是 DSH 技能发现根目录（已实测） | N005 | 结构级 |
 | D-08 | 按 9 步落地，每步模拟测试通过再下一步 | N005 | 可低成本变更 |
+| D-09 | 数据库里只存「当前状态」，历史靠带时间戳的产物文件 + `step_runs` 留痕（重生成用 `ON CONFLICT(task_id, plan_no) DO UPDATE` 覆盖同套号） | N008 | 结构级 |
+| D-10 | 跨 skill 的复用逻辑一律下沉 `.dsh/skills/_shared/`；skill 之间不互相调用，skill 只做自己的动作 | N008 | 结构级 |
 
 ## 维护提示
 

@@ -26,3 +26,8 @@
 {"ts":"2026-10-12T07:28:00+08:00","step":"WP-05-3","actor":"agent","skill":"","action":"适配器同步脚本 scripts/seed_adapters.py","result":"ok","note":"registry.json → adapter_registry 表；--check 只比对不写库；已同步 19 条，比对一致"}
 {"ts":"2026-10-12T07:35:00+08:00","step":"WP-05-3","actor":"agent","skill":"","action":"适配器层模拟测试 tests/test_adapters.py","result":"ok","note":"34 项全部通过：登记表自洽（含 implemented 与运行时双向一致、链尾离线兜底）、降级行为、零付费门禁、人工兜底、模板渲染与自检、同步与两个 skill 的命令行；全套 62 项（28+33）"}
 {"ts":"2026-10-12T07:40:00+08:00","step":"WP-05-3","actor":"agent","skill":"","action":"结构体检脚本扩展（三件套检查）","result":"ok","note":"新增 check_skill_triplets()：SKILL.md+README.md+run.py 齐全、frontmatter name 与目录名一致；EXPECTED_ROOT_FILES 增至 34 项；体检退出码 0"}
+{"ts": "2026-10-12T10:20:00+08:00", "step": "WP-05-4", "actor": "agent", "skill": "", "action": "共享库扩展（recording / hitl / workspace_dir）", "result": "ok", "note": "五张留痕表唯一写入口 + 三类关口逻辑下沉 _shared"}
+{"ts": "2026-10-12T10:20:00+08:00", "step": "WP-05-4", "actor": "agent", "skill": "", "action": "文案线 5 个 skill 落地", "result": "ok", "note": "copy-writer / storyboard-builder / artifact-recorder / hitl-gate / storyboard-validator"}
+{"ts": "2026-10-12T10:20:00+08:00", "step": "WP-05-4", "actor": "agent", "skill": "", "action": "提示词升 v2 + 假数据样例库", "result": "ok", "note": "templates/prompts/*.md v2；templates/mock/ 三份"}
+{"ts": "2026-10-12T10:20:00+08:00", "step": "WP-05-4", "actor": "agent", "skill": "", "action": "文案线模拟测试", "result": "ok", "note": "tests/test_copy_line.py 24 项通过"}
+{"ts": "2026-10-12T10:20:00+08:00", "step": "WP-05-4", "actor": "agent", "skill": "", "action": "结构体检扩展到 38 项期望文件", "result": "ok", "note": "scripts/structure_check.py ok=True"}

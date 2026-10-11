@@ -9,14 +9,15 @@
 
 | 项      | 值                                                            |
 | ------ | ------------------------------------------------------------ |
-| 阶段     | **基础环境搭建中**：目录骨架（步骤 1）+ 数据库结构与迁移（步骤 2）+ 外部服务适配器层与提示词注册表（步骤 3）已完成，按 9 步顺序继续 |
-| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.5） |
-| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N007） |
+| 阶段     | **基础环境搭建中**：目录骨架（步骤 1）+ 数据库结构与迁移（步骤 2）+ 外部服务适配器层与提示词注册表（步骤 3）+ 文案线（步骤 4）已完成，按 9 步顺序继续 |
+| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.6） |
+| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N008） |
 | Skill 名册 | [`docs/skill-roster.md`](docs/skill-roster.md)（18 岗位 + 7 支撑件 = 25 个目录） |
 | 目录与文件  | [`docs/directory-and-files.md`](docs/directory-and-files.md)（增删改必须同步） |
 | 数据模型   | [`db/README.md`](db/README.md)（13 表 / 2 视图 / 枚举取值总表）；模拟测试 `python3 tests/test_db.py` |
 | 外部服务   | [`templates/adapters/registry.json`](templates/adapters/registry.json)（7 类 19 条适配器 + 降级链）；入口 skill `llm-adapter`；测试 `python3 tests/test_adapters.py` |
-| 实施进度   | 约 72%（详见需求规格 §12 总进度台账）                                     |
+| 文案线    | 5 个 skill（`copy-writer` / `storyboard-builder` / `artifact-recorder` / `hitl-gate` / `storyboard-validator`）；测试 `python3 tests/test_copy_line.py` |
+| 实施进度   | 约 78%（详见需求规格 §12 总进度台账）                                     |
 
 > ✅ 目录方案已确认（N005）并按 9 步顺序落地，**顶层目录已建成**；各步只建「本步真正要用的子目录」，不留空壳。
 > 每一步的完成门：`python3 scripts/structure_check.py` 退出码 0（目录 / 各目录 README / 目录说明三者一致）**且**该步模拟测试通过，才进入下一步。
@@ -31,7 +32,7 @@
 4. [`docs/skill-readme-contract.md`](docs/skill-readme-contract.md) — 每个 skill 的 README 必须怎么写（含机器可判定的校验表达式）。
 5. [`docs/directory-structure-plan.md`](docs/directory-structure-plan.md) — 目录树与分步落地顺序（N005 已确认）。
 6. [`docs/directory-and-files.md`](docs/directory-and-files.md) — 《目录及文件说明》：每个目录/文件是干什么的，改东西要同步哪些地方。
-7. [`docs/decision-log.md`](docs/decision-log.md) — 决议摘要（D-01～D-08）：现在以什么为准。
+7. [`docs/decision-log.md`](docs/decision-log.md) — 决议摘要（D-01～D-10）：现在以什么为准。
 
 前两份合起来可完整还原项目状态（成功判据 AC-6）。
 
@@ -98,6 +99,25 @@
 
 ---
 
+## 文案线（步骤 4 落地）
+
+一条选题从「对话框 Prompt + 字数范围 + 类型」到「24 条分镜入库」的完整闭环，四个 skill 加两个共享库支撑：
+
+| 环节 | 谁做 | 动作 | 留下的东西 |
+| ---- | ---- | ---- | ---------- |
+| 建选题与任务 | `artifact-recorder` | `topic-create` / `task-create` | `topics`、`tasks` 行（含 F-01 Prompt、字数范围、类型、平台） |
+| 出 3 套文案 | `copy-writer` | 渲染 `copy-generate v2` → 调 `llm` 降级链 → 自检 | `copy_variants` 三行（侧重 `hook`/`emotion`/`cta`）+ `copy/variants-<时间戳>.json` |
+| 关口① 选定 | `hitl-gate`（真人拍板） | `open` → 运营人员三选一 → `resolve --action confirm --plan-no N` | `hitl_events` 一行 + `tasks.selected_plan/selected_at` |
+| 拆 24 条分镜 | `storyboard-builder` | 校验「已选定文案」→ 渲染 `storyboard-split v2` → 自检 | `storyboards` 24 行 + `storyboard/storyboard-<时间戳>.json` |
+| 分镜体检 | `storyboard-validator` | `check --file … --target-seconds …` | 问题与提示清单（不通过就退回） |
+
+设计要点（详见 `docs/decision-log.md` D-09/D-10）：
+① **数据库只存当前状态**，每一代生成的完整正文写进带时间戳的文件并登记成 `artifacts`，重生成用同套号覆盖，历史靠产物追溯；
+② **skill 之间不互相调用**，跨 skill 的复用逻辑全部下沉 `.dsh/skills/_shared/`；
+③ 自检连续 3 次不通过 → 该步骤记 `failed` 且任务置 `blocked`，由编排者决定重试还是转人工。
+
+---
+
 ## 图表约定
 
 所有关系图、流程图、结构图**一律使用 `archify` skill 生成**（可交互独立 HTML），不使用 Mermaid 作为交付图表。
@@ -124,6 +144,7 @@
 python3 scripts/structure_check.py          # 必须退出码 0
 python3 tests/test_db.py                    # 数据库相关改动必跑（28 项）
 python3 tests/test_adapters.py              # 适配器 / 提示词相关改动必跑（34 项）
+python3 tests/test_copy_line.py             # 文案线相关改动必跑（24 项）
 python3 scripts/seed_adapters.py --check    # 改了 registry.json 必跑（登记表与数据库是否一致）
 git add -A && git commit -m "..." && git push origin main --tags
 ```

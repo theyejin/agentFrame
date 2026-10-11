@@ -105,11 +105,14 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
 | `adapters/registry.json` | **适配器登记表**：7 类服务共 19 条声明（能力 / 是否要密钥 / 是否计费 / 失败特征 / 降级顺序 / 是否已接入）。换服务只改这里 | R-L2-14、R-L2-16 |
-| `prompts/copy-generate.md` | 文案生成提示词模板（3 套不同侧重点），`used_by: copy-writer` | R-7-03、R-L1-05 |
-| `prompts/storyboard-split.md` | 分镜拆解提示词模板（产出正好 24 条、编号连续），`used_by: storyboard-builder` | R-7-03、R-L1-19 |
+| `prompts/copy-generate.md` | 文案生成提示词模板 **v2**（3 套侧重点用 `hook` / `emotion` / `cta` 键），`used_by: copy-writer` | R-7-03、R-L1-05 |
+| `prompts/storyboard-split.md` | 分镜拆解提示词模板 **v2**（每行 `NN \| 画面描述 \| 镜头提示`，正好 24 条），`used_by: storyboard-builder` | R-7-03、R-L1-19 |
 | `prompts/review-report.md` | 复盘报告提示词模板，`used_by: review-reporter` | R-7-03、FLOW-8 |
 | `platforms/` | 平台预设模板文件（字数区间/标题写法/标签数/封面比例）；数据已进 `db/seed/0001_platform_templates.sql` | R-8-01、Q-18 |
-| `README.md` | 三块内容的说明与两条规则（换服务只改登记表；改提示词必须升版本） | R-L1-14 |
+| `mock/copy-generate.v2.txt` | 离线样例：3 套候选文案（336/316/352 字，落在默认 300–500 区间） | R-L2-02 |
+| `mock/storyboard-split.v2.txt` | 离线样例：24 行分镜（编号 01–24 连续） | R-L2-02 |
+| `mock/README.md` | 样例库说明：文件名固定 `<prompt_key>.<version>.txt`，提示词升版必须补样例 | R-L1-14 |
+| `README.md` | 四块内容的说明与两条规则（换服务只改登记表；改提示词必须升版本） | R-L1-14 |
 
 ### 3.6 `.dsh/skills/`（共享库与已落地 skill）
 
@@ -118,9 +121,18 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `_shared/env_file.py` | 读取 `.env`（只补缺失键，不覆盖外部变量） | C-05 |
 | `_shared/adapter_runtime.py` | **降级链运行时**：按登记表组链、逐条尝试、零付费门禁、失败降级、记录实际适配器 | R-L2-14~17、C-09 |
 | `_shared/prompt_templates.py` | 提示词模板解析、变量校验与渲染 | R-7-03 |
+| `_shared/db.py` | 数据库连接、事务与查询小工具（`db_path` / `connect` / `transaction` / `query` / `execute`） | R-L1-04 |
+| `_shared/text_utils.py` | 文本解析与判定：字数口径、解析 3 套文案与 24 条分镜、分镜结构自检 | R-L1-19、F-02 |
+| `_shared/recording.py` | **留痕唯一写入实现**（选题 / 任务 / 步骤流水 / 产物），含 `timestamp_slug` / `unique_stamp` / `elapsed_ms` | R-7-03、R-L2-07 |
+| `_shared/hitl.py` | 三类人工关口的开启与决议逻辑（写 `hitl_events`、推进任务状态） | §8.3、R-8-03 |
 | `_shared/README.md` | 共享库说明（**不是 skill**：无 `SKILL.md`，DSH 不加载） | R-L1-20 |
 | `prompt-registry/{SKILL.md,README.md,run.py}` | 提示词登记、渲染、自检、版本对照 | R-7-03 |
 | `llm-adapter/{SKILL.md,README.md,run.py}` | 一切外部服务调用的统一入口（7 类 kind） | R-L2-14~17 |
+| `artifact-recorder/{…}` | 留痕登记员：五张表的唯一写入口（建选题/任务、步骤流水、产物、状态回填） | R-L1-03、R-7-03 |
+| `hitl-gate/{…}` | 人工关口器：三类关口的 open / resolve / list / status | §8.3、C-08 |
+| `storyboard-validator/{…}` | 分镜体检员：条数 / 编号 / 重复 / 时长 ±10% | R-L1-19 |
+| `copy-writer/{…}` | 文案写手：一条选题 → 3 套侧重点不同的候选文案 | R-L1-05、F-01~F-03 |
+| `storyboard-builder/{…}` | 分镜拆解师：选定文案 → 24 条分镜，推进到视觉环节 | R-L1-06、R-L1-19 |
 
 ### 3.7 `db/`
 
@@ -138,6 +150,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | ---- | ---- | -------- |
 | `test_db.py` | 数据库模拟测试 28 项：结构可建 / 迁移链与 schema 一致 / 种子幂等 / 24 条分镜与编号唯一 / 3 套文案与侧重 / 软删 / 枚举与触发器 / 视图可用 / 建库脚本可用 | R-L2-02、R-L1-19 |
 | `test_adapters.py` | 适配器层模拟测试 34 项：登记表自洽 / 降级链行为 / 零付费门禁（C-09）/ 人工兜底 / 提示词模板渲染与自检 / 同步与两个 skill 的命令行 | R-L2-02、R-L2-14~17、C-09 |
+| `test_copy_line.py` | 文案线模拟测试 24 项：解析与字数口径 / 提示词 v2 / 登记层约束 / 关口① 四种非法输入 / copy-writer 端到端（含失败路径与重生成留痕）/ storyboard-builder 前置卡口与 24 条落库 / 校验器 | R-L2-02、R-L1-05、R-L1-06、R-L1-19、§8.3 |
 | `fixtures/` | 模拟测试的假数据（随步骤新增） | R-L2-02 |
 
 ### 3.9 `logs/`
@@ -145,7 +158,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
 | `YYYY-MM-DD.jsonl` | 当天执行流水，每行一条 JSON：`{ts, step, actor, skill, action, result, note}` | R-L2-05 |
-| `2026-10-12.jsonl` | 本项目首日记录（N001–N006 与 WP-05 步骤 1–3） | R-L2-05 |
+| `2026-10-12.jsonl` | 本项目首日记录（N001–N008 与 WP-05 步骤 1–4） | R-L2-05 |
 
 ---
 

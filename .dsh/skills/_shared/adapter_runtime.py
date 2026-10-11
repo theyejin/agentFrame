@@ -76,11 +76,33 @@ def find(adapter_id: str, registry: dict[str, Any] | None = None) -> dict[str, A
 # ---------------------------------------------------------------------------
 # 已实现的具体调用（业务代码通过 kind 走这里，不直接引用）
 # ---------------------------------------------------------------------------
+MOCK_DIR = REPO_ROOT / "templates" / "mock"
+
+
+def _mock_fixture(payload: dict[str, Any]) -> str | None:
+    """取离线样例：templates/mock/<prompt_key>.<prompt_version>.txt。
+
+    有样例文件时优先返回它 —— 这样模拟测试与演练拿到的结构与真实模型一致（文案 3 套、分镜 24 条）。
+    """
+    key = payload.get("prompt_key")
+    version = payload.get("prompt_version")
+    if not key or not version:
+        return None
+    path = MOCK_DIR / f"{key}.{version}.txt"
+    return path.read_text(encoding="utf-8") if path.is_file() else None
+
+
 def _runtime_mock(adapter: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
-    """离线假模型：不回网络，按输入确定性地造一段可辨识的假文案，供模拟测试与演练。"""
+    """离线假模型：不回网络，返回固定样例或按输入确定性地造一段可辨识的假文案。"""
     prompt = str(payload.get("prompt", ""))
     if "MOCK_FAIL" in prompt:  # 测试用的失败开关
         raise RuntimeError("MOCK_FAIL：模拟适配器故障")
+    fixture = _mock_fixture(payload)
+    if fixture is not None:
+        return {
+            "output": {"text": fixture, "fixture": f"{payload['prompt_key']}.{payload['prompt_version']}"},
+            "model_version": adapter.get("settings", {}).get("model", "mock-v1"),
+        }
     plan_count = int(payload.get("plan_count", 3))
     focuses = payload.get("focuses") or ["开头钩子", "情绪强度", "行动号召"]
     lines: list[str] = ["【模拟输出 · 未调用任何外部服务】"]

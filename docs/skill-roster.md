@@ -45,8 +45,8 @@
 
 | # | skill_id | 中文岗位名 | 归属 | 一句话职责 | 首版计划 | 已落地 |
 | - | -------- | ---------- | ---- | ---------- | -------- | ------ |
-| 1 | `copy-writer` | 文案生成 | 文案线 | 一套输入生成 3 套不同侧重点文案 | ✅ | — |
-| 2 | `storyboard-builder` | 分镜拆解 | 文案线 | 选定文案 → 24 条分镜场景（6×4） | ✅ | — |
+| 1 | `copy-writer` | 文案生成 | 文案线 | 一套输入生成 3 套不同侧重点文案 | ✅ | ✅ 步骤 4 |
+| 2 | `storyboard-builder` | 分镜拆解 | 文案线 | 选定文案 → 24 条分镜场景（6×4） | ✅ | ✅ 步骤 4 |
 | 3 | `reference-image-builder` | 参考图生成 | 视觉线 | 文案 → 1–3 张风格参考图 | ✅ | — |
 | 4 | `grid-image-builder` | 整图生成 | 视觉线 | 24 条分镜 → 6×4 整图 | ✅ | — |
 | 5 | `image-splitter` | 图片切分 | 视觉线 | 整图 → 24 张独立图 | ✅ | — |
@@ -71,7 +71,7 @@
 | — | `task-decomposer` | 任务拆解 | 编排者工具 | topic → task，派单给环节 | ✅ | — |
 | — | `summary-writer` | 汇总回报 | 编排者工具 | 四条线结果汇总成一条回报 | ✅ | — |
 
-> 落地进度：**「已落地」列**记录 `.dsh/skills/` 下真实存在的目录（三件套齐全、`run.py` 可跑）。WP-05 步骤 3 已落地 2 个（`llm-adapter`、`prompt-registry`）；其余 23 个在 WP-07 逐步落地，未落地前不在磁盘上（避免空壳目录）。
+> 落地进度：**「已落地」列**记录 `.dsh/skills/` 下真实存在的目录（三件套齐全、`run.py` 可跑）。截至 WP-05 步骤 4 已落地 **7 个**：基础设施 `llm-adapter`、`prompt-registry`；文案线 `copy-writer`、`storyboard-builder`；支撑件 `artifact-recorder`、`hitl-gate`、`storyboard-validator`。其余 18 个在 WP-07 逐步落地，未落地前不在磁盘上（避免空壳目录）。
 
 > 计数说明：上表 18 个「岗位」指**业务执行能力**；`artifact-recorder` / `hitl-gate` / 3 个校验器 / 2 个编排者工具是**支撑件**，合计 7 个目录，因此 `.dsh/skills/` 下最终是 **25 个 skill 目录**。这个数字写进目录提案，避免后面数来数去对不上。
 
@@ -88,7 +88,7 @@
 - **输出**：`draft[]`，**恰好 3 套**，每套含正文 + 侧重点名 + 选择理由
 - **输入校验**：brief 非空；平台类型在枚举内；字数区间可解析（如 `300-500`）
 - **完成判据**：3 套侧重点互不重复；各套字数在区间内；每套能说出「为什么这样写」
-- **失败处理**：模型失败 → `llm-adapter` 降级链重试（最多 3 次）；3 次仍失败 → 退回编排者并标记「需人工」
+- **失败处理**：模型失败 → `llm-adapter` 降级链重试（最多 3 次）；自检连续 3 次不通过 → 步骤记 `failed`、任务转 `blocked` 并写明原因，由编排者决定重试或转人工（口径以各 skill README 的「失败处理」段为准）
 - **不做**：不自动替用户选稿（那是关口①）
 
 #### 2. `storyboard-builder` 分镜拆解
@@ -216,9 +216,9 @@
 
 | skill_id | 职责 | 关键约束 |
 | -------- | ---- | -------- |
-| `artifact-recorder` | 写产物表 / 步骤流水表 / 操作留痕 | 每条含 `task_id`、`skill_id`、`model_version`、`prompt_version`、实际适配器 |
-| `hitl-gate` | 统一实现三类关口 | `kind ∈ {select, adjust, authorize}`；一律写 `hitl_events` |
-| `storyboard-validator` | 校验 24 条 + 编号连续 | 只读校验，不改内容；失败必须退回 |
+| `artifact-recorder` | 写产物表 / 步骤流水表 / 操作留痕 | 每条含 `task_id`、`skill_id`、`model_version`、`prompt_version`、实际适配器（✅ 步骤 4 已落地） |
+| `hitl-gate` | 统一实现三类关口 | 关口枚举 `gate1_select_copy` / `gate2_edit_video` / `gate3_publish_auth`；一律写 `hitl_events`（✅ 步骤 4 已落地） |
+| `storyboard-validator` | 校验 24 条 + 编号连续 | 只读校验，不改内容；失败必须退回（✅ 步骤 4 已落地） |
 | `image-consistency-checker` | 校验 24 张 + 分辨率一致 | 同上 |
 | `publish-guard` | 拦自动发布 | 任何发布相关写操作前必过；命中即阻断并记事件 |
 | `task-decomposer` | topic → task 派单 | 编排者专属；一次派单必须能算清「派给谁、要什么、什么算完成」 |
@@ -234,7 +234,7 @@
 ③ 执行（只走 llm-adapter 等统一接口，不直接连外部服务）
 ④ 自检（本 README 的「完成判据」段）——不通过 → 本 skill 内重试或整体重来
 ⑤ 登记产物（artifact-recorder：产物表 + 步骤流水 + 版本字段 + 实际适配器）
-⑥ 交回编排者（由编排者决定下一步派给谁；skill 之间不互相调用）
+⑥ 交回编排者（由编排者决定下一步派给谁；skill 之间不互相调用 —— 需要复用的逻辑一律下沉到 `.dsh/skills/_shared/`，见决策 D-10）
 ```
 
 人工关口（`hitl-gate`）在同一条流水里表现为「暂停 → 等人在页面上操作 → 写事件 → 继续」，

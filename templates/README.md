@@ -11,6 +11,12 @@
 | `prompts/*.md` | **提示词模板**：frontmatter 声明 `prompt_key`/`version`/`variables`，正文用 `{{变量}}` 占位 | `prompt-registry`（渲染与登记版本）、各生成类 skill |
 | `platforms/` | 平台预设模板（字数区间 / 标题写法 / 标签数量 / 封面比例）；数据已进 `db/seed/0001_platform_templates.sql` | 发布前准备、控制台（WP-05 步骤 7 后细化为文件） |
 
+## 离线样例库
+
+`mock/` 存放给离线假模型（`llm.mock`）用的固定样例，文件名固定 `<prompt_key>.<prompt_version>.txt`：
+`copy-generate.v2.txt`（3 套文案）、`storyboard-split.v2.txt`（24 条分镜）。**提示词升版本必须补一份同名样例**，
+否则模拟测试会退回通用假文案导致解析失败。详见 `mock/README.md`。
+
 ## 两条规则
 
 1. **换服务只改 `adapters/registry.json`，然后跑 `python3 scripts/seed_adapters.py`**；业务代码里不允许出现 Flow / 豆包 / ComfyUI 这类服务名（R-L2-14）。
