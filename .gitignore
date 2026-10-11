@@ -1,0 +1,46 @@
+# .gitignore — 排除不应入库的文件
+# 对应需求：R-L1-04（数据库二进制文件不入库）、C-05（密钥不入仓）
+# 维护：新增忽略规则时请同步更新 docs/requirements-spec.md §15 变更同步检查表
+
+# ---- 密钥与环境变量（C-05：绝不入仓） ----
+.env
+.env.*
+!.env.example
+
+# ---- 本地数据库（R-L1-04：只入库结构与迁移脚本） ----
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+db/*.db
+
+# ---- 运行期产物（图片 / 视频等大文件，由 artifacts 表登记路径） ----
+workspace/
+output/
+outputs/
+*.mp4
+*.mov
+*.wav
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# ---- Node ----
+node_modules/
+dist/
+.vite/
+*.log
+
+# ---- 操作系统与编辑器 ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
