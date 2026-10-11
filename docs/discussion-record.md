@@ -249,7 +249,7 @@
 | A-12 | 目录结构提案（含 9 步落地顺序）                            | 执行 Agent | N004       | `docs/directory-structure-plan.md` 产出 | ✅ 完成（待用户确认） |
 | A-13 | 基础环境搭建：按确认后的目录树建目录与文件                       | 执行 Agent | 用户确认 A-12  | 目录说明与磁盘一致、每目录有 README            | ⏳ 待开始 |
 | A-09 | 排查本机 Chrome 沙箱限制，使 `browser-check`/`visual-check` 可用 | 执行 Agent | 环境允许时      | `finalize ... --quality showcase` 的 browser-check 通过 | ⏳ 待开始 |
-| A-14 | 提交并推送本节点产出                                  | 执行 Agent | N004 收尾    | 远端可见提交与文件                       | ⏳ 进行中 |
+| A-14 | 提交并推送本节点产出                                  | 执行 Agent | N004 收尾    | 远端可见提交与文件                       | ✅ 完成（346e8a9 + tag v0.3.0-line-flows） |
 | A-06 | 每次讨论后回填本文件与规格 §12 台账的状态                      | 执行 Agent | 每次讨论结束     | 台账状态与讨论节点一一对应，无无来源状态            | 持续   |
 
 ### 完成进度
