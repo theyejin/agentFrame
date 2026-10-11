@@ -1,0 +1,331 @@
+{
+  "_comment": [
+    "适配器登记表 —— 这是适配器层的唯一事实来源（业务代码只认 kind 与统一接口，不认服务名；R-L2-14/15）。",
+    "字段分两类：① 进数据库 adapter_registry 表的列（adapter_id/kind/provider/capabilities/needs_key/billable/failure_signals/fallback_order/enabled/note）；",
+    "② 仅运行时用的字段（implemented/cost_per_call/settings），由 scripts/seed_adapters.py 跳过，但由 .dsh/skills/_shared/adapter_runtime.py 使用。",
+    "降级顺序 fallback_order：同一个 kind 内数字小的先试（R-L2-17）；走完仍失败则转人工。",
+    "计费适配器受 C-09 零付费门禁约束：默认不调用，必须显式 --allow-paid 且在成本上限内。"
+  ],
+  "schema_version": 1,
+  "adapters": [
+    {
+      "adapter_id": "llm.mock",
+      "kind": "llm",
+      "provider": "本地模拟",
+      "capabilities": "文本生成（离线假模型，零成本，仅用于演练与模拟测试）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "MOCK_FAIL（测试用的人工失败标记）",
+      "fallback_order": 1,
+      "enabled": true,
+      "note": "首版默认适配器：不需要密钥、不花钱，保证整条链路离线可跑（C-09）",
+      "implemented": true,
+      "cost_per_call": 0.0,
+      "settings": {
+        "runtime": "mock",
+        "model": "mock-copy-v1"
+      }
+    },
+    {
+      "adapter_id": "llm.deepseek",
+      "kind": "llm",
+      "provider": "DeepSeek",
+      "capabilities": "文本生成（OpenAI 兼容 /chat/completions，支持长文与结构化输出）",
+      "needs_key": true,
+      "billable": true,
+      "failure_signals": "401 未授权；429 限流；timeout 超时；insufficient_balance 余额不足",
+      "fallback_order": 2,
+      "enabled": true,
+      "note": "需要密钥与付费批准；失败则回到上一条免费链路并转人工（C-09）",
+      "implemented": true,
+      "cost_per_call": 0.01,
+      "settings": {
+        "runtime": "openai_compatible",
+        "base_url_env": "LLM_BASE_URL",
+        "default_base_url": "https://api.deepseek.com/v1",
+        "model_env": "LLM_MODEL",
+        "default_model": "deepseek-chat",
+        "api_key_env": "LLM_API_KEY"
+      }
+    },
+    {
+      "adapter_id": "image.flow",
+      "kind": "image",
+      "provider": "Google Flow",
+      "capabilities": "文生图、图生图（首版首选图像服务，Q-9）",
+      "needs_key": true,
+      "billable": false,
+      "failure_signals": "需要登录会话；配额用尽；生成被安全策略拦截",
+      "fallback_order": 1,
+      "enabled": true,
+      "note": "视觉线那一步接入（WP-05 步骤 5）",
+      "implemented": false,
+      "cost_per_call": 0.0,
+      "settings": {}
+    },
+    {
+      "adapter_id": "image.doubao",
+      "kind": "image",
+      "provider": "豆包",
+      "capabilities": "文生图（中文语义友好）",
+      "needs_key": true,
+      "billable": false,
+      "failure_signals": "需要登录会话；配额用尽；内容审核不通过",
+      "fallback_order": 2,
+      "enabled": true,
+      "note": "Flow 不可用时的第一降级目标",
+      "implemented": false,
+      "cost_per_call": 0.0,
+      "settings": {}
+    },
+    {
+      "adapter_id": "image.comfyui",
+      "kind": "image",
+      "provider": "本地 ComfyUI",
+      "capabilities": "文生图、ControlNet、可控出图（可固定风格基准，利于 24 张一致性）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "本地服务未启动；显存不足；工作流节点报错",
+      "fallback_order": 3,
+      "enabled": true,
+      "note": "本地兜底：不花钱、可控性最好，但要先把服务跑起来",
+      "implemented": false,
+      "cost_per_call": 0.0,
+      "settings": {
+        "endpoint_env": "COMFYUI_URL",
+        "default_endpoint": "http://127.0.0.1:8188"
+      }
+    },
+    {
+      "adapter_id": "split.grid-slicer",
+      "kind": "split",
+      "provider": "本地",
+      "capabilities": "把 6×4 整图按等分切成 24 张独立图片并按 shot-01…shot-24 命名",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "整图尺寸与 6×4 比例不符；切出的张数不是 24",
+      "fallback_order": 1,
+      "enabled": true,
+      "note": "纯本地计算，不需要外部服务（R-L1-19：必须切出 24 张）",
+      "implemented": false,
+      "cost_per_call": 0.0,
+      "settings": {}
+    },
+    {
+      "adapter_id": "split.manual",
+      "kind": "split",
+      "provider": "人工",
+      "capabilities": "人工切图与单张修图（流程不中断的兜底）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "",
+      "fallback_order": 2,
+      "enabled": true,
+      "note": "兜底即转人工（HITL），需要运营人员确认后才继续",
+      "implemented": true,
+      "cost_per_call": 0.0,
+      "settings": {
+        "runtime": "human"
+      }
+    },
+    {
+      "adapter_id": "video.remotion",
+      "kind": "video",
+      "provider": "Remotion",
+      "capabilities": "程序化剪辑与渲染：按参数（顺序/时长/素材替换）生成成片，可实时预览（Q-7 首选）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "素材编码不支持；渲染超时；字体缺失",
+      "fallback_order": 1,
+      "enabled": true,
+      "note": "视频线那一步接入（WP-05 步骤 6）",
+      "implemented": false,
+      "cost_per_call": 0.0,
+      "settings": {}
+    },
+    {
+      "adapter_id": "video.ffmpeg",
+      "kind": "video",
+      "provider": "ffmpeg",
+      "capabilities": "拼接、裁剪、转码、加字幕（Remotion 不可用时的兜底）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "ffmpeg 未安装；编码器缺失",
+      "fallback_order": 2,
+      "enabled": true,
+      "note": "本地兜底，无需联网",
+      "implemented": false,
+      "cost_per_call": 0.0,
+      "settings": {}
+    },
+    {
+      "adapter_id": "video.external-i2v",
+      "kind": "video",
+      "provider": "Flow / 豆包 等图生视频服务",
+      "capabilities": "图生视频：把 24 张图转成动态片段",
+      "needs_key": true,
+      "billable": false,
+      "failure_signals": "需要登录会话；单次时长上限；排队超时",
+      "fallback_order": 3,
+      "enabled": true,
+      "note": "付费时受 C-09 约束（本适配器声明为免费额度）",
+      "implemented": false,
+      "cost_per_call": 0.0,
+      "settings": {}
+    },
+    {
+      "adapter_id": "browser.playwright-cdp",
+      "kind": "browser",
+      "provider": "Playwright（连接已登录 Chrome）",
+      "capabilities": "打开平台发布页、自动填写标题/正文/标签/封面，停在发布前等人工点击（C-08）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "CDP 端口未开；登录态过期；页面结构变化导致选择器失效",
+      "fallback_order": 1,
+      "enabled": true,
+      "note": "只填不发：任何自动点击发布的实现都违反 C-08 红线",
+      "implemented": false,
+      "cost_per_call": 0.0,
+      "settings": {
+        "cdp_url_env": "BROWSER_CDP_URL",
+        "default_cdp_url": "http://127.0.0.1:9222"
+      }
+    },
+    {
+      "adapter_id": "browser.manual",
+      "kind": "browser",
+      "provider": "人工",
+      "capabilities": "人工按发布包填写并点击发布（流程终点，非失败）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "",
+      "fallback_order": 2,
+      "enabled": true,
+      "note": "C-08 要求发布动作必须由人完成，本适配器是合规终点",
+      "implemented": true,
+      "cost_per_call": 0.0,
+      "settings": {
+        "runtime": "human"
+      }
+    },
+    {
+      "adapter_id": "doc.feishu-api",
+      "kind": "doc",
+      "provider": "飞书开放平台",
+      "capabilities": "把热点汇总表与复盘报告写入飞书文档（Q-5 首选）",
+      "needs_key": true,
+      "billable": false,
+      "failure_signals": "401 凭证失效；403 无文档权限；429 限流",
+      "fallback_order": 1,
+      "enabled": true,
+      "note": "分发数据线那一步接入（WP-05 步骤 7）",
+      "implemented": false,
+      "cost_per_call": 0.0,
+      "settings": {
+        "app_id_env": "FEISHU_APP_ID",
+        "app_secret_env": "FEISHU_APP_SECRET",
+        "folder_token_env": "FEISHU_FOLDER_TOKEN"
+      }
+    },
+    {
+      "adapter_id": "doc.local-export",
+      "kind": "doc",
+      "provider": "本地",
+      "capabilities": "导出 Markdown / CSV 文件到 workspace/（飞书不可用时的兜底，Q-5）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "目标目录不可写",
+      "fallback_order": 2,
+      "enabled": true,
+      "note": "已实现：离线也能留痕",
+      "implemented": true,
+      "cost_per_call": 0.0,
+      "settings": {
+        "runtime": "local_export"
+      }
+    },
+    {
+      "adapter_id": "metrics.browser-scrape",
+      "kind": "metrics",
+      "provider": "浏览器采集",
+      "capabilities": "从平台后台采集播放量/互动量/涨粉数（R-7-04 三项指标）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "登录态过期；后台页面改版；数据延迟未出",
+      "fallback_order": 1,
+      "enabled": true,
+      "note": "分发数据线那一步接入",
+      "implemented": false,
+      "cost_per_call": 0.0,
+      "settings": {}
+    },
+    {
+      "adapter_id": "metrics.manual-entry",
+      "kind": "metrics",
+      "provider": "人工录入",
+      "capabilities": "运营人员手工填入三项指标（兜底）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "",
+      "fallback_order": 2,
+      "enabled": true,
+      "note": "兜底即转人工",
+      "implemented": true,
+      "cost_per_call": 0.0,
+      "settings": {
+        "runtime": "human"
+      }
+    },
+    {
+      "adapter_id": "image.manual",
+      "kind": "image",
+      "provider": "人工",
+      "capabilities": "人工出图 / 人工挑选与修图（图像链的兜底终点）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "",
+      "fallback_order": 4,
+      "enabled": true,
+      "note": "兜底即转人工（HITL）：自动出图全不可用时，由运营人员出图并回填",
+      "implemented": true,
+      "cost_per_call": 0.0,
+      "settings": {
+        "runtime": "human"
+      }
+    },
+    {
+      "adapter_id": "video.manual",
+      "kind": "video",
+      "provider": "人工",
+      "capabilities": "人工剪辑与导出（视频链的兜底终点）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "",
+      "fallback_order": 4,
+      "enabled": true,
+      "note": "兜底即转人工（HITL）：素材交剪辑人员处理，结果回填进产物表",
+      "implemented": true,
+      "cost_per_call": 0.0,
+      "settings": {
+        "runtime": "human"
+      }
+    },
+    {
+      "adapter_id": "llm.manual",
+      "kind": "llm",
+      "provider": "人工",
+      "capabilities": "人工撰写文案 / 分镜 / 复盘结论（文本链的兜底终点）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "",
+      "fallback_order": 3,
+      "enabled": true,
+      "note": "兜底即转人工（HITL）：模型全不可用时由运营人员直接写，产物照常登记",
+      "implemented": true,
+      "cost_per_call": 0.0,
+      "settings": {
+        "runtime": "human"
+      }
+    }
+  ]
+}

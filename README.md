@@ -9,13 +9,14 @@
 
 | 项      | 值                                                            |
 | ------ | ------------------------------------------------------------ |
-| 阶段     | **基础环境搭建中**：目录骨架（步骤 1）+ 数据库结构与迁移（步骤 2）已完成，按 9 步顺序继续                     |
-| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.4） |
-| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N006） |
+| 阶段     | **基础环境搭建中**：目录骨架（步骤 1）+ 数据库结构与迁移（步骤 2）+ 外部服务适配器层与提示词注册表（步骤 3）已完成，按 9 步顺序继续 |
+| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.5） |
+| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N007） |
 | Skill 名册 | [`docs/skill-roster.md`](docs/skill-roster.md)（18 岗位 + 7 支撑件 = 25 个目录） |
 | 目录与文件  | [`docs/directory-and-files.md`](docs/directory-and-files.md)（增删改必须同步） |
 | 数据模型   | [`db/README.md`](db/README.md)（13 表 / 2 视图 / 枚举取值总表）；模拟测试 `python3 tests/test_db.py` |
-| 实施进度   | 约 65%（详见需求规格 §12 总进度台账）                                     |
+| 外部服务   | [`templates/adapters/registry.json`](templates/adapters/registry.json)（7 类 19 条适配器 + 降级链）；入口 skill `llm-adapter`；测试 `python3 tests/test_adapters.py` |
+| 实施进度   | 约 72%（详见需求规格 §12 总进度台账）                                     |
 
 > ✅ 目录方案已确认（N005）并按 9 步顺序落地，**顶层目录已建成**；各步只建「本步真正要用的子目录」，不留空壳。
 > 每一步的完成门：`python3 scripts/structure_check.py` 退出码 0（目录 / 各目录 README / 目录说明三者一致）**且**该步模拟测试通过，才进入下一步。
@@ -72,6 +73,31 @@
 
 ---
 
+## 外部服务与降级链（步骤 3 落地）
+
+业务代码**只认能力类别（`kind`），不认服务名**（R-L2-14）。7 类能力共 19 条适配器声明集中在
+[`templates/adapters/registry.json`](templates/adapters/registry.json)，统一入口是 skill
+[`llm-adapter`](.dsh/skills/llm-adapter/README.md)：
+
+| kind | 降级链（从左到右尝试） |
+| ---- | -------------------- |
+| `llm` | 离线假模型 → DeepSeek（需密钥、计费） → **人工撰写兜底** |
+| `image` | Flow → 豆包 → ComfyUI（本地） → **人工出图兜底** |
+| `split` | 本地网格切分 → **人工裁切兜底** |
+| `video` | Remotion → ffmpeg → 外部图生视频 → **人工兜底** |
+| `browser` | Playwright + 已登录会话 → **人工填写兜底** |
+| `doc` | 飞书开放平台 API → **本地导出兜底** |
+| `metrics` | 浏览器采集 → **人工录入兜底** |
+
+三条硬规则：① 每条链的最后一条必须是**不需要密钥、不计费、已接入**的兜底（断网也能收尾，由测试强制）；
+② 计费适配器默认不调用，必须显式批准且单次预估 ≤ `LLM_COST_LIMIT`（**C-09 零付费门禁**）；
+③ 每次调用都要回答「实际用了哪个适配器 / 哪个模型版本」，否则不算完成（R-L2-17、R-7-03）。
+
+换服务只需改登记表并跑 `python3 scripts/seed_adapters.py`；提示词在
+[`templates/prompts/`](templates/prompts/) 里按 `version` 入仓，改正文必须升版本（R-7-03）。
+
+---
+
 ## 图表约定
 
 所有关系图、流程图、结构图**一律使用 `archify` skill 生成**（可交互独立 HTML），不使用 Mermaid 作为交付图表。
@@ -96,7 +122,9 @@
 
 ```bash
 python3 scripts/structure_check.py          # 必须退出码 0
-python3 tests/test_db.py                    # 本步模拟测试（数据库相关改动必跑）
+python3 tests/test_db.py                    # 数据库相关改动必跑（28 项）
+python3 tests/test_adapters.py              # 适配器 / 提示词相关改动必跑（34 项）
+python3 scripts/seed_adapters.py --check    # 改了 registry.json 必跑（登记表与数据库是否一致）
 git add -A && git commit -m "..." && git push origin main --tags
 ```
 
@@ -108,12 +136,12 @@ git add -A && git commit -m "..." && git push origin main --tags
 docs/            文档区（需求 / 留痕 / 设计 / 目录说明 / 决议）
 .archify/        图表区（整体图 + 4 张分环节图，一图一目录）
 agents/          Agent 定义（编排者 + 四条环节 Agent）
-.dsh/skills/     Skill 模块（25 个 skill；DSH 技能根目录，入口 SKILL.md）
+.dsh/skills/     Skill 模块（25 个 skill + _shared 共享库；入口 SKILL.md）
 db/              数据库结构与迁移
 dashboard/       运营控制台 + build-log 报告页
 workflows/       流程编排定义
-templates/       平台预设模板
-scripts/         辅助脚本（结构体检、报告生成）
+templates/       适配器登记表 + 提示词模板 + 平台预设模板
+scripts/         辅助脚本（结构体检、建库、适配器同步、报告生成）
 tests/           模拟测试与假数据
 logs/            运行流水（build-log 数据源）
 workspace/       运行期产物（不入库）

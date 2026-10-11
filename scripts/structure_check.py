@@ -60,8 +60,24 @@ EXPECTED_ROOT_FILES = [
     "db/migrations/0001_init.sql",
     "db/seed/0001_platform_templates.sql",
     "tests/test_db.py",
+    "tests/test_adapters.py",
     "logs/2026-10-12.jsonl",
+    "templates/adapters/registry.json",
+    "templates/prompts/copy-generate.md",
+    "templates/prompts/storyboard-split.md",
+    "templates/prompts/review-report.md",
+    "scripts/seed_adapters.py",
+    ".dsh/skills/_shared/README.md",
+    ".dsh/skills/prompt-registry/SKILL.md",
+    ".dsh/skills/prompt-registry/README.md",
+    ".dsh/skills/prompt-registry/run.py",
+    ".dsh/skills/llm-adapter/SKILL.md",
+    ".dsh/skills/llm-adapter/README.md",
+    ".dsh/skills/llm-adapter/run.py",
 ]
+
+# 非 skill 的共享目录前缀（允许没有 SKILL.md）
+SKILL_DIR_EXEMPT_PREFIX = "_"
 
 # 绝不允许出现在仓库工作区的路径/后缀（C-05 密钥、R-L1-04 数据库二进制、本地临时目录）
 FORBIDDEN = [".env", ".tmp"]
@@ -117,6 +133,37 @@ def check_doc_covers_dirs(problems, notes):
         notes.append("OK 《目录及文件说明》已覆盖全部顶层目录")
 
 
+def check_skill_triplets(problems, notes):
+    """检查 skill 目录三件套（决策 D-07 / R-L1-20）：SKILL.md + README.md + run.py 一个都不能少。
+
+    以 `_` 开头的目录（如 `_shared/`）是共享运行库，不是 skill，豁免。
+    """
+    skills_root = os.path.join(ROOT, ".dsh", "skills")
+    if not os.path.isdir(skills_root):
+        problems.append("缺少 skill 根目录：.dsh/skills/")
+        return
+    count = 0
+    for entry in sorted(os.listdir(skills_root)):
+        path = os.path.join(skills_root, entry)
+        if not os.path.isdir(path) or entry.startswith(SKILL_DIR_EXEMPT_PREFIX):
+            continue
+        count += 1
+        missing = [f for f in ("SKILL.md", "README.md", "run.py") if not os.path.isfile(os.path.join(path, f))]
+        if missing:
+            problems.append(f"skill 目录三件套不全（决策 D-07）：.dsh/skills/{entry}/ 缺 {'、'.join(missing)}")
+            continue
+        with open(os.path.join(path, "SKILL.md"), encoding="utf-8") as f:
+            head = f.read(400)
+        if "name:" not in head or "description:" not in head:
+            problems.append(f"SKILL.md 缺少 name/description frontmatter：.dsh/skills/{entry}/SKILL.md")
+        elif f"name: {entry}" not in head:
+            problems.append(f"SKILL.md 的 name 与目录名不一致：.dsh/skills/{entry}/SKILL.md")
+        else:
+            notes.append(f"OK skill {entry} 三件套齐全且 frontmatter 正确")
+    if count == 0:
+        problems.append("没有发现任何 skill 目录（.dsh/skills/ 下只有共享库）")
+
+
 def _is_ignored(rel):
     """路径是否被 .gitignore 排除（排除 = 允许留在本地但不入库）。"""
     r = subprocess.run(
@@ -163,6 +210,7 @@ def main():
     check_dirs(problems, notes)
     check_files(problems, notes)
     check_doc_covers_dirs(problems, notes)
+    check_skill_triplets(problems, notes)
     check_forbidden(problems, notes)
 
     result = {
