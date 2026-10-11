@@ -460,7 +460,7 @@
 | A-34 | 文案线模拟测试 `tests/test_copy_line.py`      | 执行 Agent | N008    | 24 项全部通过（含失败路径与重生成留痕）                     | ✅ 完成 |
 | A-35 | 结构体检扩展到 38 项期望文件                     | 执行 Agent | N008    | `structure_check.py --json` → `ok=True`    | ✅ 完成 |
 | A-36 | 同步 roster / 目录说明 / 决议 / 流水 / 规格 / README | 执行 Agent | N008 收尾 | 六份文件与代码一致                                | ✅ 完成 |
-| A-37 | 提交并推送本节点产出                           | 执行 Agent | N008 收尾 | 远端可见提交与 tag `v0.7.0-copy-line`             | ⏳ 待做 |
+| A-37 | 提交并推送本节点产出                           | 执行 Agent | N008 收尾 | 远端可见提交与 tag `v0.7.0-copy-line`             | ✅ 完成（8e2323c + tag v0.7.0-copy-line） |
 | A-09 | 排查本机 Chrome 沙箱限制                     | 执行 Agent | 环境允许时   | archify browser-check 通过                  | ⏳ 待开始 |
 | A-06 | 每次讨论后回填本文件与规格 §12 台账的状态              | 执行 Agent | 每次讨论结束  | 台账状态与讨论节点一一对应                             | 持续   |
 
