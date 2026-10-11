@@ -312,7 +312,7 @@
 | A-15 | 结构体检脚本 `scripts/structure_check.py`      | 执行 Agent | N005      | 退出码 0 = 通过；`--json` 可被 agent 调用            | ✅ 完成 |
 | A-16 | 《目录及文件说明》`docs/directory-and-files.md`  | 执行 Agent | N005      | 覆盖全部顶层目录；增删改同步更新                         | ✅ 完成 |
 | A-17 | 依实测修订 skill 三件套规则并同步两份设计文档              | 执行 Agent | N005      | `docs/skill-roster.md` §2 与 `docs/skill-readme-contract.md` §1.1 一致 | ✅ 完成 |
-| A-18 | 提交并推送本节点产出                             | 执行 Agent | N005 收尾   | 远端可见提交与文件                                | ✅ 完成（见下） |
+| A-18 | 提交并推送本节点产出                             | 执行 Agent | N005 收尾   | 远端可见提交与文件                                | ✅ 完成（4e569f0 + tag v0.4.0-env-skeleton） |
 | A-09 | 排查本机 Chrome 沙箱限制，使 `browser-check`/`visual-check` 可用 | 执行 Agent | 环境允许时     | `finalize ... --quality showcase` 的 browser-check 通过 | ⏳ 待开始 |
 | A-06 | 每次讨论后回填本文件与规格 §12 台账的状态                 | 执行 Agent | 每次讨论结束    | 台账状态与讨论节点一一对应，无无来源状态                     | 持续   |
 
