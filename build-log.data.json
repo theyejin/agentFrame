@@ -1,13 +1,19 @@
 {
-  "generated_at": "2026-10-12T14:08:07+08:00",
+  "generated_at": "2026-10-12T16:19:25+08:00",
   "generator": "scripts/build_log_report.py",
   "title": "搭建过程记录（build-log）",
-  "total": 73,
+  "total": 75,
   "dates": [
     {
       "date": "2026-10-12",
-      "count": 73,
+      "count": 75,
       "titles": [
+        {
+          "id": "2026-10-12-75",
+          "title": "修复控制台任务流转页整页空白（内联脚本括号失衡），新增语法守卫测试并打 tag v1.0.1",
+          "step": "RELEASE",
+          "result": "ok"
+        },
         {
           "id": "2026-10-12-73",
           "title": "关闭 A-09：archify 浏览器校验加 ARCHIFY_CHROME_NO_SANDBOX=1，五张图 finalize 四门全过（D-24）",
@@ -102,6 +108,12 @@
           "id": "2026-10-12-58",
           "title": "新增控制台只读数据层 `_shared/console.py`",
           "step": "WP-05-8",
+          "result": "ok"
+        },
+        {
+          "id": "2026-10-12-74",
+          "title": "控制台调用 hotspot-collector collect",
+          "step": "L3-console",
           "result": "ok"
         },
         {
@@ -451,6 +463,18 @@
   ],
   "entries": [
     {
+      "id": "2026-10-12-75",
+      "date": "2026-10-12",
+      "ts": "2026-10-12T18:10:00+08:00",
+      "step": "RELEASE",
+      "category": "RELEASE",
+      "title": "修复控制台任务流转页整页空白（内联脚本括号失衡），新增语法守卫测试并打 tag v1.0.1",
+      "detail": "HTTP 200 不代表页面能看；五页 + app.js 现由 node --check 守住（D-25）",
+      "result": "ok",
+      "skill": "",
+      "actor": "agent"
+    },
+    {
       "id": "2026-10-12-73",
       "date": "2026-10-12",
       "ts": "2026-10-12T17:20:00+08:00",
@@ -641,6 +665,18 @@
       "result": "ok",
       "skill": "",
       "actor": "agent"
+    },
+    {
+      "id": "2026-10-12-74",
+      "date": "2026-10-12",
+      "ts": "2026-10-12T14:23:11+08:00",
+      "step": "L3-console",
+      "category": "L3-console",
+      "title": "控制台调用 hotspot-collector collect",
+      "detail": "{\n  \"batch_key\": \"hotspot-20261012T142311\",\n  \"batch_id\": 3,\n  \"keyword\": \"打工人 春节\",\n  \"source\": \"fixture\",\n  \"count\": 8,\n  \"categories\": {\n    \"情绪冲突\": 3,\n    \"干货教程\": 3,\n    \"热点观点\": 2,\n    \"其他\": 0\n  },\n  \"collect_adapter\": \"browser.local-fixture\",\n  \"classify_adapter\": \"llm.mock\",\n  \"model_version\": ",
+      "result": "ok",
+      "skill": "hotspot-collector",
+      "actor": "运营（控制台）"
     },
     {
       "id": "2026-10-12-57",

@@ -155,9 +155,9 @@ python3 tests/test_visual_line.py           # 视觉线相关改动必跑（21 �
 python3 tests/test_video_line.py            # 视频线相关改动必跑（22 项）
 python3 tests/test_publish_line.py          # 分发数据线相关改动必跑（33 项）
 python3 tests/test_orchestrator.py          # Agent 定义 / 编排者工具相关改动必跑（33 项）
-python3 tests/test_dashboard.py             # 控制台 / 报告页相关改动必跑（33 项）
+python3 tests/test_dashboard.py             # 控制台 / 报告页相关改动必跑（34 项）
 python3 tests/test_e2e.py                   # 端到端验收相关改动必跑（13 项，全程约 4 秒）
-python3 scripts/run_tests.py                # 一键跑完全部 9 套 243 项
+python3 scripts/run_tests.py                # 一键跑完全部 9 套 244 项
 python3 scripts/build_log_report.py         # 有新的实施步骤记录后重生成 build-log 报告页
 python3 scripts/serve_dashboard.py          # 本地打开控制台：http://127.0.0.1:8787/
 python3 scripts/seed_adapters.py --check    # 改了 registry.json 必跑（登记表与数据库是否一致）

@@ -187,7 +187,7 @@ async function showTrace(taskId) {
           (data.gates || []).map((g) => [g.gate_label, g.action, g.actor, timeText(g.created_at)]))),
         el("div", {}, el("h4", { text: "指标 / 发布" }), table(["项目", "值"],
           [...(data.metrics || []).map((m) => [`${m.period_start} ${m.platform} ${m.metric_key}`, m.value]),
-           ...(data.publishes || []).map((p) => [`发布 ${p.platform} ${p.status}`, p.publish_url || "未回填"])])))));
+           ...(data.publishes || []).map((p) => [`发布 ${p.platform} ${p.status}`, p.publish_url || "未回填"])]))));
   } catch (err) {
     box.replaceChildren(el("div", { class: "tag bad", text: err.message }));
   }

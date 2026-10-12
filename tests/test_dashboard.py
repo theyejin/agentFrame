@@ -424,6 +424,25 @@ class TestConsolePages(unittest.TestCase):
             self.assertIn("对应需求：", text, rel)
             self.assertIn("维护提示：", text, rel)
 
+    def test_pages_inline_scripts_parse(self) -> None:
+        """页面渲染全靠内联脚本，语法错会让整页空白（曾发生：tasks.html 少一个括号）——用 node --check 守住。"""
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("本机没有 node，跳过语法检查")
+        for rel in self.PAGES + ["dashboard/assets/app.js"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            if rel.endswith(".html"):
+                sources = re.findall(r"<script>(.*?)</script>", text, re.S)
+                self.assertTrue(sources, f"{rel} 没有内联脚本")
+                code = "\n".join(sources)
+            else:
+                code = text
+            with tempfile.TemporaryDirectory() as tmp:
+                js = Path(tmp) / "check.js"
+                js.write_text(code, encoding="utf-8")
+                proc = subprocess.run([node, "--check", str(js)], capture_output=True, text=True)
+            self.assertEqual(proc.returncode, 0, f"{rel} 脚本语法错误：{proc.stderr.strip()[:300]}")
+
     def test_pages_do_not_hold_credentials(self) -> None:
         for rel in self.PAGES + ["dashboard/assets/app.js"]:
             text = (ROOT / rel).read_text(encoding="utf-8").lower()

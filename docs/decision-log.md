@@ -35,6 +35,8 @@
 
 | D-24 | archify 的浏览器校验在本机要带 `ARCHIFY_CHROME_NO_SANDBOX=1`：archify 的 `bin/visual-check.mjs` 读这个环境变量给 Chrome 加 `--no-sandbox`，加上之后五张图 `finalize` 的 `validate` / `deliver` / `check` / `browser-check` 四门全过（A-09 关闭）。该命令写进五张图的 README 与 `.archify/README.md`，并由 `tests/test_e2e.py` 的 AC-7 用例守着（README 必须含 `ARCHIFY_CHROME_NO_SANDBOX=1`）——将来换机器若再失败，按 R-L2-18 用替代方式并在讨论记录登记，不得静默跳过 | N014 | 可低成本变更 |
 
+| D-25 | 控制台页面的内联脚本必须过 `node --check`：控制台页面没有静态骨架，整页靠内联脚本渲染，一个括号失衡就是**整页空白**（v1.0.0 后的实际事故：`dashboard/pages/tasks.html` 轨迹表多一个 `)`，页面全白但 HTTP 仍 200、既有测试全绿）。因此 `tests/test_dashboard.py` 增加语法守卫用例（对五页 + `app.js` 跑 `node --check`），并把「HTTP 200 不等于页面能看」写进验收口径 | v1.0.1 补丁 | 可低成本变更 |
+
 ## 维护提示
 
 - 每次讨论节点收尾时，把新定下来的事项追加到本表（R-D-01、R-D-03）。

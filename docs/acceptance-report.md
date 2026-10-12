@@ -15,7 +15,7 @@
 | AC-2 | 每个环节在核心业务表都有记录 | ✅ | §2.2：`topics` 1 / `tasks` 1 / `copy_variants` 3 / `storyboards` 24 / `artifacts` 43 / `step_runs` 17 / `metrics` 3 / `publish_records` 1 |
 | AC-3 | 报告页与控制台能在本机浏览器打开并交互 | ✅ | §2.3：本地服务实测 + 浏览器实操（截图 `docs/evidence/*.png`） |
 | AC-4 | 不可逆动作都有人工确认记录 | ✅ | §2.4：三个关口各有 `hitl_events` confirm；关口③ 授权前 live 自检被拦 |
-| AC-5 | 每一步都先过模拟测试 | ✅ | §2.5：九套测试 243 项 + 结构体检 / 适配器 / 提示词登记表 |
+| AC-5 | 每一步都先过模拟测试 | ✅ | §2.5：九套测试 244 项 + 结构体检 / 适配器 / 提示词登记表 |
 | AC-6 | 两份文档能还原「做到哪 / 为什么 / 还剩什么」 | ✅ | §2.6：讨论记录 N001–N014 + 目录说明 + 需求规格 v2.2-frozen |
 | AC-7 | 结构或流程变更后图表同步且通过 archify 校验 | ✅ | §2.7：五张图齐备，`finalize` 四门（`validate` / `deliver` / `check` / `browser-check`）全 pass；原受本机 Chrome 沙箱限制的 A-09 已关闭 |
 
@@ -130,7 +130,7 @@ C-08（Agent 不得自动发布）另有两条硬证据：`publish_guard.record(
 ### 2.6 AC-6：两份文档能还原当前状态
 
 - `docs/discussion-record.md`：N001–N014 逐个记录「当时怎么想、定了什么、留了哪些 Action（A-01~A-78）」。
-- `docs/directory-and-files.md`：顶层目录逐条、`agents/`、`dashboard/`、`db/`、`tests/`、`logs/` 全覆盖，含「现有 243 项测试怎么分布」。
+- `docs/directory-and-files.md`：顶层目录逐条、`agents/`、`dashboard/`、`db/`、`tests/`、`logs/` 全覆盖，含「现有 244 项测试怎么分布」。
 - `docs/requirements-spec.md`：**v2.2-frozen**（验收时为 v2.1.12，收尾时冻结），台账 WP-01~WP-12 全部收口；`README.md`：留痕 N001–N014、决议 D-01~D-24、进度 100%。
 - `logs/2026-10-12.jsonl`：搭建过程流水（每完成一步追加），`build-log.html` 即由它生成，可搜索、可追溯。
 
