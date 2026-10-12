@@ -94,3 +94,52 @@ def check_storyboard_shape(shots: list[dict[str, Any]], expected: int = 24) -> l
             problems.append(f"第 {s['shot_no']} 条与第 {seen[key]} 条画面描述重复")
         seen.setdefault(key, s["shot_no"])
     return problems
+
+PREP_TITLE_MAX = 30
+ABSOLUTE_WORDS = ("最好", "最强", "第一", "唯一", "绝对", "100%", "必爆", "稳赚")
+
+
+def parse_publish_prep(text: str) -> dict[str, Any]:
+    """解析发布准备文本：`标题1/2/3：…`、`标签：a,b,c`、`封面：…`。
+
+    容错：中英文冒号都认；标题行可以写成 `标题1：` / `标题 1：` / `标题一：`。
+    """
+    titles: list[str] = []
+    tags: list[str] = []
+    cover = ""
+    for raw in (text or "").splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith("标题"):
+            body = line.split("：", 1)[-1] if "：" in line else line.split(":", 1)[-1]
+            body = body.strip()
+            if body:
+                titles.append(body)
+        elif line.startswith("标签"):
+            body = line.split("：", 1)[-1] if "：" in line else line.split(":", 1)[-1]
+            tags = [item.strip() for item in body.replace("，", ",").split(",") if item.strip()]
+        elif line.startswith("封面"):
+            cover = line.split("：", 1)[-1].strip() if "：" in line else line.split(":", 1)[-1].strip()
+    return {"titles": titles, "tags": tags, "cover": cover}
+
+
+def check_publish_prep(prep: dict[str, Any], *, tag_count: int, title_max: int = PREP_TITLE_MAX) -> list[str]:
+    """发布准备自检：三条标题、标题不超长、标签数量对得上、不得有绝对化用语、封面文案不超 12 字。"""
+    problems: list[str] = []
+    titles, tags, cover = prep.get("titles") or [], prep.get("tags") or [], prep.get("cover") or ""
+    if len(titles) != 3:
+        problems.append(f"标题候选应为 3 条，实际 {len(titles)} 条")
+    for i, title in enumerate(titles, 1):
+        if len(title) > title_max:
+            problems.append(f"标题{i} 超过 {title_max} 字（{len(title)} 字）")
+        hit = [word for word in ABSOLUTE_WORDS if word in title]
+        if hit:
+            problems.append(f"标题{i} 含绝对化用语 {hit[0]}（C-01 红线）")
+    if len(tags) != tag_count:
+        problems.append(f"标签应为 {tag_count} 个，实际 {len(tags)} 个")
+    if not cover:
+        problems.append("封面文案为空")
+    elif len(cover) > 12:
+        problems.append(f"封面文案超过 12 字（{len(cover)} 字）")
+    return problems

@@ -212,6 +212,41 @@ def latest_artifact(task_id: int, kind: str, *, role: str = "", path_like: str =
     return rows[0] if rows else None
 
 
+def latest_shots(task_id: int, path: str | None = None) -> list[dict[str, Any]]:
+    """取该任务最近一代切图清单（按 shot_no 升序）。
+
+    优先读 shots-manifest 产物（它记录了哪一代、每张图的路径与场景描述）；
+    没有清单就退回数据库里 role=shot 的最近一代产物。视频线只认这一个入口，避免拿错代。
+    """
+    art = latest_artifact(task_id, "manifest", role="shots-manifest", path=path)
+    if art:
+        file = dbm.REPO_ROOT / art["path"]
+        if file.is_file():
+            try:
+                data = json.loads(file.read_text(encoding="utf-8"))
+                shots = data.get("shots") or []
+                if shots:
+                    return sorted(shots, key=lambda s: int(s.get("shot_no") or 0))
+            except (ValueError, OSError):
+                pass
+    rows = dbm.query("SELECT * FROM artifacts WHERE task_id = ? AND kind = 'image' ORDER BY id DESC",
+                     (task_id,), path)
+    picked: dict[int, dict[str, Any]] = {}
+    window = ""
+    for row in rows:
+        meta = _meta_of(row)
+        if meta.get("role") != "shot":
+            continue
+        this_window = str(meta.get("window") or "")
+        if not window:
+            window = this_window
+        elif this_window != window:
+            break
+        no = int(meta.get("shot_no") or 0)
+        picked.setdefault(no, {"shot_no": no, "file": row["path"], "scene_text": "", "width": 0, "height": 0})
+    return [picked[k] for k in sorted(picked)]
+
+
 def task_progress(task_id: int, path: str | None = None) -> dict[str, Any]:
     return dbm.query_one("SELECT * FROM v_task_progress WHERE task_id = ?", (task_id,), path) or {}
 

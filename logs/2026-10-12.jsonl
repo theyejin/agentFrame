@@ -37,3 +37,9 @@
 {"ts": "2026-10-12T11:40:00+08:00", "step": "WP-05-5", "actor": "agent", "skill": "", "action": "视觉线模拟测试", "result": "ok", "note": "tests/test_visual_line.py 21 项通过"}
 {"ts": "2026-10-12T11:40:00+08:00", "step": "WP-05-5", "actor": "agent", "skill": "", "action": "结构体检扩展到 47 项期望文件", "result": "ok", "note": "scripts/structure_check.py ok=True"}
 {"ts": "2026-10-12T11:40:00+08:00", "step": "WP-05-5", "actor": "agent", "skill": "", "action": "文档同步与提交", "result": "ok", "note": "roster / 目录说明 / 决议 / 规格 / README + tag v0.8.0-visual-line"}
+{"ts": "2026-10-12T12:40:00+08:00", "step": "WP-05-6", "actor": "agent", "skill": "", "action": "视频线开工：实测本机 ffmpeg 9.0.2 并写出 _shared/video.py（合成 / 抽帧 / 体检）", "result": "ok", "note": "踩坑：ffmpeg 9 移除 -vsync；concat 清单必须写绝对路径"}
+{"ts": "2026-10-12T12:40:00+08:00", "step": "WP-05-6", "actor": "agent", "skill": "", "action": "适配器层接入本地视频能力", "result": "ok", "note": "video.ffmpeg implemented=true（ffmpeg_render / ffmpeg_slideshow 两个运行时），video 链离线终点 = 本地 ffmpeg"}
+{"ts": "2026-10-12T12:40:00+08:00", "step": "WP-05-6", "actor": "agent", "skill": "asset-packager / image-to-video / auto-editor / video-exporter / title-cover-prep", "action": "新增 5 个视频线 skill", "result": "ok", "note": "三件套齐全（SKILL.md + README.md + run.py）"}
+{"ts": "2026-10-12T12:40:00+08:00", "step": "WP-05-6", "actor": "agent", "skill": "", "action": "新增发布准备提示词 v1 与离线样例", "result": "ok", "note": "templates/prompts/publish-prep.md、templates/mock/publish-prep.v1.txt（库内 6 份模板）"}
+{"ts": "2026-10-12T12:40:00+08:00", "step": "WP-05-6", "actor": "agent", "skill": "", "action": "视频线模拟测试 22 项通过", "result": "ok", "note": "含整线连跑、关口② 参数生效、红线拒绝绝对化用语、video 链离线终点"}
+{"ts": "2026-10-12T12:40:00+08:00", "step": "WP-05-6", "actor": "agent", "skill": "", "action": "文档同步与提交", "result": "ok", "note": "roster / 目录说明 / 决议 D-13、D-14 / 规格 v2.1.8 / README + tag v0.9.0-video-line"}

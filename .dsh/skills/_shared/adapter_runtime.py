@@ -223,6 +223,51 @@ def _runtime_grid_slicer(adapter: dict[str, Any], payload: dict[str, Any]) -> di
             "model_version": "grid-slicer-v1"}
 
 
+def _runtime_ffmpeg_slideshow(adapter: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    """本地图生视频草稿：把一列图片按顺序合成 mp4（`video.ffmpeg` 适配器，离线终点）。"""
+    import video as vd
+
+    images = payload.get("images") or payload.get("abs_images") or payload.get("paths") or []
+    out = payload.get("abs_out") or payload.get("out_path") or payload.get("out")
+    if not out:
+        raise RuntimeError("ffmpeg_slideshow 需要输出路径：abs_out / out_path / out 三者任一")
+    size = payload.get("size")
+    info = vd.make_slideshow(
+        images, out,
+        seconds_per_image=float(payload.get("seconds_per_image", vd.DEFAULT_SECONDS_PER_IMAGE)),
+        fps=int(payload.get("fps", vd.DEFAULT_FPS)),
+        size=(int(size[0]), int(size[1])) if size else None,
+        durations=payload.get("durations"),
+    )
+    return {"output": {k: info[k] for k in ("path", "count", "fps", "duration_s", "width", "height", "bytes")},
+            "model_version": "ffmpeg-slideshow-v1"}
+
+
+def _runtime_ffmpeg_render(adapter: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    """本地参数化渲染：按「顺序 + 每镜时长」出成片，可选同时抽封面帧（剪辑干预的落点）。"""
+    import video as vd
+
+    images = payload.get("images") or payload.get("abs_images") or payload.get("paths") or []
+    out = payload.get("abs_out") or payload.get("out_path") or payload.get("out")
+    if not out:
+        raise RuntimeError("ffmpeg_render 需要输出路径：abs_out / out_path / out 三者任一")
+    size = payload.get("size")
+    info = vd.make_slideshow(
+        images, out,
+        seconds_per_image=float(payload.get("seconds_per_image", vd.DEFAULT_SECONDS_PER_IMAGE)),
+        fps=int(payload.get("fps", vd.DEFAULT_FPS)),
+        size=(int(size[0]), int(size[1])) if size else None,
+        durations=payload.get("durations"),
+    )
+    output = {k: info[k] for k in ("path", "count", "fps", "duration_s", "width", "height", "bytes")}
+    cover_out = payload.get("abs_cover") or payload.get("cover_out")
+    if cover_out:
+        cover = vd.extract_cover(out, cover_out, at_s=float(payload.get("cover_at", 1.0)),
+                                 width=int(payload.get("cover_width", 0) or 0))
+        output["cover"] = {k: cover[k] for k in ("path", "width", "height", "bytes", "at_s")}
+    return {"output": output, "model_version": "ffmpeg-render-v1"}
+
+
 class MissingKey(RuntimeError):
     """缺密钥 —— 与「调用失败」区分开，便于运营人员快速定位。"""
 
@@ -234,6 +279,8 @@ RUNTIMES: dict[str, Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]]] 
     "human": _runtime_human,
     "image_placeholder": _runtime_image_placeholder,
     "grid_slicer": _runtime_grid_slicer,
+    "ffmpeg_slideshow": _runtime_ffmpeg_slideshow,
+    "ffmpeg_render": _runtime_ffmpeg_render,
 }
 
 

@@ -334,7 +334,7 @@ class SeedAndCliTests(unittest.TestCase):
         rows = json.loads(out.stdout)
         self.assertEqual({r["prompt_key"] for r in rows},
                          {"copy-generate", "storyboard-split", "review-report",
-                          "image-reference", "image-grid"})
+                          "image-reference", "image-grid", "publish-prep"})
         check = subprocess.run([sys.executable, str(REPO_ROOT / ".dsh/skills/prompt-registry/run.py"), "check"],
                                capture_output=True, text=True)
         self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
@@ -348,7 +348,7 @@ class SeedAndCliTests(unittest.TestCase):
         finally:
             conn.close()
         self.assertEqual(keys, ["copy-generate", "image-grid", "image-reference",
-                                "review-report", "storyboard-split"])
+                                "publish-prep", "review-report", "storyboard-split"])
 
     def test_llm_adapter_cli_generate_offline(self):
         target = Path(self.tmp.name) / "copy" / "plan.txt"

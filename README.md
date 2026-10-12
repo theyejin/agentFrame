@@ -9,16 +9,17 @@
 
 | 项      | 值                                                            |
 | ------ | ------------------------------------------------------------ |
-| 阶段     | **基础环境搭建中**：目录骨架（步骤 1）+ 数据库结构与迁移（步骤 2）+ 外部服务适配器层与提示词注册表（步骤 3）+ 文案线（步骤 4）+ 视觉线（步骤 5）已完成，按 9 步顺序继续 |
-| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.7） |
-| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N009） |
+| 阶段     | **基础环境搭建中**：目录骨架（步骤 1）+ 数据库结构与迁移（步骤 2）+ 外部服务适配器层与提示词注册表（步骤 3）+ 文案线（步骤 4）+ 视觉线（步骤 5）+ 视频线（步骤 6）已完成，按 9 步顺序继续 |
+| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.8） |
+| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N010） |
 | Skill 名册 | [`docs/skill-roster.md`](docs/skill-roster.md)（18 岗位 + 7 支撑件 = 25 个目录） |
 | 目录与文件  | [`docs/directory-and-files.md`](docs/directory-and-files.md)（增删改必须同步） |
 | 数据模型   | [`db/README.md`](db/README.md)（13 表 / 2 视图 / 枚举取值总表）；模拟测试 `python3 tests/test_db.py` |
 | 外部服务   | [`templates/adapters/registry.json`](templates/adapters/registry.json)（7 类 20 条适配器 + 降级链）；入口 skill `llm-adapter`；测试 `python3 tests/test_adapters.py` |
 | 文案线    | 5 个 skill（`copy-writer` / `storyboard-builder` / `artifact-recorder` / `hitl-gate` / `storyboard-validator`）；测试 `python3 tests/test_copy_line.py` |
 | 视觉线    | 4 个 skill（`reference-image-builder` / `grid-image-builder` / `image-splitter` / `image-consistency-checker`）+ 离线图像能力（`image.placeholder` / `split.grid-slicer`）；测试 `python3 tests/test_visual_line.py` |
-| 实施进度   | 约 84%（详见需求规格 §12 总进度台账）                                     |
+| 视频线    | 5 个 skill（`asset-packager` / `image-to-video` / `auto-editor` / `video-exporter` / `title-cover-prep`）+ 本地视频能力（`video.ffmpeg`，Remotion 未接时自动降级）；测试 `python3 tests/test_video_line.py` |
+| 实施进度   | 约 90%（详见需求规格 §12 总进度台账）                                     |
 
 > ✅ 目录方案已确认（N005）并按 9 步顺序落地，**顶层目录已建成**；各步只建「本步真正要用的子目录」，不留空壳。
 > 每一步的完成门：`python3 scripts/structure_check.py` 退出码 0（目录 / 各目录 README / 目录说明三者一致）**且**该步模拟测试通过，才进入下一步。
@@ -33,7 +34,7 @@
 4. [`docs/skill-readme-contract.md`](docs/skill-readme-contract.md) — 每个 skill 的 README 必须怎么写（含机器可判定的校验表达式）。
 5. [`docs/directory-structure-plan.md`](docs/directory-structure-plan.md) — 目录树与分步落地顺序（N005 已确认）。
 6. [`docs/directory-and-files.md`](docs/directory-and-files.md) — 《目录及文件说明》：每个目录/文件是干什么的，改东西要同步哪些地方。
-7. [`docs/decision-log.md`](docs/decision-log.md) — 决议摘要（D-01～D-12）：现在以什么为准。
+7. [`docs/decision-log.md`](docs/decision-log.md) — 决议摘要（D-01～D-14）：现在以什么为准。
 
 前两份合起来可完整还原项目状态（成功判据 AC-6）。
 
@@ -46,6 +47,7 @@
 | 整体运营流程 | 三层职责、四条环节线、外部适配器、三处人工关口 | [`.archify/FLOW-OVERALL-20261012/overall-operations.html`](.archify/FLOW-OVERALL-20261012/overall-operations.html) |
 | 文案线 | FLOW-1：3 套文案 → 关口① 选定 → 24 条分镜 | [`.archify/FLOW-COPY-20261012/copy-line.html`](.archify/FLOW-COPY-20261012/copy-line.html) |
 | 视觉线 | FLOW-2/3：参考图 → 6×4 整图 → 切 24 张 | [`.archify/FLOW-VISUAL-20261012/visual-line.html`](.archify/FLOW-VISUAL-20261012/visual-line.html) |
+| 视频线 | FLOW-4/5：图文打包 → 图生视频 → 关口② 剪辑 → 导出成片与封面 | [`.archify/FLOW-VIDEO-20261012/video-line.html`](.archify/FLOW-VIDEO-20261012/video-line.html) |
 | 视频线 | FLOW-4/5：打包 → 图生视频 → 关口② 剪辑 → 导出 | [`.archify/FLOW-VIDEO-20261012/video-line.html`](.archify/FLOW-VIDEO-20261012/video-line.html) |
 | 分发数据线 | FLOW-6/7/8：热点 → 发布准备 → 关口③ 授权 → 指标 → 复盘 | [`.archify/FLOW-PUBLISH-20261012/publish-line.html`](.archify/FLOW-PUBLISH-20261012/publish-line.html) |
 
@@ -147,6 +149,7 @@ python3 tests/test_db.py                    # 数据库相关改动必跑（28 �
 python3 tests/test_adapters.py              # 适配器 / 提示词相关改动必跑（34 项）
 python3 tests/test_copy_line.py             # 文案线相关改动必跑（24 项）
 python3 tests/test_visual_line.py           # 视觉线相关改动必跑（21 项）
+python3 tests/test_video_line.py            # 视频线相关改动必跑（22 项）
 python3 scripts/seed_adapters.py --check    # 改了 registry.json 必跑（登记表与数据库是否一致）
 git add -A && git commit -m "..." && git push origin main --tags
 ```

@@ -66,14 +66,21 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("check", nargs="?", help="（默认动作）")
     p.add_argument("--file", required=True, help="分镜 JSON 或纯文本路径")
     p.add_argument("--expect", type=int, default=DEFAULT_EXPECT, help=f"期望条数，默认 {DEFAULT_EXPECT}")
-    p.add_argument("--target-seconds", type=float, default=None, help="目标总时长（秒），给了就校验 ±10%")
+    p.add_argument("--target-seconds", type=float, default=None, help="目标总时长（秒），给了就校验 ±10 个百分点")
     p.add_argument("--shot-seconds", type=float, default=0.0, help="纯文本输入时每条分镜的时长（秒）")
     p.add_argument("--json", action="store_true", help="以 JSON 输出")
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    for _action in parser._actions:  # 子命令也认 --json（写在子命令前后都行）
+        if isinstance(_action, argparse._SubParsersAction):
+            for _child in _action.choices.values():
+                if not any("--json" in _a.option_strings for _a in _child._actions):
+                    _child.add_argument("--json", action="store_true", default=argparse.SUPPRESS,
+                                        help="以 JSON 输出结果（也可写在子命令前）")
+    args = parser.parse_args(argv)
     path = Path(args.file)
     if not path.exists():
         print(f"[错误] 找不到文件：{path}", file=sys.stderr)

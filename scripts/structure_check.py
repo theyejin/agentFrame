@@ -67,6 +67,7 @@ EXPECTED_ROOT_FILES = [
     "templates/mock/README.md",
     "templates/mock/copy-generate.v2.txt",
     "templates/mock/storyboard-split.v2.txt",
+    "templates/mock/publish-prep.v1.txt",
     "templates/prompts/copy-generate.md",
     "templates/prompts/storyboard-split.md",
     "templates/prompts/review-report.md",
@@ -83,15 +84,18 @@ EXPECTED_ROOT_FILES = [
     ".dsh/skills/llm-adapter/README.md",
     ".dsh/skills/llm-adapter/run.py",
     "tests/test_visual_line.py",
+    "tests/test_video_line.py",
     # —— WP-05 步骤 5（视觉线）——
     "db/migrations/0002_add_visual_gates.sql",
     ".dsh/skills/_shared/images.py",
+    ".dsh/skills/_shared/video.py",
     ".dsh/skills/reference-image-builder/run.py",
     ".dsh/skills/grid-image-builder/run.py",
     ".dsh/skills/image-splitter/run.py",
     ".dsh/skills/image-consistency-checker/run.py",
     "templates/prompts/image-reference.md",
     "templates/prompts/image-grid.md",
+    "templates/prompts/publish-prep.md",
 ]
 
 # 非 skill 的共享目录前缀（允许没有 SKILL.md）

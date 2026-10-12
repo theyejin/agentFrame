@@ -119,7 +119,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    for _action in parser._actions:  # 子命令也认 --json（写在子命令前后都行）
+        if isinstance(_action, argparse._SubParsersAction):
+            for _child in _action.choices.values():
+                if not any("--json" in _a.option_strings for _a in _child._actions):
+                    _child.add_argument("--json", action="store_true", default=argparse.SUPPRESS,
+                                        help="以 JSON 输出结果（也可写在子命令前）")
+    args = parser.parse_args(argv)
     try:
         return args.func(args)
     except (hitl.HitlError, rec.RecordingError) as exc:

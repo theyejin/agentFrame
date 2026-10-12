@@ -140,7 +140,7 @@
       "failure_signals": "素材编码不支持；渲染超时；字体缺失",
       "fallback_order": 1,
       "enabled": true,
-      "note": "视频线那一步接入（WP-05 步骤 6）",
+      "note": "视频线首选（Q-7）；首版本机未接，降级链自动落到 video.ffmpeg",
       "implemented": false,
       "cost_per_call": 0.0,
       "settings": {}
@@ -149,16 +149,19 @@
       "adapter_id": "video.ffmpeg",
       "kind": "video",
       "provider": "ffmpeg",
-      "capabilities": "拼接、裁剪、转码、加字幕（Remotion 不可用时的兜底）",
+      "capabilities": "拼接、裁剪、转码、按顺序与每镜时长合成竖屏成片、抽封面帧（Remotion 未接时的兜底）",
       "needs_key": false,
       "billable": false,
       "failure_signals": "ffmpeg 未安装；编码器缺失",
       "fallback_order": 2,
       "enabled": true,
-      "note": "本地兜底，无需联网",
-      "implemented": false,
+      "note": "本地兜底，无需联网、不计费（首版视频线的离线终点）",
+      "implemented": true,
       "cost_per_call": 0.0,
-      "settings": {}
+      "settings": {
+        "runtime": "ffmpeg_render",
+        "slideshow_runtime": "ffmpeg_slideshow"
+      }
     },
     {
       "adapter_id": "video.external-i2v",
@@ -170,7 +173,7 @@
       "failure_signals": "需要登录会话；单次时长上限；排队超时",
       "fallback_order": 3,
       "enabled": true,
-      "note": "付费时受 C-09 约束（本适配器声明为免费额度）",
+      "note": "需登录会话；付费时受 C-09 约束（本适配器声明为免费额度）",
       "implemented": false,
       "cost_per_call": 0.0,
       "settings": {}

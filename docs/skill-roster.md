@@ -50,11 +50,11 @@
 | 3 | `reference-image-builder` | 参考图生成 | 视觉线 | 文案 → 1–3 张风格参考图 | ✅ | ✅ 步骤 5 |
 | 4 | `grid-image-builder` | 整图生成 | 视觉线 | 24 条分镜 → 6×4 整图 | ✅ | ✅ 步骤 5 |
 | 5 | `image-splitter` | 图片切分 | 视觉线 | 整图 → 24 张独立图 | ✅ | ✅ 步骤 5 |
-| 6 | `asset-packager` | 素材打包 | 视频线 | 图文按分镜顺序打包成工程文件夹 | ✅ | — |
-| 7 | `image-to-video` | 图生视频 | 视频线 | 图片序列 + 文案 → 视频草稿 | ✅ | — |
-| 8 | `auto-editor` | 自动剪辑 | 视频线 | 参数化剪辑（顺序 / 时长 / 替换） | ✅ | — |
-| 9 | `video-exporter` | 成片导出 | 视频线 | 导出 mp4 + 封面帧 | ✅ | — |
-| 10 | `title-cover-prep` | 发布准备 | 视频线 | 按平台模板生成标题 / 标签 / 封面 | ✅ | — |
+| 6 | `asset-packager` | 素材打包 | 视频线 | 图文按分镜顺序打包成工程文件夹 | ✅ | ✅ 步骤 6 |
+| 7 | `image-to-video` | 图生视频 | 视频线 | 图片序列 + 文案 → 视频草稿 | ✅ | ✅ 步骤 6 |
+| 8 | `auto-editor` | 自动剪辑 | 视频线 | 参数化剪辑（顺序 / 时长 / 替换） | ✅ | ✅ 步骤 6 |
+| 9 | `video-exporter` | 成片导出 | 视频线 | 导出 mp4 + 封面帧 | ✅ | ✅ 步骤 6 |
+| 10 | `title-cover-prep` | 发布准备 | 视频线 | 按平台模板生成标题 / 标签 / 封面 | ✅ | ✅ 步骤 6（并复用于分发数据线） |
 | 11 | `browser-publisher` | 浏览器填写 | 分发数据线 | 登录并填写发布信息，**停在发布前** | ✅ | — |
 | 12 | `hotspot-collector` | 热点采集 | 分发数据线 | 按周期 / 关键词搜热点并留存原始数据 | ✅ | — |
 | 13 | `table-builder` | 汇总成表 | 分发数据线 | 热点分类汇总成表格 | ✅ | — |
@@ -71,7 +71,7 @@
 | — | `task-decomposer` | 任务拆解 | 编排者工具 | topic → task，派单给环节 | ✅ | — |
 | — | `summary-writer` | 汇总回报 | 编排者工具 | 四条线结果汇总成一条回报 | ✅ | — |
 
-> 落地进度：**「已落地」列**记录 `.dsh/skills/` 下真实存在的目录（三件套齐全、`run.py` 可跑）。截至 WP-05 步骤 5 已落地 **11 个**：基础设施 `llm-adapter`、`prompt-registry`；文案线 `copy-writer`、`storyboard-builder`；视觉线 `reference-image-builder`、`grid-image-builder`、`image-splitter`；支撑件 `artifact-recorder`、`hitl-gate`、`storyboard-validator`、`image-consistency-checker`。其余 14 个在 WP-07 逐步落地，未落地前不在磁盘上（避免空壳目录）。
+> 落地进度：**「已落地」列**记录 `.dsh/skills/` 下真实存在的目录（三件套齐全、`run.py` 可跑）。截至 WP-05 步骤 6 已落地 **16 个**：基础设施 `llm-adapter`、`prompt-registry`；文案线 `copy-writer`、`storyboard-builder`；视觉线 `reference-image-builder`、`grid-image-builder`、`image-splitter`；视频线 `asset-packager`、`image-to-video`、`auto-editor`、`video-exporter`、`title-cover-prep`；支撑件 `artifact-recorder`、`hitl-gate`、`storyboard-validator`、`image-consistency-checker`。其余 9 个（分发数据线 6 个 + 支撑件 `publish-guard`、`task-decomposer`、`summary-writer`）在 WP-07 逐步落地，未落地前不在磁盘上（避免空壳目录）。
 
 > 计数说明：上表 18 个「岗位」指**业务执行能力**；`artifact-recorder` / `hitl-gate` / 3 个校验器 / 2 个编排者工具是**支撑件**，合计 7 个目录，因此 `.dsh/skills/` 下最终是 **25 个 skill 目录**。这个数字写进目录提案，避免后面数来数去对不上。
 
@@ -220,6 +220,7 @@
 | `hitl-gate` | 统一实现三类关口（五个关口点） | 关口枚举 `gate1_select_copy` / `gate_visual_style` / `gate_visual_fix` / `gate2_edit_video` / `gate3_publish_auth`；一律写 `hitl_events`（✅ 步骤 4 已落地，步骤 5 扩到五个） |
 | `storyboard-validator` | 校验 24 条 + 编号连续 | 只读校验，不改内容；失败必须退回（✅ 步骤 4 已落地） |
 | `image-consistency-checker` | 校验 24 张 + 编号连续 + 分辨率一致 | 只出结论、不改产物、不把任务置 blocked（✅ 步骤 5 已落地） |
+| 视频线本地能力 | `video.ffmpeg` 适配器 + `_shared/video.py` | 本地免费兜底：按镜序与逐镜时长合成成片、抽封面帧（✅ 步骤 6 已落地；Remotion 未接时自动降级到它） |
 | `publish-guard` | 拦自动发布 | 任何发布相关写操作前必过；命中即阻断并记事件 |
 | `task-decomposer` | topic → task 派单 | 编排者专属；一次派单必须能算清「派给谁、要什么、什么算完成」 |
 | `summary-writer` | 四线结果汇总回报 | 只汇总，不改写下游结论 |

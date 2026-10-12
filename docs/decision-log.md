@@ -18,6 +18,8 @@
 | D-10 | 跨 skill 的复用逻辑一律下沉 `.dsh/skills/_shared/`；skill 之间不互相调用，skill 只做自己的动作 | N008 | 结构级 |
 | D-11 | 视觉线新增两个调整态关口（`gate_visual_style` 风格确认 / `gate_visual_fix` 单张返工），关口枚举共五个；SQLite 不能改 CHECK，用迁移 `0002_add_visual_gates.sql` 重建 `hitl_events` 表 | N009 | 结构级 |
 | D-12 | 产物定位按 `artifacts.meta.role`（reference / grid / shot / shots-manifest），不按路径关键字 —— 产物目录会被 `--out` 改掉；离线图像能力由 `image.placeholder`（画图）与 `split.grid-slicer`（切图）两个本地运行时提供，不联网不花钱 | N009 | 可低成本变更 |
+| D-13 | 视频线用本地 ffmpeg 兜底（`video.ffmpeg` 标 `implemented=true`，`settings.runtime=ffmpeg_render`）：Remotion 未接时降级链自动落到它，成片与封面帧都由它产出、不联网不花钱；ffmpeg 命令只出现在 `_shared/video.py` 一个文件里 | N010 | 可低成本变更 |
+| D-14 | 统一 CLI 约定：`--json` / `--db` 写在子命令前后都行 —— 子命令里加 `--json` 必须带 `default=argparse.SUPPRESS`，否则子命令的默认值会覆盖父级已解析的值（踩过一次）；所有 16 个 skill 统一补齐 | N010 | 可低成本变更 |
 
 ## 维护提示
 
