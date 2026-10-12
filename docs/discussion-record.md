@@ -588,7 +588,7 @@
 | A-58 | 分发数据线模拟测试 `tests/test_publish_line.py`     | 执行 Agent | N011    | 33 项全部通过（含夹具采集、只填写不提交、关口③ 授权与回填、指标同键更新、复盘报告） | ✅ 完成 |
 | A-59 | 结构体检期望文件 51 → 68                          | 执行 Agent | N011    | `python3 scripts/structure_check.py` 退出码 0、`expected_files=68`、`problems=[]` | ✅ 完成 |
 | A-60 | 同步 roster / 目录说明 / 决议 / 流水 / 规格 / README    | 执行 Agent | N011 收尾 | 六份文件与代码一致（含 D-15、D-16、规格 v2.1.9）                              | ✅ 完成 |
-| A-61 | 提交并推送本节点产出                                | 执行 Agent | N011 收尾 | 远端可见提交与 tag `v0.10.0-publish-line`                            | ⏳ 进行中 |
+| A-61 | 提交并推送本节点产出                                | 执行 Agent | N011 收尾 | 远端可见提交与 tag `v0.10.0-publish-line`                            | ✅ 完成（a22e527 + tag v0.10.0-publish-line） |
 | A-06 | 每次讨论后回填本文件与规格 §12 台账的状态                   | 执行 Agent | 每次讨论结束  | 台账状态与讨论节点一一对应                                                 | 持续   |
 
 ### 本次讨论留下的规则（后续步骤必须遵守）
