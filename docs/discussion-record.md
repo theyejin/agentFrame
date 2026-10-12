@@ -543,7 +543,7 @@
 | A-49 | 视频线模拟测试 `tests/test_video_line.py`         | 执行 Agent | N010    | 22 项全部通过（含整线连跑、关口② 参数真生效、绝对化用语被拒、video 链离线终点）                 | ✅ 完成 |
 | A-50 | 统一 CLI：16 个 skill 的 `--json` 前后皆可           | 执行 Agent | N010    | 全部 skill 的任意子命令都能接受 `--json`（且不覆盖父级）                           | ✅ 完成 |
 | A-51 | 同步 roster / 目录说明 / 决议 / 流水 / 规格 / README    | 执行 Agent | N010 收尾 | 六份文件与代码一致（含 D-13、D-14）                                        | ✅ 完成 |
-| A-52 | 提交并推送本节点产出                                | 执行 Agent | N010 收尾 | 远端可见提交与 tag `v0.9.0-video-line`                               | ⏳ 待开始 |
+| A-52 | 提交并推送本节点产出                                | 执行 Agent | N010 收尾 | 远端可见提交与 tag `v0.9.0-video-line`                               | ✅ 完成（df0d780 + tag v0.9.0-video-line） |
 | A-09 | 排查本机 Chrome 沙箱限制                          | 执行 Agent | 环境允许时   | archify browser-check 通过                                      | ⏳ 待开始 |
 | A-06 | 每次讨论后回填本文件与规格 §12 台账的状态                   | 执行 Agent | 每次讨论结束  | 台账状态与讨论节点一一对应                                                 | 持续   |
 
