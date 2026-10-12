@@ -502,7 +502,7 @@
 | A-41 | 视觉线模拟测试 `tests/test_visual_line.py`         | 执行 Agent | N009    | 21 项全部通过（含整除拒绝、同秒重跑不覆盖、体检不置 blocked、返工必须带 `shot_nos`）         | ✅ 完成 |
 | A-42 | 结构体检扩到 47 项期望文件                           | 执行 Agent | N009    | `structure_check.py --json` → `ok=True`                        | ✅ 完成 |
 | A-43 | 同步 roster / 目录说明 / 决议 / 流水 / 规格 / README    | 执行 Agent | N009 收尾 | 六份文件与代码一致（含 D-11、D-12）                                        | ✅ 完成 |
-| A-44 | 提交并推送本节点产出                                | 执行 Agent | N009 收尾 | 远端可见提交与 tag `v0.8.0-visual-line`                              | ✅ 完成 |
+| A-44 | 提交并推送本节点产出                                | 执行 Agent | N009 收尾 | 远端可见提交与 tag `v0.8.0-visual-line`                              | ✅ 完成（77d9999 + tag v0.8.0-visual-line） |
 | A-09 | 排查本机 Chrome 沙箱限制                          | 执行 Agent | 环境允许时   | archify browser-check 通过                                      | ⏳ 待开始 |
 | A-06 | 每次讨论后回填本文件与规格 §12 台账的状态                   | 执行 Agent | 每次讨论结束  | 台账状态与讨论节点一一对应                                                 | 持续   |
 
