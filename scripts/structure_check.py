@@ -82,6 +82,16 @@ EXPECTED_ROOT_FILES = [
     ".dsh/skills/llm-adapter/SKILL.md",
     ".dsh/skills/llm-adapter/README.md",
     ".dsh/skills/llm-adapter/run.py",
+    "tests/test_visual_line.py",
+    # —— WP-05 步骤 5（视觉线）——
+    "db/migrations/0002_add_visual_gates.sql",
+    ".dsh/skills/_shared/images.py",
+    ".dsh/skills/reference-image-builder/run.py",
+    ".dsh/skills/grid-image-builder/run.py",
+    ".dsh/skills/image-splitter/run.py",
+    ".dsh/skills/image-consistency-checker/run.py",
+    "templates/prompts/image-reference.md",
+    "templates/prompts/image-grid.md",
 ]
 
 # 非 skill 的共享目录前缀（允许没有 SKILL.md）

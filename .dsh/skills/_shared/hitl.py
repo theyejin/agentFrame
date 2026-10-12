@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-# 文件用途：人工关口（HITL）共享层 —— 三类关口（选定文案 / 剪辑干预 / 发布授权）的统一开启与决议落库。
+# 文件用途：人工关口（HITL）共享层 —— 五处关口（选定文案 / 剪辑干预 / 发布授权 / 风格确认 / 单张返工）的统一开启与决议落库。
 # 对应需求：§8.3 三类 HITL 形态（选择 / 调整 / 授权）、R-L1-18（契约校验）、R-8-03（操作人字段）、C-08（发布红线）。
 # 对应流程图：.archify/FLOW-COPY-20261012/copy-line.html（关口①）、FLOW-VIDEO-20261012（关口②）、FLOW-PUBLISH-20261012（关口③）
 # 维护提示：新增关口形态请同步 docs/skill-roster.md 的 hitl-gate 条目与 db/README.md 的 hitl_events 枚举表。
 """人工关口共享层。
 
-三类形态（与 §8.3 一致）：
+以下关口形态与 §8.3 的三类「形态」对应：
   * 选择态  gate1_select_copy    —— 三套文案里挑一套（confirm 时必须给 plan_no）
   * 调整态  gate2_edit_video     —— 改顺序/时长/素材（用 action=adjust + diff_json）
   * 授权态  gate3_publish_auth   —— 停在发布前，人工点击发布（confirm 即授权已登录会话发出去）
+  * 调整态  gate_visual_style    —— 人的风格确认：参考图是否作为基准（confirm）或整组返工（adjust/reject）
+  * 调整态  gate_visual_fix      —— 人工修图 / 单张返工：必须用 diff_json 指明要重做的 shot_nos
 
 硬规则：
   1. 未开启关口就不能决议（`tasks.status` 必须是 waiting_human），防止「没有等人确认就往下走」；
@@ -27,6 +29,9 @@ import recording as rec
 GATE1 = "gate1_select_copy"
 GATE2 = "gate2_edit_video"
 GATE3 = "gate3_publish_auth"
+GATE_VISUAL_STYLE = "gate_visual_style"   # 视觉线：人的风格确认（调整态）
+GATE_VISUAL_FIX = "gate_visual_fix"       # 视觉线：人工修图 / 单张返工（调整态）
+GATES = rec.GATES                          # 五个关口点的权威清单（CLI 的 --gate 选项直接取这里，避免写死）
 ACTIONS = {"confirm", "reject", "adjust"}
 
 
@@ -67,6 +72,10 @@ def resolve_gate(task_id: int, gate: str, action: str, actor: str, *, snapshot: 
             (task_id, plan_no), path)
         if variant is None:
             raise HitlError(f"第 {plan_no} 套文案不存在或已失效：不能选定")
+    if gate == GATE_VISUAL_FIX and action in ("confirm", "adjust"):
+        shot_nos = (diff or {}).get("shot_nos") or (snapshot or {}).get("shot_nos")
+        if not shot_nos:
+            raise HitlError("单张返工必须用 diff_json 给出 shot_nos（哪几张要重做），否则无法追溯返工范围")
     event_id = dbm.execute(
         """INSERT INTO hitl_events (task_id, gate, actor, action, snapshot_json, diff_json, created_at)
            VALUES (?, ?, ?, ?, ?, ?, ?)""",

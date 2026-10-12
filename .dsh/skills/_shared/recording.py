@@ -26,7 +26,8 @@ import db as dbm
 # 需要计大小的产物类型（图片/视频缺大小会被触发器拦下，提前给出人话错误）
 MEDIA_KINDS = {"image", "video", "audio"}
 ARTIFACT_KINDS = {"copy", "storyboard", "image", "video", "audio", "manifest", "table", "report", "publish_package"}
-GATES = {"gate1_select_copy", "gate2_edit_video", "gate3_publish_auth"}
+GATES = {"gate1_select_copy", "gate2_edit_video", "gate3_publish_auth",
+         "gate_visual_style", "gate_visual_fix"}   # 后两个是视觉线的人工关口（迁移 0002 加入）
 
 
 class RecordingError(ValueError):
@@ -165,6 +166,50 @@ def task_bundle(task_id: int, path: str | None = None) -> dict[str, Any]:
     topic = dbm.query_one("SELECT * FROM topics WHERE id = ?", (task["topic_id"],), path) or {}
     progress = dbm.query_one("SELECT * FROM v_task_progress WHERE task_id = ?", (task_id,), path) or {}
     return {"task": task, "topic": topic, "progress": progress}
+
+
+def current_storyboards(task_id: int, path: str | None = None) -> list[dict[str, Any]]:
+    """取某任务当前的分镜列表（按 shot_no 升序）—— 视觉线的硬输入。"""
+    return dbm.query("SELECT * FROM storyboards WHERE task_id = ? ORDER BY shot_no", (task_id,), path)
+
+
+def selected_copy(task_id: int, path: str | None = None) -> dict[str, Any] | None:
+    """取关口① 已选定的那套文案；没选定返回 None（视觉线必须靠它把关）。"""
+    return dbm.query_one(
+        """SELECT c.* FROM copy_variants c
+             JOIN tasks t ON t.id = c.task_id AND t.selected_plan = c.plan_no
+            WHERE c.task_id = ? AND c.status = 'active'""",
+        (task_id,), path)
+
+
+def _meta_of(row: dict[str, Any]) -> dict[str, Any]:
+    """artifacts.meta_json 的安全解析（坏 JSON 当成空对象，不让留痕数据拖垮流水线）。"""
+    try:
+        return json.loads(row.get("meta_json") or "{}")
+    except ValueError:
+        return {}
+
+
+def latest_artifact(task_id: int, kind: str, *, role: str = "", path_like: str = "",
+                    path: str | None = None) -> dict[str, Any] | None:
+    """取某任务最近一条某类产物。
+
+    两种过滤方式：`role` 按 meta.role 判（推荐 —— 产物目录会被 `--out` 改掉，角色不会）；
+    `path_like` 按路径关键字判（例如只要 images/grid 目录里的图）。
+    """
+    sql = "SELECT * FROM artifacts WHERE task_id = ? AND kind = ?"
+    params: list[Any] = [task_id, kind]
+    if path_like:
+        sql += " AND path LIKE ?"
+        params.append(f"%{path_like}%")
+    sql += " ORDER BY id DESC"
+    rows = dbm.query(sql, tuple(params), path)
+    if role:
+        for row in rows:
+            if _meta_of(row).get("role") == role:
+                return row
+        return None
+    return rows[0] if rows else None
 
 
 def task_progress(task_id: int, path: str | None = None) -> dict[str, Any]:

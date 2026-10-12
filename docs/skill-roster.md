@@ -47,9 +47,9 @@
 | - | -------- | ---------- | ---- | ---------- | -------- | ------ |
 | 1 | `copy-writer` | 文案生成 | 文案线 | 一套输入生成 3 套不同侧重点文案 | ✅ | ✅ 步骤 4 |
 | 2 | `storyboard-builder` | 分镜拆解 | 文案线 | 选定文案 → 24 条分镜场景（6×4） | ✅ | ✅ 步骤 4 |
-| 3 | `reference-image-builder` | 参考图生成 | 视觉线 | 文案 → 1–3 张风格参考图 | ✅ | — |
-| 4 | `grid-image-builder` | 整图生成 | 视觉线 | 24 条分镜 → 6×4 整图 | ✅ | — |
-| 5 | `image-splitter` | 图片切分 | 视觉线 | 整图 → 24 张独立图 | ✅ | — |
+| 3 | `reference-image-builder` | 参考图生成 | 视觉线 | 文案 → 1–3 张风格参考图 | ✅ | ✅ 步骤 5 |
+| 4 | `grid-image-builder` | 整图生成 | 视觉线 | 24 条分镜 → 6×4 整图 | ✅ | ✅ 步骤 5 |
+| 5 | `image-splitter` | 图片切分 | 视觉线 | 整图 → 24 张独立图 | ✅ | ✅ 步骤 5 |
 | 6 | `asset-packager` | 素材打包 | 视频线 | 图文按分镜顺序打包成工程文件夹 | ✅ | — |
 | 7 | `image-to-video` | 图生视频 | 视频线 | 图片序列 + 文案 → 视频草稿 | ✅ | — |
 | 8 | `auto-editor` | 自动剪辑 | 视频线 | 参数化剪辑（顺序 / 时长 / 替换） | ✅ | — |
@@ -63,15 +63,15 @@
 | 16 | `review-reporter` | 复盘报告 | 分发数据线 | 出复盘结论与优化建议 | ✅ | — |
 | 17 | `llm-adapter` | 模型适配 | 基础设施 | 统一文本 / 图像生成调用接口 | ✅ | ✅ 步骤 3 |
 | 18 | `prompt-registry` | 提示词注册 | 基础设施 | 提示词入仓、按版本取用 | ✅ | ✅ 步骤 3 |
-| — | `artifact-recorder` | 产物登记 | 基础设施 | 写产物表 / 步骤流水表 / 留痕 | ✅ | — |
-| — | `hitl-gate` | 人工关口承接 | 通用 | 三类形态（选择 / 调整 / 授权）统一实现 | ✅ | — |
-| — | `storyboard-validator` | 分镜校验 | 质量门 | 24 条 + 编号连续 | ✅ | — |
-| — | `image-consistency-checker` | 图片一致性校验 | 质量门 | 24 张齐全 + 分辨率一致 | ✅ | — |
+| — | `artifact-recorder` | 产物登记 | 基础设施 | 写产物表 / 步骤流水表 / 留痕 | ✅ | ✅ 步骤 4 |
+| — | `hitl-gate` | 人工关口承接 | 通用 | 三类形态（选择 / 调整 / 授权）、五个关口点统一实现 | ✅ | ✅ 步骤 4 |
+| — | `storyboard-validator` | 分镜校验 | 质量门 | 24 条 + 编号连续 | ✅ | ✅ 步骤 4 |
+| — | `image-consistency-checker` | 图片一致性校验 | 质量门 | 24 张齐全 + 编号连续 + 分辨率一致 | ✅ | ✅ 步骤 5 |
 | — | `publish-guard` | 发布红线守卫 | 质量门 | 拦下任何自动发布（C-01 / C-08） | ✅ | — |
 | — | `task-decomposer` | 任务拆解 | 编排者工具 | topic → task，派单给环节 | ✅ | — |
 | — | `summary-writer` | 汇总回报 | 编排者工具 | 四条线结果汇总成一条回报 | ✅ | — |
 
-> 落地进度：**「已落地」列**记录 `.dsh/skills/` 下真实存在的目录（三件套齐全、`run.py` 可跑）。截至 WP-05 步骤 4 已落地 **7 个**：基础设施 `llm-adapter`、`prompt-registry`；文案线 `copy-writer`、`storyboard-builder`；支撑件 `artifact-recorder`、`hitl-gate`、`storyboard-validator`。其余 18 个在 WP-07 逐步落地，未落地前不在磁盘上（避免空壳目录）。
+> 落地进度：**「已落地」列**记录 `.dsh/skills/` 下真实存在的目录（三件套齐全、`run.py` 可跑）。截至 WP-05 步骤 5 已落地 **11 个**：基础设施 `llm-adapter`、`prompt-registry`；文案线 `copy-writer`、`storyboard-builder`；视觉线 `reference-image-builder`、`grid-image-builder`、`image-splitter`；支撑件 `artifact-recorder`、`hitl-gate`、`storyboard-validator`、`image-consistency-checker`。其余 14 个在 WP-07 逐步落地，未落地前不在磁盘上（避免空壳目录）。
 
 > 计数说明：上表 18 个「岗位」指**业务执行能力**；`artifact-recorder` / `hitl-gate` / 3 个校验器 / 2 个编排者工具是**支撑件**，合计 7 个目录，因此 `.dsh/skills/` 下最终是 **25 个 skill 目录**。这个数字写进目录提案，避免后面数来数去对不上。
 
@@ -217,9 +217,9 @@
 | skill_id | 职责 | 关键约束 |
 | -------- | ---- | -------- |
 | `artifact-recorder` | 写产物表 / 步骤流水表 / 操作留痕 | 每条含 `task_id`、`skill_id`、`model_version`、`prompt_version`、实际适配器（✅ 步骤 4 已落地） |
-| `hitl-gate` | 统一实现三类关口 | 关口枚举 `gate1_select_copy` / `gate2_edit_video` / `gate3_publish_auth`；一律写 `hitl_events`（✅ 步骤 4 已落地） |
+| `hitl-gate` | 统一实现三类关口（五个关口点） | 关口枚举 `gate1_select_copy` / `gate_visual_style` / `gate_visual_fix` / `gate2_edit_video` / `gate3_publish_auth`；一律写 `hitl_events`（✅ 步骤 4 已落地，步骤 5 扩到五个） |
 | `storyboard-validator` | 校验 24 条 + 编号连续 | 只读校验，不改内容；失败必须退回（✅ 步骤 4 已落地） |
-| `image-consistency-checker` | 校验 24 张 + 分辨率一致 | 同上 |
+| `image-consistency-checker` | 校验 24 张 + 编号连续 + 分辨率一致 | 只出结论、不改产物、不把任务置 blocked（✅ 步骤 5 已落地） |
 | `publish-guard` | 拦自动发布 | 任何发布相关写操作前必过；命中即阻断并记事件 |
 | `task-decomposer` | topic → task 派单 | 编排者专属；一次派单必须能算清「派给谁、要什么、什么算完成」 |
 | `summary-writer` | 四线结果汇总回报 | 只汇总，不改写下游结论 |

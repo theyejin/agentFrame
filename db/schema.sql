@@ -177,8 +177,10 @@ CREATE TABLE IF NOT EXISTS hitl_events (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id     INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
     gate        TEXT    NOT NULL
-                CHECK (gate IN ('gate1_select_copy','gate2_edit_video','gate3_publish_auth')),
+                CHECK (gate IN ('gate1_select_copy','gate2_edit_video','gate3_publish_auth',
+                                'gate_visual_style','gate_visual_fix')),
                                               -- gate1=选定文案(选择态) gate2=剪辑干预(调整态) gate3=发布授权(授权态)
+                                              -- gate_visual_style=人的风格确认(调整态) gate_visual_fix=人工修图/单张返工(调整态)
     actor       TEXT    NOT NULL,             -- 谁做的（operator 名）
     action      TEXT    NOT NULL CHECK (action IN ('confirm','reject','adjust')),
                                               -- confirm=确认 reject=拒绝 adjust=调整参数

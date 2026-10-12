@@ -16,6 +16,8 @@
 | D-08 | 按 9 步落地，每步模拟测试通过再下一步 | N005 | 可低成本变更 |
 | D-09 | 数据库里只存「当前状态」，历史靠带时间戳的产物文件 + `step_runs` 留痕（重生成用 `ON CONFLICT(task_id, plan_no) DO UPDATE` 覆盖同套号） | N008 | 结构级 |
 | D-10 | 跨 skill 的复用逻辑一律下沉 `.dsh/skills/_shared/`；skill 之间不互相调用，skill 只做自己的动作 | N008 | 结构级 |
+| D-11 | 视觉线新增两个调整态关口（`gate_visual_style` 风格确认 / `gate_visual_fix` 单张返工），关口枚举共五个；SQLite 不能改 CHECK，用迁移 `0002_add_visual_gates.sql` 重建 `hitl_events` 表 | N009 | 结构级 |
+| D-12 | 产物定位按 `artifacts.meta.role`（reference / grid / shot / shots-manifest），不按路径关键字 —— 产物目录会被 `--out` 改掉；离线图像能力由 `image.placeholder`（画图）与 `split.grid-slicer`（切图）两个本地运行时提供，不联网不花钱 | N009 | 可低成本变更 |
 
 ## 维护提示
 

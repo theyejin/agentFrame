@@ -31,3 +31,9 @@
 {"ts": "2026-10-12T10:20:00+08:00", "step": "WP-05-4", "actor": "agent", "skill": "", "action": "提示词升 v2 + 假数据样例库", "result": "ok", "note": "templates/prompts/*.md v2；templates/mock/ 三份"}
 {"ts": "2026-10-12T10:20:00+08:00", "step": "WP-05-4", "actor": "agent", "skill": "", "action": "文案线模拟测试", "result": "ok", "note": "tests/test_copy_line.py 24 项通过"}
 {"ts": "2026-10-12T10:20:00+08:00", "step": "WP-05-4", "actor": "agent", "skill": "", "action": "结构体检扩展到 38 项期望文件", "result": "ok", "note": "scripts/structure_check.py ok=True"}
+{"ts": "2026-10-12T11:40:00+08:00", "step": "WP-05-5", "actor": "agent", "skill": "", "action": "视觉线 4 个 skill 落地", "result": "ok", "note": "reference-image-builder / grid-image-builder / image-splitter / image-consistency-checker 三件套齐全"}
+{"ts": "2026-10-12T11:40:00+08:00", "step": "WP-05-5", "actor": "agent", "skill": "", "action": "离线图像能力", "result": "ok", "note": "新增 _shared/images.py；image 链新增 image.placeholder；split.grid-slicer 接上本地运行时"}
+{"ts": "2026-10-12T11:40:00+08:00", "step": "WP-05-5", "actor": "agent", "skill": "", "action": "关口枚举扩展", "result": "ok", "note": "hitl_events.gate 由 3 值扩到 5 值，迁移 0002 重建表"}
+{"ts": "2026-10-12T11:40:00+08:00", "step": "WP-05-5", "actor": "agent", "skill": "", "action": "视觉线模拟测试", "result": "ok", "note": "tests/test_visual_line.py 21 项通过"}
+{"ts": "2026-10-12T11:40:00+08:00", "step": "WP-05-5", "actor": "agent", "skill": "", "action": "结构体检扩展到 47 项期望文件", "result": "ok", "note": "scripts/structure_check.py ok=True"}
+{"ts": "2026-10-12T11:40:00+08:00", "step": "WP-05-5", "actor": "agent", "skill": "", "action": "文档同步与提交", "result": "ok", "note": "roster / 目录说明 / 决议 / 规格 / README + tag v0.8.0-visual-line"}

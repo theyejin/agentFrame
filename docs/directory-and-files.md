@@ -108,6 +108,8 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `prompts/copy-generate.md` | 文案生成提示词模板 **v2**（3 套侧重点用 `hook` / `emotion` / `cta` 键），`used_by: copy-writer` | R-7-03、R-L1-05 |
 | `prompts/storyboard-split.md` | 分镜拆解提示词模板 **v2**（每行 `NN \| 画面描述 \| 镜头提示`，正好 24 条），`used_by: storyboard-builder` | R-7-03、R-L1-19 |
 | `prompts/review-report.md` | 复盘报告提示词模板，`used_by: review-reporter` | R-7-03、FLOW-8 |
+| `prompts/image-reference.md` | 参考图提示词模板 **v1**，`used_by: reference-image-builder` | R-7-03、FLOW-2 |
+| `prompts/image-grid.md` | 整图提示词模板 **v1**（只输出一张 6×4 整图），`used_by: grid-image-builder` | R-7-03、FLOW-2、Q-11 |
 | `platforms/` | 平台预设模板文件（字数区间/标题写法/标签数/封面比例）；数据已进 `db/seed/0001_platform_templates.sql` | R-8-01、Q-18 |
 | `mock/copy-generate.v2.txt` | 离线样例：3 套候选文案（336/316/352 字，落在默认 300–500 区间） | R-L2-02 |
 | `mock/storyboard-split.v2.txt` | 离线样例：24 行分镜（编号 01–24 连续） | R-L2-02 |
@@ -125,6 +127,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `_shared/text_utils.py` | 文本解析与判定：字数口径、解析 3 套文案与 24 条分镜、分镜结构自检 | R-L1-19、F-02 |
 | `_shared/recording.py` | **留痕唯一写入实现**（选题 / 任务 / 步骤流水 / 产物），含 `timestamp_slug` / `unique_stamp` / `elapsed_ms` | R-7-03、R-L2-07 |
 | `_shared/hitl.py` | 三类人工关口的开启与决议逻辑（写 `hitl_events`、推进任务状态） | §8.3、R-8-03 |
+| `_shared/images.py` | 本地图像能力（Pillow）：画 6×4 整图 / 占位参考图、等分切图、图片体检（数量 / 编号 / 尺寸 / 单边） | R-L1-06、R-L1-19、Q-11 |
 | `_shared/README.md` | 共享库说明（**不是 skill**：无 `SKILL.md`，DSH 不加载） | R-L1-20 |
 | `prompt-registry/{SKILL.md,README.md,run.py}` | 提示词登记、渲染、自检、版本对照 | R-7-03 |
 | `llm-adapter/{SKILL.md,README.md,run.py}` | 一切外部服务调用的统一入口（7 类 kind） | R-L2-14~17 |
@@ -140,6 +143,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | ---- | ---- | -------- |
 | `schema.sql` | **结构唯一参考**：13 张表 + 2 个视图 + 3 个一致性触发器 | §7、R-7-01~R-7-05 |
 | `migrations/0001_init.sql` | 首次建库迁移（与 `schema.sql` 一致 + 登记 `schema_migrations`）；历史文件不得再改 | R-L1-04 |
+| `migrations/0002_add_visual_gates.sql` | 视觉线关口迁移：`hitl_events.gate` 的 CHECK 由 3 值扩到 5 值（SQLite 不能改 CHECK，故重建表并回填） | §8.3、R-L1-04 |
 | `seed/0001_platform_templates.sql` | 平台预设模板：抖音 / 小红书 / B站 / 视频号 | R-8-01、Q-18 |
 | `app.db` | 运行期数据库（不入库，`python3 scripts/db_init.py` 生成） | R-L1-04 |
 | `README.md` | 表清单、枚举取值总表、建库与改结构流程 | R-L1-14、R-7-02 |
@@ -150,6 +154,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | ---- | ---- | -------- |
 | `test_db.py` | 数据库模拟测试 28 项：结构可建 / 迁移链与 schema 一致 / 种子幂等 / 24 条分镜与编号唯一 / 3 套文案与侧重 / 软删 / 枚举与触发器 / 视图可用 / 建库脚本可用 | R-L2-02、R-L1-19 |
 | `test_adapters.py` | 适配器层模拟测试 34 项：登记表自洽 / 降级链行为 / 零付费门禁（C-09）/ 人工兜底 / 提示词模板渲染与自检 / 同步与两个 skill 的命令行 | R-L2-02、R-L2-14~17、C-09 |
+| `test_visual_line.py` | 视觉线模拟测试 21 项：切分几何 / 参考图（含未选定文案的拒绝与同秒重跑不覆盖）/ 整图尺寸等式 / 切图与清单 / 一致性体检（含不置 blocked）/ 两个视觉关口（`shot_nos` 强制）/ 整线连跑 | R-L2-02、R-L1-06、R-L1-19、Q-11、§8.3 |
 | `test_copy_line.py` | 文案线模拟测试 24 项：解析与字数口径 / 提示词 v2 / 登记层约束 / 关口① 四种非法输入 / copy-writer 端到端（含失败路径与重生成留痕）/ storyboard-builder 前置卡口与 24 条落库 / 校验器 | R-L2-02、R-L1-05、R-L1-06、R-L1-19、§8.3 |
 | `fixtures/` | 模拟测试的假数据（随步骤新增） | R-L2-02 |
 
@@ -158,7 +163,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
 | `YYYY-MM-DD.jsonl` | 当天执行流水，每行一条 JSON：`{ts, step, actor, skill, action, result, note}` | R-L2-05 |
-| `2026-10-12.jsonl` | 本项目首日记录（N001–N008 与 WP-05 步骤 1–4） | R-L2-05 |
+| `2026-10-12.jsonl` | 本项目首日记录（N001–N009 与 WP-05 步骤 1–5） | R-L2-05 |
 
 ---
 

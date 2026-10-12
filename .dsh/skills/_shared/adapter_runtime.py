@@ -172,6 +172,57 @@ def _runtime_human(adapter: dict[str, Any], payload: dict[str, Any]) -> dict[str
     }
 
 
+def _runtime_image_placeholder(adapter: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    """本地占位整图（离线终点，不是可发布素材）：按行列画格并标出分镜号。
+
+    用途：① 让视觉线在没有任何外部生图服务时也能端到端跑通与测试；② 给运营人员一张
+    「该放什么图」的版式参考。真实出图仍应优先走前面的 image.flow / image.doubao / image.comfyui。
+    """
+    import images as im
+
+    cell_w = int(payload.get("cell_w", 320))
+    cell_h = int(payload.get("cell_h", 320))
+    labels = payload.get("labels") or []
+    title = payload.get("title", "")
+    paths = payload.get("paths") or []          # 多张（参考图）：每个路径一张单格图
+    if paths:
+        made = []
+        for i, one in enumerate(paths, start=1):
+            info = im.make_placeholder_grid(one, 1, 1, cell_w, cell_h,
+                                            [labels[i - 1]] if i <= len(labels) else [],
+                                            title if i == 1 else "")
+            info["placeholder"] = True
+            made.append(info)
+        return {"output": {"images": made, "count": len(made)}, "model_version": "placeholder-v1"}
+    out_path = payload.get("abs_path") or payload.get("out_path")
+    if not out_path:
+        rel = payload.get("rel_path") or "workspace/exports/placeholder-grid.png"
+        out_path = REPO_ROOT / rel
+    cols = int(payload.get("cols", 6))
+    rows = int(payload.get("rows", 4))
+    info = im.make_placeholder_grid(out_path, cols, rows, cell_w, cell_h, labels, title)
+    info["placeholder"] = True
+    return {"output": info, "model_version": "placeholder-v1"}
+
+
+def _runtime_grid_slicer(adapter: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    """本地网格切分：把一张整图按 6×4 等分成 24 张独立图（离线终点，无需任何外部服务）。"""
+    import images as im
+
+    src = payload.get("abs_src") or payload.get("grid_path") or payload.get("src")
+    if not src:
+        raise RuntimeError("grid_slicer 需要整图路径：abs_src / grid_path / src 三者任一")
+    out_dir = payload.get("abs_out_dir") or payload.get("out_dir") or (REPO_ROOT / "workspace" / "exports" / "shots")
+    shots = im.slice_grid(src, int(payload.get("cols", 6)), int(payload.get("rows", 4)), out_dir,
+                          prefix=payload.get("prefix", "shot"), ext=payload.get("ext", ".png"),
+                          start_no=int(payload.get("start_no", 1)))
+    sizes = sorted({(s["width"], s["height"]) for s in shots})
+    if len(sizes) != 1:
+        raise RuntimeError(f"切分结果尺寸不一致：{sizes}")
+    return {"output": {"shots": shots, "count": len(shots), "cell_size": {"w": sizes[0][0], "h": sizes[0][1]}},
+            "model_version": "grid-slicer-v1"}
+
+
 class MissingKey(RuntimeError):
     """缺密钥 —— 与「调用失败」区分开，便于运营人员快速定位。"""
 
@@ -181,6 +232,8 @@ RUNTIMES: dict[str, Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]]] 
     "openai_compatible": _runtime_openai_compatible,
     "local_export": _runtime_local_export,
     "human": _runtime_human,
+    "image_placeholder": _runtime_image_placeholder,
+    "grid_slicer": _runtime_grid_slicer,
 }
 
 

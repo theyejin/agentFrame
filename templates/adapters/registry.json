@@ -100,16 +100,18 @@
       "adapter_id": "split.grid-slicer",
       "kind": "split",
       "provider": "本地",
-      "capabilities": "把 6×4 整图按等分切成 24 张独立图片并按 shot-01…shot-24 命名",
+      "capabilities": "按行列等分整图；输出 shot-NN 编号命名；读出每张尺寸供一致性校验",
       "needs_key": false,
       "billable": false,
-      "failure_signals": "整图尺寸与 6×4 比例不符；切出的张数不是 24",
+      "failure_signals": "整图不存在或不是图片；单格像素小于 8；输出目录不可写",
       "fallback_order": 1,
       "enabled": true,
-      "note": "纯本地计算，不需要外部服务（R-L1-19：必须切出 24 张）",
-      "implemented": false,
+      "note": "离线终点：本机用 Pillow 切分，不依赖任何外部服务。",
+      "implemented": true,
       "cost_per_call": 0.0,
-      "settings": {}
+      "settings": {
+        "runtime": "grid_slicer"
+      }
     },
     {
       "adapter_id": "split.manual",
@@ -277,6 +279,25 @@
       }
     },
     {
+      "kind": "image",
+      "adapter_id": "image.placeholder",
+      "provider": "本地（Pillow 绘制）",
+      "fallback_order": 4,
+      "needs_key": false,
+      "billable": false,
+      "implemented": true,
+      "capabilities": "离线生成占位整图；按 6×4 画格并标出分镜号；无需密钥与网络",
+      "failure_signals": "缺少 Pillow；单格尺寸过小；输出目录不可写",
+      "settings": {
+        "runtime": "image_placeholder",
+        "cell_w_default": 320,
+        "cell_h_default": 320
+      },
+      "note": "离线终点（占位图，不是可发布素材）：让视觉线在无外部生图服务时也能跑通与测试。",
+      "enabled": true,
+      "cost_per_call": 0.0
+    },
+    {
       "adapter_id": "image.manual",
       "kind": "image",
       "provider": "人工",
@@ -284,7 +305,7 @@
       "needs_key": false,
       "billable": false,
       "failure_signals": "",
-      "fallback_order": 4,
+      "fallback_order": 5,
       "enabled": true,
       "note": "兜底即转人工（HITL）：自动出图全不可用时，由运营人员出图并回填",
       "implemented": true,

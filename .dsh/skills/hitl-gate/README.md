@@ -1,10 +1,10 @@
 # 人工关口器（hitl-gate）
 
 <!--
-文件用途：三类人工关口（选定文案 / 剪辑干预 / 发布授权）的开启、决议与留痕，让流水线只在真人拍板处等待。
+文件用途：三类形态、五个关口点（选定文案 / 风格确认 / 单张返工 / 剪辑干预 / 发布授权）的开启、决议与留痕，让流水线只在真人拍板处等待。
 对应需求：§8.3 三类 HITL 形态、R-8-03（记录操作人）、C-08（未授权不发布）、C-01（发布前人工确认）。
 对应流程图：.archify/FLOW-COPY-20261012/copy-line.html（关口① 选定文案）、.archify/FLOW-VIDEO-20261012/video-line.html（关口②）、.archify/FLOW-PUBLISH-20261012/publish-line.html（关口③）
-维护提示：关口枚举（gate1_select_copy / gate2_edit_video / gate3_publish_auth）改动要同步 db/schema.sql 的 hitl_events.gate、docs/skill-roster.md 与本文件。
+维护提示：关口枚举（gate1_select_copy / gate_visual_style / gate_visual_fix / gate2_edit_video / gate3_publish_auth）改动要同步 db/schema.sql 的 hitl_events.gate（含迁移 db/migrations/0002_add_visual_gates.sql）、docs/skill-roster.md 与本文件。
 -->
 
 | 项 | 值 |
@@ -27,7 +27,7 @@
 | 字段 | 类型 | 必填 | 说明 | 来源 |
 | ---- | ---- | ---- | ---- | ---- |
 | `--task-id` | int | 是 | 任务编号 | 编排者 |
-| `--gate` | enum | 是 | `gate1_select_copy` / `gate2_edit_video` / `gate3_publish_auth` | 规格 §8.3 |
+| `--gate` | enum | 是 | `gate1_select_copy` / `gate_visual_style` / `gate_visual_fix` / `gate2_edit_video` / `gate3_publish_auth` | 规格 §8.3 |
 | `--action` | enum | 决议时是 | `confirm` / `reject` / `adjust` | 运营人员 |
 | `--actor` | str | 决议时是 | 谁做的决定（R-8-03） | 运营人员 |
 | `--plan-no` | int | 关口① confirm 时是 | 选定第几套（1/2/3） | 运营人员 |
@@ -40,6 +40,7 @@
 - [ ] `--actor` 不能为空（要能回答「谁点的」）
 - [ ] 决议前任务状态必须是 `waiting_human`（即必须先 `open`）
 - [ ] 关口① `confirm` 必须给 `--plan-no`，且该套文案存在且 `status = 'active'`
+- [ ] `gate_visual_fix` 的 confirm/adjust 必须用 `--diff-json` 给出 `shot_nos`（哪几张要重做），否则拒绝（返工范围不可追溯）
 
 退回时返回：`{"ok": false, "reason": "<不合法原因>"}`（退出码 2）。
 
@@ -80,3 +81,4 @@
 | 日期 | 变更 | 来源 |
 | ---- | ---- | ---- |
 | 2026-10-12 | 首版：三类关口 open/resolve/list/status | N008 |
+| 2026-10-12 | v0.2.0：关口枚举扩为五个（新增 gate_visual_style、gate_visual_fix） | N009 |

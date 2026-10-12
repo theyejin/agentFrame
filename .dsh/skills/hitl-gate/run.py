@@ -94,13 +94,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("open", help="开启关口（任务置 waiting_human）")
     s.add_argument("--task-id", type=int, required=True)
-    s.add_argument("--gate", required=True, choices=[hitl.GATE1, hitl.GATE2, hitl.GATE3])
+    s.add_argument("--gate", required=True, choices=sorted(hitl.GATES))
     s.add_argument("--note", default="")
     s.set_defaults(func=cmd_open)
 
     s = sub.add_parser("resolve", help="决议关口并写 hitl_events")
     s.add_argument("--task-id", type=int, required=True)
-    s.add_argument("--gate", required=True, choices=[hitl.GATE1, hitl.GATE2, hitl.GATE3])
+    s.add_argument("--gate", required=True, choices=sorted(hitl.GATES))
     s.add_argument("--action", required=True, choices=["confirm", "reject", "adjust"])
     s.add_argument("--actor", required=True, help="谁做的决定（R-8-03）")
     s.add_argument("--plan-no", type=int, default=None, help="关口① confirm 时必填：选定第几套")

@@ -159,13 +159,38 @@ class FallbackTests(unittest.TestCase):
         self.assertIn("C-09", result.attempts[0]["detail"])
 
     def test_not_implemented_is_skipped_and_chain_continues(self):
+        """未接入的适配器被逐个跳过；把离线终点也拿掉后，应落到人工兜底。"""
+        registry = {"adapters": [a for a in ar.load_registry()["adapters"]
+                                 if a["adapter_id"] != "image.placeholder"]}
         with env():
-            result = ar.invoke("image", {"prompt": "参考图", "count": 3})
+            result = ar.invoke("image", {"prompt": "参考图", "count": 3}, registry=registry)
         statuses = [a["status"] for a in result.attempts]
         self.assertEqual(statuses.count(ar.STATUS_NOT_IMPLEMENTED), 3)
         self.assertTrue(result.ok)
         self.assertEqual(result.adapter_id, "image.manual")
         self.assertTrue(result.needs_human)
+
+    def test_image_chain_hits_local_placeholder_offline(self):
+        """离线终点：没密钥、没网络时 image 链落在本地占位生图（步骤 5 新增）。"""
+        with tempfile.TemporaryDirectory() as tmp, env():
+            result = ar.invoke("image", {"prompt": "参考图", "count": 1,
+                                         "abs_path": str(Path(tmp) / "placeholder.png")})
+        self.assertTrue(result.ok)
+        self.assertEqual(result.adapter_id, "image.placeholder")
+        self.assertFalse(result.needs_human)
+        self.assertEqual(result.model_version, "placeholder-v1")
+
+    def test_split_chain_uses_local_grid_slicer(self):
+        """切分链的离线终点是本地网格切分（真的能把整图切成 24 张），不是人工。"""
+        import images as im
+        with tempfile.TemporaryDirectory() as tmp, env():
+            grid = Path(tmp) / "grid.png"
+            im.make_placeholder_grid(grid, 6, 4, 40, 40, [f"格{i}" for i in range(1, 25)])
+            result = ar.invoke("split", {"grid_path": str(grid), "out_dir": str(Path(tmp) / "shots")})
+        self.assertTrue(result.ok)
+        self.assertEqual(result.adapter_id, "split.grid-slicer")
+        self.assertFalse(result.needs_human)
+        self.assertEqual(result.output["count"], 24)
 
     def test_chain_order_follows_fallback_order(self):
         mock_first = {"adapters": [ar.find("llm.mock"), ar.find("llm.deepseek")]}
@@ -307,7 +332,9 @@ class SeedAndCliTests(unittest.TestCase):
         out = subprocess.run([sys.executable, str(REPO_ROOT / ".dsh/skills/prompt-registry/run.py"),
                               "list", "--json"], capture_output=True, text=True, check=True)
         rows = json.loads(out.stdout)
-        self.assertEqual({r["prompt_key"] for r in rows}, {"copy-generate", "storyboard-split", "review-report"})
+        self.assertEqual({r["prompt_key"] for r in rows},
+                         {"copy-generate", "storyboard-split", "review-report",
+                          "image-reference", "image-grid"})
         check = subprocess.run([sys.executable, str(REPO_ROOT / ".dsh/skills/prompt-registry/run.py"), "check"],
                                capture_output=True, text=True)
         self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
@@ -320,7 +347,8 @@ class SeedAndCliTests(unittest.TestCase):
             keys = [r[0] for r in conn.execute("SELECT prompt_key FROM prompt_versions ORDER BY prompt_key")]
         finally:
             conn.close()
-        self.assertEqual(keys, ["copy-generate", "review-report", "storyboard-split"])
+        self.assertEqual(keys, ["copy-generate", "image-grid", "image-reference",
+                                "review-report", "storyboard-split"])
 
     def test_llm_adapter_cli_generate_offline(self):
         target = Path(self.tmp.name) / "copy" / "plan.txt"
