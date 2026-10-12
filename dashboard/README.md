@@ -139,6 +139,8 @@ python3 tests/test_dashboard.py               # 控制台与报告页的模拟�
 | `GET /api/diagrams` | 框架图库整包：五张图的登记事实 + 磁盘事实（大小 / 生成时间 / 节点数…）+ 七份框架文档 + 缺件与漏登记（R-L3-06） |
 | `GET /diagrams/<key>` | 某张图的交付 HTML（`overall` / `copy` / `visual` / `video` / `publish`，只认登记 key，用于栏目的内嵌查看器） |
 | `GET /docs/<key>` | 某份框架资料的原文（纯文本，`requirements` / `directory` / `roster` / `grammar` / `decisions` / `acceptance` / `archify`） |
+| `GET /tasks.html`（及 `copy` / `publish` / `metrics` / `index.html`） | 只写页面名时的 302 跳转，落到 `/pages/…` 正式路径（`PAGE_ALIASES`，D-28） |
+| `GET /favicon.ico` | 204 空响应：浏览器自动请求，不再刷 404 噪声 |
 
 ## 白名单（页面能调的脚本）
 
@@ -158,4 +160,5 @@ python3 tests/test_dashboard.py               # 控制台与报告页的模拟�
 | 日期 | 版本 | 说明 |
 | --- | --- | --- |
 | 2026-10-12 | v0.2.0 | 随 WP-05 步骤 8 落地：总览、任务流转、文案生成、发布操作、数据与复盘五页 + 本地服务（`/api/*` + 白名单）+ build-log 报告页。 |
+| 2026-10-12 | v0.3.1 | 入口容错补丁（D-28）：只写页面名的 URL 302 跳到正式路径，`/favicon.ico` 回 204；控制台测试 43 → 45 项（累计 255 项）。 |
 | 2026-10-12 | v0.3.0 | N015（R-L3-06）：新增第六个栏目「框架图库」——五张框架图集中查看（点选切换 / 全屏 / 新标签页 / `?key=` 深链）+ 七份框架资料可读原文 + 增改图三条命令；新增 `/api/diagrams`、`/diagrams/<key>`、`/docs/<key>` 三个只读接口；顺带修掉顶栏在根目录与 `/pages/` 之间互跳 404 的既存缺陷（D-27）。 |

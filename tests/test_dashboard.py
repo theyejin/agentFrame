@@ -452,6 +452,20 @@ class TestServeDashboard(DashboardBaseCase):
             self.assertEqual(status, 400, path)
             self.assertIn("没有登记", json.loads(body)["error"], path)
 
+    def test_bare_page_names_work(self) -> None:
+        """只写页面名（忘 pages/ 前缀）也要能用：302 跳到正式路径，最后仍是 200 + 正确内容。"""
+        for bare, token in (("/tasks.html", "任务流转"), ("/copy.html", "文案生成"),
+                            ("/publish.html", "发布操作"), ("/metrics.html", "数据与复盘")):
+            status, body = self.get(bare)
+            self.assertEqual(status, 200, f"{bare} 应能跳到正式页面")
+            self.assertIn(token, body, f"{bare} 跳转后内容不对")
+        self.assertIn("/tasks.html", serve.PAGE_ALIASES)
+
+    def test_favicon_is_quiet(self) -> None:
+        status, body = self.get("/favicon.ico")
+        self.assertEqual(status, 204)
+        self.assertEqual(body, "")
+
     def test_path_traversal_blocked(self) -> None:
         status, _ = self.get("/../../etc/passwd")
         self.assertEqual(status, 404)

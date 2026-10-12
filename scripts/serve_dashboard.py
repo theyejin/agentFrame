@@ -107,6 +107,15 @@ def _append_log(*, skill: str, action: str, result: str, note: str, actor: str =
         handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
+PAGE_ALIASES = {  # 只写页面名时的顺手跳转（人手输 URL 常忘 pages/ 前缀）
+    "/tasks.html": "/pages/tasks.html",
+    "/copy.html": "/pages/copy.html",
+    "/publish.html": "/pages/publish.html",
+    "/metrics.html": "/pages/metrics.html",
+    "/index.html": "/",
+}
+
+
 def _static_file(url_path: str) -> Path | None:
     """把 URL 映射到仓库内的静态文件；越界（../）直接拒绝。"""
     rel = url_path.lstrip("/") or "index.html"
@@ -149,6 +158,14 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         route, query = parsed.path, parse_qs(parsed.query)
         try:
+            if route in PAGE_ALIASES:  # /tasks.html → /pages/tasks.html
+                self.send_response(302)
+                self.send_header("Location", PAGE_ALIASES[route])
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+                return
+            if route == "/favicon.ico":  # 浏览器自动请求，回空内容免得刷 404
+                return self._send(204, b"", "image/x-icon")
             if route == "/api/health":
                 return self._json(200, {"ok": True, "db": str(dbm.db_path(self.db)), "time": _now(),
                                         "whitelist": {k: list(v) for k, v in cs.RUN_WHITELIST.items()}})
