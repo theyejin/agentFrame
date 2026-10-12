@@ -630,7 +630,7 @@
 | A-66 | 编排者模拟测试 `tests/test_orchestrator.py` | 执行 Agent | N012    | 33 项全部通过（累计 197 项）                                      | ✅ 完成 |
 | A-67 | 结构体检期望文件 68 → 82                      | 执行 Agent | N012    | `python3 scripts/structure_check.py` 退出码 0、`expected_files=82`、`problems=[]` | ✅ 完成 |
 | A-68 | 同步 roster / 目录说明 / 决议 / 流水 / 规格 / README | 执行 Agent | N012 收尾 | 六份文件与代码一致（含 D-17~D-19、规格 v2.1.10）                        | ✅ 完成 |
-| A-69 | 提交并推送本节点产出                           | 执行 Agent | N012 收尾 | 远端可见提交与 tag `v0.11.0-agents`                                  | ✅ 完成 |
+| A-69 | 提交并推送本节点产出                           | 执行 Agent | N012 收尾 | 远端可见提交与 tag `v0.11.0-agents`                                  | ✅ 完成（81380d8 + tag v0.11.0-agents） |
 | A-06 | 每次讨论后回填本文件与规格 §12 台账的状态              | 执行 Agent | 每次讨论结束  | 台账状态与讨论节点一一对应                                                 | 持续   |
 
 ### 本次讨论留下的规则（后续步骤必须遵守）
