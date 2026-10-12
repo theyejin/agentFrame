@@ -179,6 +179,34 @@
         260,
         72
       ]
+    },
+    {
+      "id": "console",
+      "type": "frontend",
+      "label": "运营控制台（dashboard）",
+      "sublabel": "五页：文案 / 任务 / 发布 / 数据 / 日志",
+      "pos": [
+        400,
+        840
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "buildlog",
+      "type": "frontend",
+      "label": "搭建过程报告页（build-log）",
+      "sublabel": "由 logs/*.jsonl 生成，可搜索",
+      "pos": [
+        820,
+        840
+      ],
+      "size": [
+        210,
+        64
+      ]
     }
   ],
   "boundaries": [
@@ -208,6 +236,14 @@
         "db",
         "feishu",
         "hot"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "本地人机界面（只读）",
+      "wraps": [
+        "console",
+        "buildlog"
       ]
     }
   ],
@@ -307,6 +343,24 @@
       "from": "db",
       "to": "orch",
       "label": "状态与指标读回"
+    },
+    {
+      "id": "c17",
+      "from": "human",
+      "to": "console",
+      "label": "本机浏览器打开"
+    },
+    {
+      "id": "c18",
+      "from": "console",
+      "to": "db",
+      "label": "只读查询与本地脚本"
+    },
+    {
+      "id": "c19",
+      "from": "console",
+      "to": "buildlog",
+      "label": "报告页入口"
     }
   ],
   "cards": [

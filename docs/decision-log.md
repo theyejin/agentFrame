@@ -30,6 +30,9 @@
 | D-20 | 控制台的读写边界写死在两处：页面**只读**数据层 `_shared/console.py`（口径只写一遍：环节 / 状态 / 关口中文标签、互动率 = 互动量 ÷ 播放量），**写操作一律经本地服务调 skill 白名单** `RUN_WHITELIST`，页面传来的 `--db` / `--allow-paid` 一律被拒 —— 页面既不能换库，也不能绕开零付费门禁（C-09）；服务只监听 127.0.0.1 | N013 | 可低成本变更 |
 | D-21 | build-log 报告页放在**仓库根目录**（R-L2-06），由 `scripts/build_log_report.py` 从 `logs/*.jsonl` 生成 `build-log.html` + 可追溯的 `build-log.data.json`，并把数据内联进 HTML（`file://` 双击也能看）；它与控制台是**两个独立页面**（Q-6），控制台首页只放入口链接 —— 报告页与库解耦，日志坏行不致命 | N013 | 结构级 |
 
+| D-22 | 端到端验收以「一条真实选题离线全链跑通」为准：`tests/test_e2e.py` 在临时库里真跑一遍（24 步 / 18 个 skill），把 AC-1~AC-7 逐条变成可执行断言，结论与证据写进 `docs/acceptance-report.md` —— 验收不靠口头结论，靠可复跑的命令与实测数值（AC-1~AC-7、R-L2-02） | N014 | 结构级 |
+| D-23 | 受限项如实登记、不伪造通过：本机 Chrome 沙箱导致 archify 的 `browser-check` 门跑不完，就在验收报告与决议里写明「`validate` / `deliver` / `check` 三门 pass、`browser-check` fail（A-09）」——图的交付按 R-L2-18 用 `render` + `check` + 截图，绝不把未跑的检查写成通过 | N014 | 可低成本变更 |
+
 ## 维护提示
 
 - 每次讨论节点收尾时，把新定下来的事项追加到本表（R-D-01、R-D-03）。

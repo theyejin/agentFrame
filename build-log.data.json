@@ -1,13 +1,49 @@
 {
-  "generated_at": "2026-10-12T13:51:29+08:00",
+  "generated_at": "2026-10-12T14:03:26+08:00",
   "generator": "scripts/build_log_report.py",
   "title": "搭建过程记录（build-log）",
-  "total": 64,
+  "total": 70,
   "dates": [
     {
       "date": "2026-10-12",
-      "count": 64,
+      "count": 70,
       "titles": [
+        {
+          "id": "2026-10-12-70",
+          "title": "文档同步与提交",
+          "step": "WP-05-9",
+          "result": "ok"
+        },
+        {
+          "id": "2026-10-12-69",
+          "title": "五张流程图同步：分发线补 publish-guard、总览图补控制台与报告页",
+          "step": "WP-05-9",
+          "result": "ok"
+        },
+        {
+          "id": "2026-10-12-68",
+          "title": "AC-3 浏览器实测：控制台与报告页截图入库 docs/evidence/",
+          "step": "WP-05-9",
+          "result": "ok"
+        },
+        {
+          "id": "2026-10-12-67",
+          "title": "一键测试脚本 scripts/run_tests.py：9 套 243 项",
+          "step": "WP-05-9",
+          "result": "ok"
+        },
+        {
+          "id": "2026-10-12-66",
+          "title": "验收报告 docs/acceptance-report.md：逐条证据与受限项登记",
+          "step": "WP-05-9",
+          "result": "ok"
+        },
+        {
+          "id": "2026-10-12-65",
+          "title": "端到端测试 tests/test_e2e.py 落地：一条选题 24 步、18 个 skill 全链跑通",
+          "step": "WP-05-9",
+          "result": "ok"
+        },
         {
           "id": "2026-10-12-64",
           "title": "文档同步与提交",
@@ -396,6 +432,78 @@
     }
   ],
   "entries": [
+    {
+      "id": "2026-10-12-70",
+      "date": "2026-10-12",
+      "ts": "2026-10-12T16:00:00+08:00",
+      "step": "WP-05-9",
+      "category": "WP-05",
+      "title": "文档同步与提交",
+      "detail": "规格 v2.1.12 / README 100% / 台账 WP-05 与 WP-12 收口 / 决议 D-22~D-23 / 讨论节点 N014 / tag v0.13.0-e2e",
+      "result": "ok",
+      "skill": "",
+      "actor": "agent"
+    },
+    {
+      "id": "2026-10-12-69",
+      "date": "2026-10-12",
+      "ts": "2026-10-12T16:00:00+08:00",
+      "step": "WP-05-9",
+      "category": "WP-05",
+      "title": "五张流程图同步：分发线补 publish-guard、总览图补控制台与报告页",
+      "detail": "render + check 两图 9/9；browser-check 受限 A-09",
+      "result": "ok",
+      "skill": "",
+      "actor": "agent"
+    },
+    {
+      "id": "2026-10-12-68",
+      "date": "2026-10-12",
+      "ts": "2026-10-12T16:00:00+08:00",
+      "step": "WP-05-9",
+      "category": "WP-05",
+      "title": "AC-3 浏览器实测：控制台与报告页截图入库 docs/evidence/",
+      "detail": "127.0.0.1:8791；报告页搜索与切换可用",
+      "result": "ok",
+      "skill": "",
+      "actor": "agent"
+    },
+    {
+      "id": "2026-10-12-67",
+      "date": "2026-10-12",
+      "ts": "2026-10-12T16:00:00+08:00",
+      "step": "WP-05-9",
+      "category": "WP-05",
+      "title": "一键测试脚本 scripts/run_tests.py：9 套 243 项",
+      "detail": "R-L2-02；AC-5",
+      "result": "ok",
+      "skill": "",
+      "actor": "agent"
+    },
+    {
+      "id": "2026-10-12-66",
+      "date": "2026-10-12",
+      "ts": "2026-10-12T16:00:00+08:00",
+      "step": "WP-05-9",
+      "category": "WP-05",
+      "title": "验收报告 docs/acceptance-report.md：逐条证据与受限项登记",
+      "detail": "AC-1~AC-7；A-09 如实写明",
+      "result": "ok",
+      "skill": "",
+      "actor": "agent"
+    },
+    {
+      "id": "2026-10-12-65",
+      "date": "2026-10-12",
+      "ts": "2026-10-12T16:00:00+08:00",
+      "step": "WP-05-9",
+      "category": "WP-05",
+      "title": "端到端测试 tests/test_e2e.py 落地：一条选题 24 步、18 个 skill 全链跑通",
+      "detail": "AC-1~AC-7；13 项全部通过",
+      "result": "ok",
+      "skill": "",
+      "actor": "agent"
+    },
     {
       "id": "2026-10-12-64",
       "date": "2026-10-12",

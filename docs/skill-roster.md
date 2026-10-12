@@ -281,3 +281,4 @@
 | 2026-10-12 | WP-05 步骤 7：分发数据线 6 个 skill 与支撑件 `publish-guard` 落地；口径修正为「16 执行 + 2 基础设施 = 18 岗位，另 7 支撑件（25 目录）」 | N011 |
 | 2026-10-12 | WP-05 步骤 8：运营控制台五页 + 本地服务（白名单）+ 搭建过程报告页落地；支撑件新增「运营控制台」一行 | N013 |
 | 2026-10-12 | WP-07：编排者工具 `task-decomposer`、`summary-writer` 落地，25 个 skill 目录全部齐；五个 Agent 定义与 `agents/orchestrator/config.yml` 契约由运行时校验 | N012 |
+| N014 | 2026-10-12 | 端到端验收落地（WP-05 步骤 9）：`tests/test_e2e.py` 13 项逐条对照 AC-1~AC-7、`docs/acceptance-report.md` 给出可复现证据、`scripts/run_tests.py` 一键跑 9 套 243 项；skill 目录仍为 25 个，无新增岗位 |

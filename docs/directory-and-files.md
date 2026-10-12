@@ -82,6 +82,8 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `directory-structure-plan.md` | 目录结构提案与 9 步落地顺序（N005 已确认） | R-L1-13 |
 | `directory-and-files.md` | **本文件**：目录及文件说明正式版 | R-L2-09 |
 | `decision-log.md` | 决议摘要索引（一行一条「现在以什么为准」） | R-D-01、R-D-03 |
+| `acceptance-report.md` | 端到端验收报告（WP-05 步骤 9）：AC-1~AC-7 逐条可复现证据、本版未覆盖项、受限项（A-09） | AC-1~AC-7、R-L2-02 |
+| `evidence/` | 验收截图：控制台总览页、搭建过程报告页（浏览器实操留证；按 `.gitignore`「图片不入仓」规则不入库，属本机证据） | AC-3、R-L3-01 |
 
 ### 3.3 `.archify/`（每张图一个目录）
 
@@ -102,6 +104,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `seed_adapters.py` | 把 `templates/adapters/registry.json` 同步进 `adapter_registry` 表；`--check` 只比对不写库 | R-L2-16、R-L2-17 |
 | `build_log_report.py` | 扫 `logs/*.jsonl` 生成**仓库根**的 `build-log.html` + `build-log.data.json`（`--check` 只校验、`--json` 机读） | R-L2-05、R-L2-06 |
 | `serve_dashboard.py` | 控制台本地服务：只监听 `127.0.0.1:8787`，`/api/*` 取数与调 skill；写操作走白名单，禁传 `--db` / `--allow-paid` | R-L3-01~05、C-09 |
+| `run_tests.py` | 一键跑完全部模拟测试（自动发现 `tests/test_*.py`，打印每套结果与合计项数；`--only` / `--json`） | R-L2-02、AC-5 |
 
 ### 3.5 `templates/`（适配器登记表 + 提示词模板）
 
@@ -200,6 +203,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
+| `test_e2e.py` | 端到端验收 13 项：一条选题全链（24 步 / 18 个 skill）在临时库真跑一遍，逐条对照 AC-1~AC-7，另验指标复采不堆行、汇总回报五项、控制台只读不改状态 | AC-1~AC-7、R-L2-02、C-08、C-10 |
 | `test_dashboard.py` | 控制台与报告页模拟测试 33 项：数据层口径（环节/状态/关口标签、互动率百分比、轨迹与文案卡）/ 坏行日志不致命 / 静态页可达与越界路径 404 / 白名单拒绝未知 skill 与动作 / 页面能走到四页与报告页 / `build_log_report.py` 与 `serve_dashboard.py --check` 命令行 | R-L2-02、R-L2-05、R-L2-06、R-L3-01~05、C-08、Q-6 |
 | `test_db.py` | 数据库模拟测试 28 项：结构可建 / 迁移链与 schema 一致 / 种子幂等 / 24 条分镜与编号唯一 / 3 套文案与侧重 / 软删 / 枚举与触发器 / 视图可用 / 建库脚本可用 | R-L2-02、R-L1-19 |
 | `test_adapters.py` | 适配器层模拟测试 36 项：登记表自洽 / 降级链行为 / 零付费门禁（C-09）/ 人工兜底 / 提示词模板渲染与自检 / 同步与两个 skill 的命令行 | R-L2-02、R-L2-14~17、C-09 |
@@ -215,7 +219,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
 | `YYYY-MM-DD.jsonl` | 当天执行流水，每行一条 JSON：`{ts, step, actor, skill, action, result, note}` | R-L2-05 |
-| `2026-10-12.jsonl` | 本项目首日记录（N001–N013、WP-05 步骤 1–8 与 WP-07，共 64 行） | R-L2-05 |
+| `2026-10-12.jsonl` | 本项目首日记录（N001–N014、WP-05 步骤 1–9 与 WP-07，共 70 行） | R-L2-05 |
 
 ---
 

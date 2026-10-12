@@ -18,10 +18,10 @@
 
 主链路：`运营人员提供平台账号与会话（Q-13 需登录走人工授权）` → `编排者` → `hotspot-collector（按周期 / 自定义关键词搜热点）`
 → `table-builder（分类汇总成表）` → `feishu-sync（同步到飞书文档）` → `title-cover-prep（标题 / 标签 / 封面）`
-→ `browser-publisher（自动登录并填写，**停在发布前**）` → **关口③ 发布授权（授权态：核对信息 → 人工点击发布）**
+→ `browser-publisher（自动登录并填写，**停在发布前**）` → `publish-guard（发布前红线自检：C-08 不自动发布 / 关口③ 未授权不放行）` → **关口③ 发布授权（授权态：核对信息 → 人工点击发布）**
 → `metrics-collector（按周期采集播放 / 互动 / 涨粉）` → `指标与流水入库` → `review-reporter（复盘报告与优化建议，回写下一轮提示词版本）`。
 
-- 侧向依赖：`skill-readme`、`feishu-sync` 与 `metrics-collector` 的汇回编排者连线。
+- 侧向依赖：`skill-readme`、`publish-guard`（支撑件，守卫任何发布路径）、`feishu-sync` 与 `metrics-collector` 的汇回编排者连线。
 - 产出物：热点表（分类 / 关键词 / 时间）、发布包（标题 / 标签 / 封面 / 账号）、**待发布态（只填不发，C-08 红线）**、复盘报告。
 - 卡片写死：输入校验 / 完成判据 / 机制说明（`publish-guard` 守卫任何发布路径）/ 红线（C-01、C-08：agent 只填不发，发布动作永远由人点击）。
 

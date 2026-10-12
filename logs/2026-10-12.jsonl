@@ -62,3 +62,9 @@
 {"ts": "2026-10-12T15:00:00+08:00", "step": "WP-05-8", "actor": "agent", "skill": "", "action": "控制台与报告页模拟测试 33 项通过", "result": "ok", "note": "tests/test_dashboard.py：数据层口径 / 坏行不致命 / 白名单与路径越界 / 静态页可达 / 页面能走到四页与报告页（累计 230 项）"}
 {"ts": "2026-10-12T15:00:00+08:00", "step": "WP-05-8", "actor": "agent", "skill": "", "action": "结构体检期望文件 82 → 95", "result": "ok", "note": "scripts/structure_check.py：expected_files=95、problems=[]"}
 {"ts": "2026-10-12T15:00:00+08:00", "step": "WP-05-8", "actor": "agent", "skill": "", "action": "文档同步与提交", "result": "ok", "note": "roster / 目录说明 / 决议 D-20~D-21 / 规格 v2.1.11 / README + tag v0.12.0-dashboard"}
+{"ts": "2026-10-12T16:00:00+08:00", "step": "WP-05-9", "actor": "agent", "skill": "", "action": "端到端测试 tests/test_e2e.py 落地：一条选题 24 步、18 个 skill 全链跑通", "result": "ok", "note": "AC-1~AC-7；13 项全部通过"}
+{"ts": "2026-10-12T16:00:00+08:00", "step": "WP-05-9", "actor": "agent", "skill": "", "action": "验收报告 docs/acceptance-report.md：逐条证据与受限项登记", "result": "ok", "note": "AC-1~AC-7；A-09 如实写明"}
+{"ts": "2026-10-12T16:00:00+08:00", "step": "WP-05-9", "actor": "agent", "skill": "", "action": "一键测试脚本 scripts/run_tests.py：9 套 243 项", "result": "ok", "note": "R-L2-02；AC-5"}
+{"ts": "2026-10-12T16:00:00+08:00", "step": "WP-05-9", "actor": "agent", "skill": "", "action": "AC-3 浏览器实测：控制台与报告页截图入库 docs/evidence/", "result": "ok", "note": "127.0.0.1:8791；报告页搜索与切换可用"}
+{"ts": "2026-10-12T16:00:00+08:00", "step": "WP-05-9", "actor": "agent", "skill": "", "action": "五张流程图同步：分发线补 publish-guard、总览图补控制台与报告页", "result": "ok", "note": "render + check 两图 9/9；browser-check 受限 A-09"}
+{"ts": "2026-10-12T16:00:00+08:00", "step": "WP-05-9", "actor": "agent", "skill": "", "action": "文档同步与提交", "result": "ok", "note": "规格 v2.1.12 / README 100% / 台账 WP-05 与 WP-12 收口 / 决议 D-22~D-23 / 讨论节点 N014 / tag v0.13.0-e2e"}

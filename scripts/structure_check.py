@@ -132,6 +132,7 @@ EXPECTED_ROOT_FILES = [
     ".dsh/skills/_shared/console.py",
     "scripts/build_log_report.py",
     "scripts/serve_dashboard.py",
+    "scripts/run_tests.py",
     "dashboard/index.html",
     "dashboard/assets/app.js",
     "dashboard/assets/style.css",
@@ -141,7 +142,10 @@ EXPECTED_ROOT_FILES = [
     "dashboard/pages/metrics.html",
     "build-log.html",
     "build-log.data.json",
+    # —— WP-05 步骤 9（端到端验收）——
+    "docs/acceptance-report.md",
     "tests/test_dashboard.py",
+    "tests/test_e2e.py",
 ]
 
 # 非 skill 的共享目录前缀（允许没有 SKILL.md）
