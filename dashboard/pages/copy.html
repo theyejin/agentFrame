@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<!-- 文件用途：文案生成页 —— 运营人员输入提示词/字数的对话框、三套候选文案对比卡与关口① 选择动作（F-01/F-02/F-03/F-05）。 -->
+<!-- 对应需求：R-L1-05（生成 3 套）、R-L1-19（侧重点互不重复）、R-L3-04（选择动作在页面完成）、R-8-03（选择必须记谁选的）、AC-3。 -->
+<!-- 维护提示：对比卡的侧重口径与 db/schema.sql 的 copy_variants.focus 一致（hook/emotion/cta）；改动要同步 _shared/console.py 的 FOCUS_LABELS。 -->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>agentFrame 运营控制台 · 文案生成</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+<script src="../assets/app.js"></script>
+<script>
+/* 区块：页面状态 */
+let current = 0; // 当前查看的任务号
+
+/* 区块：页面主体 */
+async function render() {
+  const snap = state.snapshot;
+  if (!snap) return;
+  const copyTasks = (snap.tasks || []).filter((t) => ["copy", "visual"].includes(t.stage));
+  if (!current && copyTasks.length) current = copyTasks[0].id;
+  const main = el("main", {},
+    cardDialog(snap, copyTasks), el("div", { id: "plans" }));
+  shell("copy.html", main);
+  if (current) await loadPlans();
+}
+
+/* 区块：对话框（选题 / 提示词 / 字数范围 / 类型 / 平台） */
+function cardDialog(snap, copyTasks) {
+  const taskSel = el("select", { onchange: async (e) => { current = Number(e.target.value); await loadPlans(); } },
+    ...copyTasks.map((t) => option(String(t.id), `#${t.id} ${t.topic_title || ""}（${t.target_platform || "未定"}）`)));
+  const actor = el("input", { id: "c-actor", value: "运营小李" });
+  const planNo = el("select", { id: "c-plan" }, ...[1, 2, 3].map((n) => option(String(n), `第 ${n} 套`)));
+  const task = copyTasks.find((t) => t.id === current) || {};
+  return el("div", { class: "card" },
+    el("h2", {}, "对话框：让文案写手写三套", el("span", { class: "hint", text: "提示词与字数范围取自派单时的设置（F-01/F-02）；不改冻结需求，只改这一单的输入" })),
+    el("div", { class: "grid cols-3" },
+      el("label", { class: "field" }, el("span", { text: "看哪条任务" }), taskSel),
+      el("label", { class: "field" }, el("span", { text: "选择人（记进 hitl_events）" }), actor),
+      el("label", { class: "field" }, el("span", { text: "选定套号" }), planNo)),
+    el("div", { class: "grid cols-4" },
+      el("div", { class: "stat" }, el("div", { class: "k", text: "平台" }), el("div", { text: String(task.target_platform || "—") })),
+      el("div", { class: "stat" }, el("div", { class: "k", text: "类型" }), el("div", { text: String(task.content_type || "—") })),
+      el("div", { class: "stat" }, el("div", { class: "k", text: "字数范围" }), el("div", { text: `${task.word_min || "—"} ~ ${task.word_max || "—"}` })),
+      el("div", { class: "stat" }, el("div", { class: "k", text: "当前环节" }), el("div", { text: stageTag(task.stage) }))),
+    el("div", { class: "row", style: "margin-top:12px" },
+      el("button", { class: "primary", text: "生成三套候选文案", onclick: () => generate() }),
+      el("button", { text: "选定这套（关口① confirm）", onclick: () => choose(actor, planNo) }),
+      el("button", { text: "拆 24 条分镜", onclick: () => call("storyboard-builder", "build", ["--task-id", String(current)]) }),
+      el("button", { text: "刷新", onclick: () => loadPlans() })),
+    el("div", { class: "muted", text: "选中后：可继续拆分镜 → 生成参考图 → 整图 → 切图（各步也可在「任务流转」页推进）。" }));
+}
+
+async function generate() {
+  const out = await run("copy-writer", "generate", ["--task-id", String(current)]);
+  if (out.globalError) toast(out.globalError, true);
+  state.snapshot = await get("/api/snapshot");
+  await loadPlans();
+}
+
+async function choose(actor, planNo) {
+  const who = actor.value.trim();
+  if (!who) return toast("选择人不能为空（R-8-03：必须记谁做的决定）", true);
+  const data = await get(`/api/copy?id=${current}`);
+  const snapshotJson = JSON.stringify((data.plans || []).map((p) => ({
+    plan_no: p.plan_no, focus: p.focus, title: p.title, word_count: p.word_count })));
+  const out = await call("hitl-gate", "resolve",
+    ["--task-id", String(current), "--gate", "gate1_select_copy", "--action", "confirm",
+     "--actor", who, "--plan-no", planNo.value, "--snapshot-json", snapshotJson]);
+  if (out.json && out.json.ok !== false) toast(`已选定第 ${planNo.value} 套（关卡① 决议已留痕）`);
+  state.snapshot = await get("/api/snapshot");
+  await loadPlans();
+}
+
+async function call(skill, action, args) {
+  const out = await run(skill, action, args);
+  state.snapshot = await get("/api/snapshot");
+  await loadPlans();
+  return out;
+}
+
+/* 区块：三套对比卡（F-03） */
+async function loadPlans() {
+  const box = $("#plans");
+  if (!current) { box.replaceChildren(el("div", { class: "card", text: "还没有可看的任务：先到「任务流转」页派单建任务。" })); return; }
+  let data;
+  try {
+    data = await get(`/api/copy?id=${current}`);
+  } catch (err) {
+    box.replaceChildren(el("div", { class: "card" }, el("div", { class: "tag bad", text: err.message }))); return;
+  }
+  const cards = (data.plans || []).map((p) => el("div", { class: `plan${p.plan_no === data.selected_plan ? " selected" : ""}` },
+    el("h3", {}, `方案 ${p.plan_no} · ${p.focus_label}`, el("span", { class: "hint", text: ` ${p.word_count} 字` })),
+    el("div", { class: "sub", text: p.title || "" }),
+    el("pre", { text: p.body || "（这套文案还没有正文）" }),
+    el("div", { class: "foot" },
+      el("span", { class: p.plan_no === data.selected_plan ? "tag ok" : "tag",
+        text: p.plan_no === data.selected_plan ? "已选定" : "未选定" }),
+      el("button", { text: "选这套", onclick: async () => {
+        const actor = $("#c-actor");
+        const planNo = $("#c-plan");
+        planNo.value = String(p.plan_no);
+        await choose(actor, planNo);
+      } }))));
+  box.replaceChildren(el("div", { class: "card" },
+    el("h2", {}, `任务 #${current} 的三套候选文案`,
+      el("span", { class: "hint", text: `环境：${data.stage_label} / ${data.status_label}；选定套号：${data.selected_plan || "还没选"}` })),
+    cards.length ? el("div", { class: "grid cols-3" }, ...cards)
+                 : el("div", { class: "muted", text: "这条任务还没有候选文案，点上面的「生成三套候选文案」。" })));
+}
+
+boot(render);
+</script>
+</body>
+</html>

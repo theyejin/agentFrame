@@ -223,6 +223,7 @@
 | 视频线本地能力 | `video.ffmpeg` 适配器 + `_shared/video.py` | 本地免费兜底：按镜序与逐镜时长合成成片、抽封面帧（✅ 步骤 6 已落地；Remotion 未接时自动降级到它） |
 | 分发数据线本地能力 | `browser.local-fixture` / `browser.fill-plan` / `metrics.local-fixture` 适配器 + `_shared/hotspots.py`、`_shared/metrics.py`、`_shared/publish_guard.py` | 本地免费兜底：热点读夹具采集并分类、发布只产填写清单（`submitted=false`）、指标读夹具落库；三项指标口径 `views` / `engagements` / `follower_gain` 归一（✅ 步骤 7 已落地；真实浏览器 / 飞书 API 未接时自动降级） |
 | `publish-guard` | 拦自动发布 | 任何发布相关写操作前必过；命中即阻断并记事件（✅ 步骤 7 已落地） |
+| 运营控制台 | 只读看板与操作页面（总览 / 任务流转 / 文案生成 / 发布操作 / 数据与复盘）+ 搭建过程报告页 | 页面不直连数据库、不持有平台账号凭据（R-L3-05）；写操作走本地服务的 skill 白名单；`submitted` / `can_auto_publish` 恒 `false`（C-08）（✅ WP-05 步骤 8 已落地） |
 | `task-decomposer` | topic → task 派单 | 编排者专属；一次派单必须能算清「派给谁、要什么、什么算完成」 |
 | `summary-writer` | 四线结果汇总回报 | 只汇总，不改写下游结论 |
 
@@ -278,4 +279,5 @@
 | ---- | ---- | ---- |
 | 2026-10-12 | 首版：18 岗位 + 7 支撑件，命名规则、接口字段、统一执行流程、与图对应关系 | N004 |
 | 2026-10-12 | WP-05 步骤 7：分发数据线 6 个 skill 与支撑件 `publish-guard` 落地；口径修正为「16 执行 + 2 基础设施 = 18 岗位，另 7 支撑件（25 目录）」 | N011 |
+| 2026-10-12 | WP-05 步骤 8：运营控制台五页 + 本地服务（白名单）+ 搭建过程报告页落地；支撑件新增「运营控制台」一行 | N013 |
 | 2026-10-12 | WP-07：编排者工具 `task-decomposer`、`summary-writer` 落地，25 个 skill 目录全部齐；五个 Agent 定义与 `agents/orchestrator/config.yml` 契约由运行时校验 | N012 |

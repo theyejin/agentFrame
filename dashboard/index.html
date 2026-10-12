@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!-- 文件用途：控制台首页 —— 环节看板、人工待办、发布队列、指标与热点概览、最近日志。 -->
+<!-- 对应需求：R-L3-01（本地访问）、R-L3-02（页面与字段说明）、R-L2-05（过程日志可见）、AC-3、Q-6（与 build-log 是两个独立页面）。 -->
+<!-- 维护提示：字段口径全部来自 .dsh/skills/_shared/console.py；本页只读，不改任何库表。 -->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>agentFrame 运营控制台 · 总览</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+<script src="assets/app.js"></script>
+<script>
+/* 区块：首页主体 */
+async function render() {
+  const snap = state.snapshot;
+  if (!snap) { shell("index.html", el("main", {}, el("div", { class: "card", text: "读不到数据，请确认本地服务在跑。" }))); return; }
+
+  const tasks = snap.tasks || [];
+  const running = tasks.filter((t) => t.status === "running").length;
+  const waiting = tasks.filter((t) => t.status === "waiting_human").length;
+  const totals = (snap.metrics && snap.metrics.totals) || {};
+
+  const main = el("main", {},
+    /* 区块：关键数字 */
+    el("div", { class: "grid cols-4" },
+      stat(snap.tasks.length, "任务总数"),
+      stat(running, "进行中"),
+      stat(snap.gate_todos.length, "待人工决议"),
+      stat(snap.publish_queue.length, "发布队列"),
+      stat(totalOf(totals, "views"), "当期播放量"),
+      stat(totalOf(totals, "engagements"), "当期互动量"),
+      stat(totalOf(totals, "follower_gain"), "当期涨粉"),
+      stat((snap.logs && snap.logs.count) || 0, "过程日志条数")),
+
+    /* 区块：环节看板（泳道计数） */
+    el("div", { class: "card" },
+      el("h2", {}, "环节看板", el("span", { class: "hint", text: "字段：环节 / 任务数 / 进行中 / 等人工（口径见 dashboard/README.md）" })),
+      table(["环节", "任务数", "进行中", "等人工"],
+        (snap.stage_board || []).map((row) => [stageTag(row.stage), row.total, row.running, row.waiting_human]))),
+
+    /* 区块：人工待办 */
+    el("div", { class: "card" },
+      el("h2", {}, "人工待办（关口）", el("span", { class: "hint", text: "任务停在 waiting_human 且关口还没有决议；决议请到「任务流转」页用 hitl-gate" })),
+      table(["任务", "选题", "环节", "关口", "处理人", "最近事件"],
+        (snap.gate_todos || []).map((row) => [
+          el("div", {}, el("b", { text: `#${row.task_id}` }),
+            el("div", { class: "sub", text: STATUS_LABEL[row.status] || row.status })),
+          row.topic_title || "—", stageTag(row.stage), row.gate_label || "—",
+          row.operator || "—", timeText(row.last_at || row.updated_at)])),
+      el("div", { class: "row", style: "margin-top:10px" },
+        el("button", { text: "刷新待办", onclick: () => location.reload() }),
+        el("a", { href: "pages/copy.html" }, el("button", { text: "去文案生成页" })),
+        el("a", { href: "pages/tasks.html" }, el("button", { text: "去任务流转页" })))),
+
+    /* 区块：发布队列（C-08：不允许自动发布） */
+    el("div", { class: "card" },
+      el("h2", {}, "发布队列", el("span", { class: "hint", text: "成片与封面齐备、停在发布环节的任务；系统只填写，提交由真人在关口③ 授权后手工完成（C-08）" })),
+      table(["任务", "选题", "平台", "分镜/成片", "填写状态", "发布链接"],
+        (snap.publish_queue || []).map((row) => [
+          `#${row.task_id}`, row.title || "—", row.target_platform || "—",
+          `${row.shots || 0} / ${row.videos || 0}`, row.record_label || "—",
+          row.publish_url ? el("span", { class: "mono", text: row.publish_url }) : el("span", { class: "muted", text: "未回填" })])),
+      el("div", { class: "row", style: "margin-top:10px" }, el("a", { href: "pages/publish.html" }, el("button", { text: "去发布操作页" })))),
+
+    /* 区块：指标走势 */
+    el("div", { class: "card" },
+      el("h2", {}, "指标走势", el("span", { class: "hint", text: "按周期聚合：播放量 / 互动量 / 涨粉数 / 互动率（互动量 ÷ 播放量）" })),
+      table(["周期", "平台", "播放量", "互动量", "涨粉数", "互动率"],
+        (snap.metrics_trend || []).map((row) => [
+          `${row.period_start} ~ ${row.period_end}`, (row.platforms || []).join("、") || "—",
+          num(row.views), num(row.engagements), num(row.follower_gain), `${row.engagement_rate}%`])),
+      el("div", { class: "row", style: "margin-top:10px" }, el("a", { href: "pages/metrics.html" }, el("button", { text: "去数据与复盘页" })))),
+
+    /* 区块：热点来源 */
+    el("div", { class: "card" },
+      el("h2", {}, "热点来源", el("span", { class: "hint", text: "最近批次与分类分布；找选题从这里开始" })),
+      el("div", { class: "grid cols-2" },
+        table(["批次", "关键词", "来源", "条数", "采集时间"],
+          ((snap.hotspots || {}).batches || []).map((b) => [`#${b.id} ${b.batch_key}`, b.keyword || "—",
+            b.source || "—", b.items_count || 0, timeText(b.collected_at)])),
+        table(["分类", "条数", "热度合计"],
+          ((snap.hotspots || {}).categories || []).map((c) => [c.category, c.n, num(c.heat)])))),
+
+    /* 区块：最近日志 */
+    el("div", { class: "card" },
+      el("h2", {}, "最近过程日志", el("span", { class: "hint", text: `共 ${(snap.logs || {}).count || 0} 条；完整版见搭建过程报告页` })),
+      table(["时间", "步骤", "技能", "动作", "结果"],
+        (((snap.logs || {}).latest) || []).slice(0, 12).map((row) => [
+          timeText(row.ts || row.at || ""), row.step || "—", row.skill || "—", row.action || row.title || "—",
+          tag(row.result || "—", row.result === "ok" ? "ok" : (row.result ? "bad" : "")) ])),
+      el("div", { class: "row", style: "margin-top:10px" },
+        el("a", { href: "../build-log.html" }, el("button", { text: "打开搭建过程报告页" })),
+        el("span", { class: "muted", text: "报告页由 python3 scripts/build_log_report.py 重新生成（仓库根目录）" }))));
+  shell("index.html", main);
+}
+
+/* 区块：小工具 */
+function totalOf(totals, key) { return num((totals || {})[key]); }
+function num(value) { return Number(value || 0).toLocaleString("zh-CN"); }
+
+boot(render);
+</script>
+</body>
+</html>

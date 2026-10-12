@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<!-- 文件用途：数据与复盘页 —— 三项指标汇总与走势、指标采集、热点来源与汇总表、复盘报告生成与查看（F-14/F-15）。 -->
+<!-- 对应需求：R-L3-04（数据查看可在页面完成）、三项指标唯一口径（播放量/互动量/涨粉数）、Q-5（未接服务降级不报错）、AC-3。 -->
+<!-- 维护提示：指标口径由 _shared/metrics.py 定义，本页只做展示与触发；新增口径要同步 dashboard/README.md 的字段说明。 -->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>agentFrame 运营控制台 · 数据与复盘</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+<script src="../assets/app.js"></script>
+<script>
+/* 区块：页面状态 */
+let current = 0;
+
+async function render() {
+  const snap = state.snapshot;
+  if (!snap) return;
+  const reviewTasks = (snap.tasks || []).filter((t) => ["publish", "metrics", "review", "closed"].includes(t.stage));
+  if (!current && reviewTasks.length) current = reviewTasks[0].id;
+  const main = el("main", {},
+    cardMetrics(snap), cardTrend(snap), cardCollect(reviewTasks), cardHotspots(snap), cardReview(reviewTasks));
+  shell("metrics.html", main);
+  if (current) await loadReview();
+}
+
+/* 区块：指标汇总卡 */
+function cardMetrics(snap) {
+  const t = (snap.metrics && snap.metrics.totals) || {};
+  const note = (snap.metrics && snap.metrics.note) || "";
+  const period = snap.metrics && snap.metrics.period_start
+    ? `${snap.metrics.period_start} ~ ${snap.metrics.period_end}` : "还没有采到周期数据";
+  return el("div", { class: "card" },
+    el("h2", {}, "当期指标", el("span", { class: "hint", text: `口径：播放量 / 互动量（赞藏评合计）/ 涨粉数；互动率 = 互动量 ÷ 播放量。周期：${period}` })),
+    note ? el("div", { class: "tag warn", text: note }) : null,
+    el("div", { class: "grid cols-4" },
+      stat(num(t.views), "播放量"), stat(num(t.engagements), "互动量"),
+      stat(num(t.follower_gain), "涨粉数"), stat(`${t.engagement_rate || 0}%`, "互动率")),
+    el("div", { class: "muted", text: "来源可追溯：每条指标都记录了 source（manual/browser/api/export）与采集时间，见「任务流转」页的轨迹面板。" }));
+}
+
+/* 区块：按周期走势 */
+function cardTrend(snap) {
+  return el("div", { class: "card" },
+    el("h2", {}, "按周期走势", el("span", { class: "hint", text: "每期一行，含覆盖的平台；用于对比选题表现" })),
+    table(["周期", "平台", "播放量", "互动量", "涨粉数", "互动率"],
+      (snap.metrics_trend || []).map((row) => [`${row.period_start} ~ ${row.period_end}`,
+        (row.platforms || []).join("、") || "—", num(row.views), num(row.engagements),
+        num(row.follower_gain), `${row.engagement_rate}%`]), "还没有指标数据：在下面采一期"));
+}
+
+/* 区块：采集表单 */
+function cardCollect(tasks) {
+  const task = el("input", { id: "m-task", value: current ? String(current) : "", placeholder: "任务号" });
+  const values = el("input", { id: "m-values", placeholder: "人工录入，例：播放量=1200,互动量=88,涨粉=12" });
+  const fixture = el("input", { id: "m-fixture", value: "templates/mock/metrics.v1.json", placeholder: "离线夹具（未接浏览器时用）" });
+  const period = el("input", { id: "m-period", placeholder: "周期起始，例 2026-10-05" });
+  return el("div", { class: "card" },
+    el("h2", {}, "采集一期指标", el("span", { class: "hint", text: "人工录入走 human 适配器；夹具走 metrics 降级链（浏览器抓取未接时用，Q-5）" })),
+    el("div", { class: "grid cols-4" },
+      el("label", { class: "field" }, el("span", { text: "任务号" }), task),
+      el("label", { class: "field" }, el("span", { text: "人工录入的三项" }), values),
+      el("label", { class: "field" }, el("span", { text: "或：夹具文件" }), fixture),
+      el("label", { class: "field" }, el("span", { text: "周期起始" }), period)),
+    el("div", { class: "row" },
+      el("button", { class: "primary", text: "采集", onclick: async () => {
+        const args = ["--task-id", String(task.value || current || "")];
+        if (!args[1]) return toast("任务号不能为空", true);
+        if (values.value.trim()) args.push("--values", values.value.trim());
+        else if (fixture.value.trim()) args.push("--fixture", fixture.value.trim());
+        else return toast("要么填人工录入，要么给夹具文件", true);
+        if (period.value.trim()) args.push("--period-start", period.value.trim());
+        await call("metrics-collector", "collect", args);
+      } }),
+      el("button", { text: "生成复盘报告", onclick: async () => {
+        const id = String(task.value || current || "");
+        if (!id) return toast("任务号不能为空", true);
+        current = Number(id);
+        await call("review-reporter", "report", ["--task-id", id]);
+      } })),
+    el("div", { class: "muted", text: "采集后任务会从「发布」推进到「指标」；生成复盘后推进到「复盘」。" }));
+}
+
+/* 区块：热点来源与汇总 */
+function cardHotspots(snap) {
+  const kw = el("input", { id: "h-kw", placeholder: "关键词，例：打工人 春节" });
+  const batch = el("input", { id: "h-batch", placeholder: "批次号（同步时可选）" });
+  const hs = snap.hotspots || {};
+  return el("div", { class: "card" },
+    el("h2", {}, "热点来源与汇总表", el("span", { class: "hint", text: "采集 → 按分类汇总（Markdown + CSV）→ 同步到飞书（未接 API 时降级为本地导出）" })),
+    el("div", { class: "grid cols-2" },
+      table(["批次", "关键词", "来源", "条数", "表文件", "采集时间"],
+        (hs.batches || []).map((b) => [el("span", { class: "mono", text: b.batch_key }), b.keyword || "—",
+          b.source || "—", b.items_count || 0, b.table_path ? el("span", { class: "mono", text: b.table_path }) : "—",
+          timeText(b.collected_at)]), "还没有热点批次"),
+      table(["分类", "条数", "热度合计"], (hs.categories || []).map((c) => [c.category, c.n, num(c.heat)]), "还没有热点条目")),
+    el("div", { class: "grid cols-2", style: "margin-top:10px" },
+      el("label", { class: "field" }, el("span", { text: "关键词（采集用；留空用离线样例词）" }), kw),
+      el("label", { class: "field" }, el("span", { text: "批次号（同步用，可留空取最新）" }), batch)),
+    el("div", { class: "row" },
+      el("button", { text: "采集热点（离线样例）", onclick: () => call("hotspot-collector", "collect", [
+        "--keyword", (kw.value.trim() || "打工人 春节"), "--fixture", "templates/mock/hotspot-source.v1.json"]) }),
+      el("button", { text: "汇总成表格（最新批次）", onclick: () => call("table-builder", "build", ["--latest"]) }),
+      el("button", { text: "同步到飞书文档", onclick: () => call("feishu-sync", "sync",
+        batch.value.trim() ? ["--batch", batch.value.trim()] : []) }))); // 不传批次即取最近一批
+}
+
+/* 区块：复盘报告 */
+function cardReview(tasks) {
+  const sel = el("select", { onchange: async (e) => { current = Number(e.target.value); await loadReview(); } },
+    ...tasks.map((t) => option(String(t.id), `#${t.id} ${t.topic_title || ""}（${STAGE_LABEL[t.stage] || t.stage}）`)));
+  return el("div", { class: "card" },
+    el("h2", {}, "复盘报告", el("span", { class: "hint", text: "按当期指标出数据复盘与优化建议；只建议，不改提示词（提示词改版要人来做）" })),
+    el("label", { class: "field" }, el("span", { text: "看哪条任务" }), sel),
+    el("div", { id: "review" }, el("div", { class: "muted", text: "还没有选任务" })));
+}
+
+async function loadReview() {
+  const box = $("#review");
+  if (!current) return;
+  try {
+    const data = await get(`/api/artifacts?id=${current}&kind=report`);
+    const reports = (data.artifacts || []).filter((a) => a.role === "review" || a.role === "summary");
+    box.replaceChildren(reports.length
+      ? el("div", {}, ...reports.reverse().map((a) => el("div", {},
+          el("h3", {}, `${a.role === "summary" ? "汇总回报" : "复盘报告"} · ${a.created_at}`,
+            el("span", { class: "hint", text: ` ${a.model_version || ""} / ${a.prompt_version || ""}` })),
+          el("div", { class: "mono", text: a.path }),
+          el("pre", { class: "out", text: (a.text || "").slice(0, 6000) }))))
+      : el("div", { class: "muted", text: "这条任务还没有复盘报告：先采指标，再点「生成复盘报告」。" }));
+  } catch (err) {
+    box.replaceChildren(el("div", { class: "tag bad", text: err.message }));
+  }
+}
+
+async function call(skill, action, args) {
+  const out = await run(skill, action, args);
+  state.snapshot = await get("/api/snapshot");
+  await loadReview();
+  return out;
+}
+
+function num(value) { return Number(value || 0).toLocaleString("zh-CN"); }
+
+boot(render);
+</script>
+</body>
+</html>

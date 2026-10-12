@@ -47,7 +47,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `agents/` | Agent 定义 | 编排者与四条环节 Agent 的职责、派单契约、边界；`orchestrator/config.yml` 是契约唯一事实源 | Skill 实现、运行期数据 | **WP-07（已建成）** |
 | `.dsh/skills/` | Skill 模块 | 25 个 skill（18 执行岗 + 7 支撑件）+ `_shared/` 共享运行库，每个 skill 只做一件事 | 流程判断、跨 skill 编排 | WP-05 建骨架与共享库；**步骤 3 落地 2 个**；WP-07 起其余 23 个（**WP-07 全部 25 个目录已落地**） |
 | `db/` | 数据库 | `schema.sql` 唯一结构来源、`migrations/` 迁移、`seed/` 种子数据 | `*.db` 二进制（不入库） | **WP-05 步骤 2（已建成）** |
-| `dashboard/` | 运营控制台 | L3 多人任务管理页面 + L2 执行轨迹报告页 | 业务逻辑实现（页面只调本地数据与 Agent 接口） | WP-08 / WP-11 |
+| `dashboard/` | 运营控制台 | L3 任务管理页面（五页）+ L2 搭建过程报告页的入口 | 业务逻辑（页面只经本地服务调 skill；不直连数据库、不持凭据） | WP-05 步骤 8（**已建成**，覆盖 WP-08 / WP-11） |
 | `workflows/` | 流程编排定义 | 四条线流程与端到端流程：每步交给哪个 skill、何时推进 | Skill 内部逻辑（在 skill 的 README.md） | WP-07 |
 | `templates/` | 模板库 | 适配器登记表（19 条 / 7 类）、提示词模板、平台预设模板 | 密钥、账号信息 | **WP-05 步骤 3（适配器与提示词已建成）**；平台模板文件 WP-09 |
 | `scripts/` | 辅助脚本 | `structure_check.py` 结构体检、`db_init.py` 建库、`seed_adapters.py` 适配器同步、`build_log_report.py` 报告生成 | 业务实现 | WP-05 起 |
@@ -68,6 +68,8 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `.env.example` | 环境变量**样例**（只有键名与说明，绝无真实值） | C-05、R-L2-14 |
 | `docs/README.md` | 文档区索引 | R-L1-14 |
 | `.archify/README.md` | 图表区索引与图表命名/交付约定 | R-L2-11~13、R-L2-18 |
+| `build-log.html` | 搭建过程报告页（左右分栏 / 日期倒序 / 搜索与分类筛选 / 点击看轨迹；数据内联，双击可开） | R-L2-05、R-L2-06 |
+| `build-log.data.json` | 报告页的结构化数据源（每次由生成脚本重写，可追溯） | R-L2-06 |
 
 ### 3.2 `docs/`
 
@@ -98,7 +100,8 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `structure_check.py` | 目录结构体检：目录/README/说明文档三者一致性 + 禁止项扫描 | R-L1-14、R-L2-09 |
 | `db_init.py` | 建库脚本：按 `db/schema.sql`（或 `--from-migrations`）建库并灌种子 | R-L1-04、§7、R-8-01 |
 | `seed_adapters.py` | 把 `templates/adapters/registry.json` 同步进 `adapter_registry` 表；`--check` 只比对不写库 | R-L2-16、R-L2-17 |
-| `build_log_report.py` | 扫 `logs/` 生成 `dashboard/build-log.html` 报告页 | R-L2-05、R-L2-06（WP-08） |
+| `build_log_report.py` | 扫 `logs/*.jsonl` 生成**仓库根**的 `build-log.html` + `build-log.data.json`（`--check` 只校验、`--json` 机读） | R-L2-05、R-L2-06 |
+| `serve_dashboard.py` | 控制台本地服务：只监听 `127.0.0.1:8787`，`/api/*` 取数与调 skill；写操作走白名单，禁传 `--db` / `--allow-paid` | R-L3-01~05、C-09 |
 
 ### 3.5 `templates/`（适配器登记表 + 提示词模板）
 
@@ -139,6 +142,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `_shared/hotspots.py` | 热点批次与条目：解析 / 校验 / 汇总（分类计数与热度）/ 渲染 md 与 csv 表；批次写入前先查重 | R-7-04、FLOW-7 |
 | `_shared/metrics.py` | 三项指标口径归一（播放 / 互动 / 涨粉）、别名解析、聚合与互动率计算 | R-7-05、FLOW-9 |
 | `_shared/publish_guard.py` | 发布包组装与红线检查（C-08 不自动发布 / C-10 关口③ 授权 / C-01 绝对化用语）、发布记录读写（`published` 只能由人回填） | C-01、C-08、C-10、R-7-05 |
+| `_shared/console.py` | **控制台与报告页的只读数据层**：环节/状态/关口中文口径、任务总览与轨迹、环节看板、人工待办、发布队列、指标（互动率按百分比）、热点、日志读取（无任何写库操作） | R-L2-05、R-L3-02、R-L3-05 |
 | `_shared/README.md` | 共享库说明（**不是 skill**：无 `SKILL.md`，DSH 不加载） | R-L1-20 |
 | `prompt-registry/{SKILL.md,README.md,run.py}` | 提示词登记、渲染、自检、版本对照 | R-7-03 |
 | `llm-adapter/{SKILL.md,README.md,run.py}` | 一切外部服务调用的统一入口（7 类 kind） | R-L2-14~17 |
@@ -196,6 +200,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
+| `test_dashboard.py` | 控制台与报告页模拟测试 33 项：数据层口径（环节/状态/关口标签、互动率百分比、轨迹与文案卡）/ 坏行日志不致命 / 静态页可达与越界路径 404 / 白名单拒绝未知 skill 与动作 / 页面能走到四页与报告页 / `build_log_report.py` 与 `serve_dashboard.py --check` 命令行 | R-L2-02、R-L2-05、R-L2-06、R-L3-01~05、C-08、Q-6 |
 | `test_db.py` | 数据库模拟测试 28 项：结构可建 / 迁移链与 schema 一致 / 种子幂等 / 24 条分镜与编号唯一 / 3 套文案与侧重 / 软删 / 枚举与触发器 / 视图可用 / 建库脚本可用 | R-L2-02、R-L1-19 |
 | `test_adapters.py` | 适配器层模拟测试 36 项：登记表自洽 / 降级链行为 / 零付费门禁（C-09）/ 人工兜底 / 提示词模板渲染与自检 / 同步与两个 skill 的命令行 | R-L2-02、R-L2-14~17、C-09 |
 | `test_orchestrator.py` | 编排者模拟测试 33 项：五个 Agent 定义与契约三段齐备 / config 声明的 Skill 目录都存在 / 关口与 `recording.GATES` 一致 / 环节路由覆盖七个 stage / 契约自检能挑出缺段与假 Skill / dispatch 建话题任务与派单书留痕 / 平台模板字数与非法输入 / plan 按当前环节路由 / 汇总五项与只读性 / 缺口照实写 / 不代答关口 / 自检拦下过短回报 / `_roles` 只认 `meta.role` | R-L2-02、R-L1-05~09、R-L1-18、R-L1-19 |
@@ -210,9 +215,22 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
 | `YYYY-MM-DD.jsonl` | 当天执行流水，每行一条 JSON：`{ts, step, actor, skill, action, result, note}` | R-L2-05 |
-| `2026-10-12.jsonl` | 本项目首日记录（N001–N012、WP-05 步骤 1–7 与 WP-07，共 57 行） | R-L2-05 |
+| `2026-10-12.jsonl` | 本项目首日记录（N001–N013、WP-05 步骤 1–8 与 WP-07，共 64 行） | R-L2-05 |
 
 ---
+
+### 3.11 `dashboard/`（运营控制台与报告页入口）
+
+| 文件 | 用途 | 对应需求 |
+| ---- | ---- | -------- |
+| `index.html` | 控制台首页（总览）：任务与待办、发布队列、指标、热点、最近日志 | R-L3-01、R-L3-02 |
+| `pages/tasks.html` | 任务流转页：建任务、领单/推进/回报、关口决议、任务轨迹（产物与关口事件） | R-L3-04、§8.2 |
+| `pages/copy.html` | 文案生成页（F-01~F-03）：对话框 + 三套候选对比卡 + 关口① 选定 | §8.1、§8.3 |
+| `pages/publish.html` | 发布操作页：准备发布包、红线自检、关口③ 授权、人工发布后回填链接（不自动发布） | C-08、C-10、§8.2 |
+| `pages/metrics.html` | 数据与复盘页：三项指标与走势、热点采集与汇总、复盘报告 | R-7-04、R-7-05、§8.2 |
+| `assets/app.js` | 前端公共库（取数、按钮、表格、提示、顶栏），代码保留区块注释 | R-L2-08 |
+| `assets/style.css` | 统一样式（区块注释齐全，新页面复用这些类） | R-L2-08 |
+| `README.md` | 控制台与报告页说明：打开方式、字段口径、页面流转、设计理由、接口与白名单 | R-L3-02、R-L3-03 |
 
 ## 4. 命名与注释规则
 

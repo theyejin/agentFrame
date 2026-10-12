@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<!-- 文件用途：发布操作页 —— 准备发布包与填写清单、红线自检、关口③ 授权、人工发布后回填链接（F-11/F-12/F-13）。 -->
+<!-- 对应需求：R-L3-04（发布操作可在页面完成）、C-08（系统只填写、绝不自动发布）、C-10（发布授权必须真人给）、Q-5、AC-3。 -->
+<!-- 维护提示：页面上任何按钮都不允许调起 --live 之外的发布动作；「发布」这件事只有真人手工做，页面只做记录。 -->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>agentFrame 运营控制台 · 发布操作</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+<script src="../assets/app.js"></script>
+<script>
+/* 区块：页面状态 */
+let current = 0;
+
+async function render() {
+  const snap = state.snapshot;
+  if (!snap) return;
+  const queue = snap.publish_queue || [];
+  if (!current && queue.length) current = queue[0].task_id;
+  const main = el("main", {},
+    el("div", { class: "card" },
+      el("h2", {}, "发布纪律（C-08 / C-10）"),
+      el("div", { class: "flowline" },
+        tag("系统只填写", "accent"), "→", tag("真人核对并授权（关口③）", "warn"), "→",
+        tag("真人手工点发布", "warn"), "→", tag("回填链接", "ok")),
+      el("div", { class: "muted", style: "margin-top:8px",
+        text: "本页不会、也无法替你把内容发出去：填写清单里 submitted 恒为 false；要发布只能你本人到平台后台操作，再回来回填链接。" })),
+    cardQueue(queue), cardActions(), el("div", { id: "package" }));
+  shell("publish.html", main);
+  if (current) await loadPackage();
+}
+
+/* 区块：发布队列表（来自视图 v_pending_publish） */
+function cardQueue(queue) {
+  return el("div", { class: "card" },
+    el("h2", {}, "发布队列", el("span", { class: "hint", text: "字段：任务 / 选题 / 平台 / 分镜数 / 成片数 / 填写状态 / 最近授权时间 / 发布链接" })),
+    table(["任务", "选题", "平台", "分镜", "成片", "填写状态", "最近授权", "发布链接"],
+      queue.map((row) => [
+        el("div", {}, el("b", { text: `#${row.task_id}` }),
+          el("div", { class: "sub", text: STATUS_LABEL[row.task_status] || row.task_status || "" })),
+        row.title || "—", row.target_platform || "—", row.shots || 0, row.videos || 0,
+        row.record_label || "—", timeText(row.last_auth_at),
+        el("div", {}, row.publish_url ? tag("已回填", "ok") : tag("未回填", ""),
+          el("button", { text: "选中", onclick: () => { current = row.task_id; $("#p-task").value = row.task_id; loadPackage(); } }))]),
+      "发布队列为空：任务必须先出成片与封面（视频线），才会进入这里"));
+
+}
+
+/* 区块：操作面板 */
+function cardActions() {
+  const task = el("input", { id: "p-task", placeholder: "任务号" });
+  const actor = el("input", { id: "p-actor", value: "运营小李" });
+  const account = el("input", { id: "p-account", placeholder: "账号标签（只记标签，不存密码）" });
+  const url = el("input", { id: "p-url", placeholder: "发布后的作品链接" });
+  return el("div", { class: "card" },
+    el("h2", {}, "操作", el("span", { class: "hint", text: "全部经本地服务调 skill；页面上不保存任何账号密码" })),
+    el("div", { class: "grid cols-4" },
+      el("label", { class: "field" }, el("span", { text: "任务号" }), task),
+      el("label", { class: "field" }, el("span", { text: "操作人（真人）" }), actor),
+      el("label", { class: "field" }, el("span", { text: "账号标签" }), account),
+      el("label", { class: "field" }, el("span", { text: "发布链接" }), url)),
+    el("div", { class: "row" },
+      el("button", { class: "primary", text: "准备发布（组装包 + 填写清单）", onclick: async () => {
+        const id = need(task);
+        await call("browser-publisher", "prepare", ["--task-id", id,
+          ...(account.value.trim() ? ["--account-label", account.value.trim()] : [])]);
+      } }),
+      el("button", { text: "红线自检", onclick: () => call("publish-guard", "check", ["--task-id", need(task)]) }),
+      el("button", { text: "按「真要发布」自检（--live）", onclick: () => call("publish-guard", "check", ["--task-id", need(task), "--live"]) }),
+      el("button", { text: "关口③ 授权（真人确认）", onclick: async () => {
+        const who = actor.value.trim();
+        if (!who) return toast("授权人不能为空（C-10：授权必须由真人给出）", true);
+        await call("hitl-gate", "resolve", ["--task-id", need(task), "--gate", "gate3_publish_auth",
+          "--action", "confirm", "--actor", who]);
+      } }),
+      el("button", { text: "回填发布结果", onclick: async () => {
+        const who = actor.value.trim();
+        if (!who) return toast("回填必须写发布人（R-8-03）", true);
+        await call("browser-publisher", "mark-published", ["--task-id", need(task), "--actor", who,
+          ...(url.value.trim() ? ["--url", url.value.trim()] : [])]);
+      } }),
+      el("button", { text: "看填写清单", onclick: () => loadPackage() })));
+
+}
+
+function need(input) {
+  const value = (input.value || current || "").toString().trim();
+  if (!value) { toast("先填任务号（或在队列表里点「选中」）", true); throw new Error("no task"); }
+  input.value = value;
+  current = Number(value);
+  return value;
+}
+
+async function call(skill, action, args) {
+  const out = await run(skill, action, args);
+  state.snapshot = await get("/api/snapshot");
+  await loadPackage();
+  return out;
+}
+
+/* 区块：发布包与填写清单正文 */
+async function loadPackage() {
+  const box = $("#package");
+  if (!current) { box.replaceChildren(); return; }
+  try {
+    const data = await get(`/api/artifacts?id=${current}`);
+    const pick = (data.artifacts || []).filter((a) => a.role === "package" || a.kind === "publish_package");
+    box.replaceChildren(el("div", { class: "card" },
+      el("h2", {}, `任务 #${current} 的发布包与填写清单`, el("span", { class: "hint", text: "只读展示；填写清单里 submitted 必须是 false" })),
+      pick.length ? el("div", { class: "grid cols-2" }, ...pick.map((a) => el("div", {},
+        el("h3", {}, `${a.kind} · ${a.role || "无角色"}`, el("span", { class: "hint", text: ` ${a.model_version || ""}` })),
+        el("div", { class: "mono", text: a.path }),
+        el("pre", { class: "out", text: (a.text || "（读不到正文）").slice(0, 4000) }))))
+        : el("div", { class: "muted", text: "这条任务还没有发布包：先点「准备发布」。" })));
+  } catch (err) {
+    box.replaceChildren(el("div", { class: "card" }, el("div", { class: "tag bad", text: err.message })));
+  }
+}
+
+boot(render);
+</script>
+</body>
+</html>

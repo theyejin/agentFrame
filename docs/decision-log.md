@@ -27,6 +27,9 @@
 | D-18 | 完成判据必须用最小词汇表写（`count` / `ids_continuous` / `unique` / `in_range` / `all_resolution_equal` / `file_exists` / `non_empty` / `enum_in` / `no_auto_publish`），不许自由发挥文字 —— 这样「什么算完成」可以被机器读，而不是只靠人理解 | N012 | 结构级 |
 | D-19 | 编排者的两个工具各只有一个实现：`task-decomposer`（建话题与任务、产派单书、按任务当前环节路由）与 `summary-writer`（只读汇总五项：当前环节 / 已完成步骤 / 待办关口 / 关键产物 / 下一步找谁）。派单书按 `kind=manifest` + `meta.role=dispatch` + `prompt_version='none'` 留痕，并**不算内容产物**（汇总回报里按 kind 排除 `manifest`）；汇总缺口照实写（没指标就写「本期还没有指标」，挂在关口上写「有 N 个关口待人工决议」但绝不代答） | N012 | 可低成本变更 |
 
+| D-20 | 控制台的读写边界写死在两处：页面**只读**数据层 `_shared/console.py`（口径只写一遍：环节 / 状态 / 关口中文标签、互动率 = 互动量 ÷ 播放量），**写操作一律经本地服务调 skill 白名单** `RUN_WHITELIST`，页面传来的 `--db` / `--allow-paid` 一律被拒 —— 页面既不能换库，也不能绕开零付费门禁（C-09）；服务只监听 127.0.0.1 | N013 | 可低成本变更 |
+| D-21 | build-log 报告页放在**仓库根目录**（R-L2-06），由 `scripts/build_log_report.py` 从 `logs/*.jsonl` 生成 `build-log.html` + 可追溯的 `build-log.data.json`，并把数据内联进 HTML（`file://` 双击也能看）；它与控制台是**两个独立页面**（Q-6），控制台首页只放入口链接 —— 报告页与库解耦，日志坏行不致命 | N013 | 结构级 |
+
 ## 维护提示
 
 - 每次讨论节点收尾时，把新定下来的事项追加到本表（R-D-01、R-D-03）。

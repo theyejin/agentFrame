@@ -128,6 +128,20 @@ EXPECTED_ROOT_FILES = [
     ".dsh/skills/summary-writer/SKILL.md",
     ".dsh/skills/summary-writer/README.md",
     ".dsh/skills/summary-writer/run.py",
+    # —— WP-05 步骤 8（控制台与搭建过程报告页）——
+    ".dsh/skills/_shared/console.py",
+    "scripts/build_log_report.py",
+    "scripts/serve_dashboard.py",
+    "dashboard/index.html",
+    "dashboard/assets/app.js",
+    "dashboard/assets/style.css",
+    "dashboard/pages/copy.html",
+    "dashboard/pages/tasks.html",
+    "dashboard/pages/publish.html",
+    "dashboard/pages/metrics.html",
+    "build-log.html",
+    "build-log.data.json",
+    "tests/test_dashboard.py",
 ]
 
 # 非 skill 的共享目录前缀（允许没有 SKILL.md）
