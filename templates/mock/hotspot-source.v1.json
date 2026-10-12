@@ -1,0 +1,15 @@
+{
+  "_comment": "离线热点源夹具：模拟公开源页面上抓到的原始条目（标题 + 链接），分类由 hotspot-summarize 提示词给出。",
+  "source": "公开热搜榜（离线夹具）",
+  "items": [
+    {"title": "打工人春节返乡被亲戚追问工资", "source_url": "https://example.com/hot/1001", "rank": 1},
+    {"title": "三招拆解爆款短视频标题", "source_url": "https://example.com/hot/1002", "rank": 2},
+    {"title": "某综艺名场面刷屏引发站队", "source_url": "https://example.com/hot/1003", "rank": 3},
+    {"title": "新手做账号最容易踩的五个坑", "source_url": "https://example.com/hot/1004", "rank": 4},
+    {"title": "年轻人为什么不爱参加同学会", "source_url": "https://example.com/hot/1005", "rank": 5},
+    {"title": "一条视频看懂关税对日用品价格的影响", "source_url": "https://example.com/hot/1006", "rank": 6},
+    {"title": "凌晨四点的早餐摊夫妻", "source_url": "https://example.com/hot/1007", "rank": 7},
+    {"title": "手机相册整理的三步法", "source_url": "https://example.com/hot/1008", "rank": 8},
+    {"title": "【广告】点击领取免费流量包", "source_url": "https://example.com/ad/1", "rank": 9}
+  ]
+}

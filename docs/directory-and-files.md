@@ -104,17 +104,22 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
-| `adapters/registry.json` | **适配器登记表**：7 类服务共 19 条声明（能力 / 是否要密钥 / 是否计费 / 失败特征 / 降级顺序 / 是否已接入）。换服务只改这里 | R-L2-14、R-L2-16 |
+| `adapters/registry.json` | **适配器登记表**：7 类服务共 **23** 条声明（能力 / 是否要密钥 / 是否计费 / 失败特征 / 降级顺序 / 是否已接入）。换服务只改这里 | R-L2-14、R-L2-16 |
 | `prompts/copy-generate.md` | 文案生成提示词模板 **v2**（3 套侧重点用 `hook` / `emotion` / `cta` 键），`used_by: copy-writer` | R-7-03、R-L1-05 |
 | `prompts/storyboard-split.md` | 分镜拆解提示词模板 **v2**（每行 `NN \| 画面描述 \| 镜头提示`，正好 24 条），`used_by: storyboard-builder` | R-7-03、R-L1-19 |
 | `prompts/review-report.md` | 复盘报告提示词模板，`used_by: review-reporter` | R-7-03、FLOW-8 |
 | `prompts/image-reference.md` | 参考图提示词模板 **v1**，`used_by: reference-image-builder` | R-7-03、FLOW-2 |
 | `prompts/image-grid.md` | 整图提示词模板 **v1**（只输出一张 6×4 整图），`used_by: grid-image-builder` | R-7-03、FLOW-2、Q-11 |
 | `prompts/publish-prep.md` | 发布准备提示词模板 **v1**（三条标题 + 标签 + 封面），`used_by: title-cover-prep` | R-7-03、R-8-01、FLOW-6 |
+| `prompts/hotspot-summarize.md` | 热点摘要与归类提示词模板 **v1**（每行 `标题 \| 分类 \| 热度 \| 链接`），`used_by: hotspot-collector` | R-7-03、FLOW-7 |
 | `platforms/` | 平台预设模板文件（字数区间/标题写法/标签数/封面比例）；数据已进 `db/seed/0001_platform_templates.sql` | R-8-01、Q-18 |
 | `mock/copy-generate.v2.txt` | 离线样例：3 套候选文案（336/316/352 字，落在默认 300–500 区间） | R-L2-02 |
 | `mock/storyboard-split.v2.txt` | 离线样例：24 行分镜（编号 01–24 连续） | R-L2-02 |
 | `mock/publish-prep.v1.txt` | 离线样例：标题 1/2/3 + 5 个标签 + 封面文案（供发布准备离线演练） | R-L2-02、R-8-01 |
+| `mock/hotspot-summarize.v1.txt` | 离线样例：热点清单 9 行（标题 \| 分类 \| 热度 \| 链接），含未归一的「情绪」写法 | R-L2-02、FLOW-7 |
+| `mock/hotspot-source.v1.json` | 离线样例：浏览器夹具（公开源的原始条目，供 `browser.local-fixture` 读取） | R-L2-02、Q-13 |
+| `mock/metrics.v1.json` | 离线样例：两个平台的指标明细（views / engagements / follower_gain） | R-L2-02、FLOW-9 |
+| `mock/review-report.v1.txt` | 离线样例：复盘报告（含数字依据与「建议」段） | R-L2-02、FLOW-8 |
 | `mock/README.md` | 样例库说明：文件名固定 `<prompt_key>.<version>.txt`，提示词升版必须补样例 | R-L1-14 |
 | `README.md` | 四块内容的说明与两条规则（换服务只改登记表；改提示词必须升版本） | R-L1-14 |
 
@@ -131,6 +136,9 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `_shared/hitl.py` | 三类人工关口的开启与决议逻辑（写 `hitl_events`、推进任务状态） | §8.3、R-8-03 |
 | `_shared/images.py` | 本地图像能力（Pillow）：画 6×4 整图 / 占位参考图、等分切图、图片体检（数量 / 编号 / 尺寸 / 单边） | R-L1-06、R-L1-19、Q-11 |
 | `_shared/video.py` | 本地视频能力（ffmpeg/ffprobe）：按镜序与逐镜时长合成成片、抽封面帧、成片体检 | R-L1-07、R-L1-08、Q-7 |
+| `_shared/hotspots.py` | 热点批次与条目：解析 / 校验 / 汇总（分类计数与热度）/ 渲染 md 与 csv 表；批次写入前先查重 | R-7-04、FLOW-7 |
+| `_shared/metrics.py` | 三项指标口径归一（播放 / 互动 / 涨粉）、别名解析、聚合与互动率计算 | R-7-05、FLOW-9 |
+| `_shared/publish_guard.py` | 发布包组装与红线检查（C-08 不自动发布 / C-10 关口③ 授权 / C-01 绝对化用语）、发布记录读写（`published` 只能由人回填） | C-01、C-08、C-10、R-7-05 |
 | `_shared/README.md` | 共享库说明（**不是 skill**：无 `SKILL.md`，DSH 不加载） | R-L1-20 |
 | `prompt-registry/{SKILL.md,README.md,run.py}` | 提示词登记、渲染、自检、版本对照 | R-7-03 |
 | `llm-adapter/{SKILL.md,README.md,run.py}` | 一切外部服务调用的统一入口（7 类 kind） | R-L2-14~17 |
@@ -148,12 +156,20 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `auto-editor/{…}` | 自动剪辑师：按关口② 的顺序 / 时长 / 替换渲染剪辑版 + 参数留痕 | R-L1-08、§8.3 |
 | `video-exporter/{…}` | 成片导出师：定稿成片 + 抽封面帧，推进到分发环节 | R-L1-08 |
 | `title-cover-prep/{…}` | 发布准备师：按平台模板生成三条标题 / 标签 / 封面文案（不登录不发布） | R-8-01、C-08 |
+| `hotspot-collector/{…}` | 热点采集员：按关键词采集热点并归类（情绪冲突 / 干货教程 / 热点观点 / 其他），产出批次清单 | R-7-04、FLOW-7、Q-13 |
+| `table-builder/{…}` | 表格汇总员：一批热点按分类汇总成 Markdown + CSV 表（每类条数 / 热度 / 代表条目） | R-7-04、FLOW-7 |
+| `feishu-sync/{…}` | 文档同步员：汇总表同步到飞书文档，API 未接时降级为本地导出文件（记 `degraded=true`） | R-7-04、Q-5 |
+| `browser-publisher/{…}` | 浏览器发布员：组装发布包并只做填写（恒 `submitted=false`），真人发布后回填链接 | R-7-05、C-08、C-10 |
+| `metrics-collector/{…}` | 指标采集员：采集播放 / 互动 / 涨粉三项并按周期落库（同键更新不堆行） | R-7-05、FLOW-9 |
+| `review-reporter/{…}` | 复盘报告员：按当期指标出数据复盘与下一轮优化建议（只建议不改提示词） | R-7-05、FLOW-8、Q-19 |
+| `publish-guard/{…}` | 发布红线守卫：发布前自检填写清单并阻断（只读，不写任何库表） | C-01、C-08、C-10 |
 
 ### 3.7 `db/`
 
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
-| `schema.sql` | **结构唯一参考**：13 张表 + 2 个视图 + 3 个一致性触发器 | §7、R-7-01~R-7-05 |
+| `schema.sql` | **结构唯一参考**：16 张表 + 2 个视图 + 3 个一致性触发器 | §7、R-7-01~R-7-05 |
+| `migrations/0003_add_hotspots_and_publish.sql` | 分发数据线迁移：新增 `hotspot_batches` / `hotspot_items` / `publish_records` 三张表与索引（话题级留痕不进任务维度，D-15） | §7、R-7-04、R-7-05、D-15 |
 | `migrations/0001_init.sql` | 首次建库迁移（与 `schema.sql` 一致 + 登记 `schema_migrations`）；历史文件不得再改 | R-L1-04 |
 | `migrations/0002_add_visual_gates.sql` | 视觉线关口迁移：`hitl_events.gate` 的 CHECK 由 3 值扩到 5 值（SQLite 不能改 CHECK，故重建表并回填） | §8.3、R-L1-04 |
 | `seed/0001_platform_templates.sql` | 平台预设模板：抖音 / 小红书 / B站 / 视频号 | R-8-01、Q-18 |
@@ -165,7 +181,8 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
 | `test_db.py` | 数据库模拟测试 28 项：结构可建 / 迁移链与 schema 一致 / 种子幂等 / 24 条分镜与编号唯一 / 3 套文案与侧重 / 软删 / 枚举与触发器 / 视图可用 / 建库脚本可用 | R-L2-02、R-L1-19 |
-| `test_adapters.py` | 适配器层模拟测试 34 项：登记表自洽 / 降级链行为 / 零付费门禁（C-09）/ 人工兜底 / 提示词模板渲染与自检 / 同步与两个 skill 的命令行 | R-L2-02、R-L2-14~17、C-09 |
+| `test_adapters.py` | 适配器层模拟测试 36 项：登记表自洽 / 降级链行为 / 零付费门禁（C-09）/ 人工兜底 / 提示词模板渲染与自检 / 同步与两个 skill 的命令行 | R-L2-02、R-L2-14~17、C-09 |
+| `test_publish_line.py` | 分发数据线模拟测试 33 项：热点夹具采集与批次去重 / 汇总表与 CSV / 飞书降级导出与 `export_path` 回填 / 发布包只填写不提交（C-08）/ 关口③ 未授权被 live 拦下 / 授权后回填链接 / 指标人工录入与同键更新 / 复盘报告与 stage 推进 / 共享库口径单测 | R-L2-02、R-7-04、R-7-05、C-01、C-08、C-10、Q-5、Q-13、Q-19 |
 | `test_video_line.py` | 视频线模拟测试 22 项：打包清单与同秒不覆盖 / 草稿落到本地 ffmpeg / 关口② 未决议拒绝 / 顺序与替换的非法输入 / adjust 真的改变时长 / 导出成片与封面并推进 stage / 平台模板与红线（绝对化用语）/ video 链离线终点 / 整线连跑 | R-L2-02、R-L1-07、R-L1-08、R-L1-09、R-8-01、C-01、C-08、C-09 |
 | `test_visual_line.py` | 视觉线模拟测试 21 项：切分几何 / 参考图（含未选定文案的拒绝与同秒重跑不覆盖）/ 整图尺寸等式 / 切图与清单 / 一致性体检（含不置 blocked）/ 两个视觉关口（`shot_nos` 强制）/ 整线连跑 | R-L2-02、R-L1-06、R-L1-19、Q-11、§8.3 |
 | `test_copy_line.py` | 文案线模拟测试 24 项：解析与字数口径 / 提示词 v2 / 登记层约束 / 关口① 四种非法输入 / copy-writer 端到端（含失败路径与重生成留痕）/ storyboard-builder 前置卡口与 24 条落库 / 校验器 | R-L2-02、R-L1-05、R-L1-06、R-L1-19、§8.3 |
@@ -176,7 +193,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
 | `YYYY-MM-DD.jsonl` | 当天执行流水，每行一条 JSON：`{ts, step, actor, skill, action, result, note}` | R-L2-05 |
-| `2026-10-12.jsonl` | 本项目首日记录（N001–N010 与 WP-05 步骤 1–6） | R-L2-05 |
+| `2026-10-12.jsonl` | 本项目首日记录（N001–N011 与 WP-05 步骤 1–7，共 51 行） | R-L2-05 |
 
 ---
 

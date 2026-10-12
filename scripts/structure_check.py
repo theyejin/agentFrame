@@ -96,6 +96,24 @@ EXPECTED_ROOT_FILES = [
     "templates/prompts/image-reference.md",
     "templates/prompts/image-grid.md",
     "templates/prompts/publish-prep.md",
+    # —— WP-05 步骤 7（分发数据线）——
+    "db/migrations/0003_add_hotspots_and_publish.sql",
+    ".dsh/skills/_shared/hotspots.py",
+    ".dsh/skills/_shared/metrics.py",
+    ".dsh/skills/_shared/publish_guard.py",
+    ".dsh/skills/hotspot-collector/run.py",
+    ".dsh/skills/table-builder/run.py",
+    ".dsh/skills/feishu-sync/run.py",
+    ".dsh/skills/browser-publisher/run.py",
+    ".dsh/skills/metrics-collector/run.py",
+    ".dsh/skills/review-reporter/run.py",
+    ".dsh/skills/publish-guard/run.py",
+    "templates/prompts/hotspot-summarize.md",
+    "templates/mock/hotspot-source.v1.json",
+    "templates/mock/hotspot-summarize.v1.txt",
+    "templates/mock/metrics.v1.json",
+    "templates/mock/review-report.v1.txt",
+    "tests/test_publish_line.py",
 ]
 
 # 非 skill 的共享目录前缀（允许没有 SKILL.md）

@@ -197,6 +197,41 @@
       }
     },
     {
+      "adapter_id": "browser.local-fixture",
+      "kind": "browser",
+      "provider": "本地夹具（离线演练）",
+      "capabilities": "把一份本地热点夹具当成公开源页面结果读进来，零登录、零网络（热点采集离线终点）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "夹具文件不存在；夹具 JSON 结构不对",
+      "fallback_order": 2,
+      "enabled": true,
+      "note": "离线演练与测试用；真实采集仍优先 browser.playwright-cdp（Q-13 登录授权）",
+      "implemented": true,
+      "cost_per_call": 0.0,
+      "settings": {
+        "runtime": "browser_local_fixture",
+        "fixture_hint": "workspace/hotspots/fixtures/*.json"
+      }
+    },
+    {
+      "adapter_id": "browser.fill-plan",
+      "kind": "browser",
+      "provider": "本地填写清单（离线终点）",
+      "capabilities": "产出「该往哪个页面填什么」的填写清单 JSON，不打开浏览器、不提交（C-08 合规终点）",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "缺发布包信息（平台/成片/封面）",
+      "fallback_order": 3,
+      "enabled": true,
+      "note": "只填不发：submitted 恒为 false，发布动作由人完成",
+      "implemented": true,
+      "cost_per_call": 0.0,
+      "settings": {
+        "runtime": "browser_fill_plan"
+      }
+    },
+    {
       "adapter_id": "browser.manual",
       "kind": "browser",
       "provider": "人工",
@@ -204,7 +239,7 @@
       "needs_key": false,
       "billable": false,
       "failure_signals": "",
-      "fallback_order": 2,
+      "fallback_order": 4,
       "enabled": true,
       "note": "C-08 要求发布动作必须由人完成，本适配器是合规终点",
       "implemented": true,
@@ -265,6 +300,24 @@
       "settings": {}
     },
     {
+      "adapter_id": "metrics.local-fixture",
+      "kind": "metrics",
+      "provider": "本地夹具（离线演练）",
+      "capabilities": "从本地夹具读一组平台指标（播放量/互动量/涨粉数），零登录、零网络",
+      "needs_key": false,
+      "billable": false,
+      "failure_signals": "夹具不存在；指标键不认识；数值为负",
+      "fallback_order": 2,
+      "enabled": true,
+      "note": "离线演练与测试用；真实采集走 metrics.browser-scrape（Q-16）",
+      "implemented": true,
+      "cost_per_call": 0.0,
+      "settings": {
+        "runtime": "metrics_local_fixture",
+        "fixture_hint": "workspace/metrics/fixtures/*.json"
+      }
+    },
+    {
       "adapter_id": "metrics.manual-entry",
       "kind": "metrics",
       "provider": "人工录入",
@@ -272,7 +325,7 @@
       "needs_key": false,
       "billable": false,
       "failure_signals": "",
-      "fallback_order": 2,
+      "fallback_order": 3,
       "enabled": true,
       "note": "兜底即转人工",
       "implemented": true,

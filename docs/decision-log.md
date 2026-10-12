@@ -21,6 +21,8 @@
 | D-13 | 视频线用本地 ffmpeg 兜底（`video.ffmpeg` 标 `implemented=true`，`settings.runtime=ffmpeg_render`）：Remotion 未接时降级链自动落到它，成片与封面帧都由它产出、不联网不花钱；ffmpeg 命令只出现在 `_shared/video.py` 一个文件里 | N010 | 可低成本变更 |
 | D-14 | 统一 CLI 约定：`--json` / `--db` 写在子命令前后都行 —— 子命令里加 `--json` 必须带 `default=argparse.SUPPRESS`，否则子命令的默认值会覆盖父级已解析的值（踩过一次）；所有 16 个 skill 统一补齐 | N010 | 可低成本变更 |
 
+| D-15 | 话题级留痕自建两张表：热点批次与条目（`hotspot_batches` / `hotspot_items`）—— `artifacts.task_id` 与 `step_runs.task_id` 都是 NOT NULL，热点采集发生在选题之前、没有 task_id 可挂，所以不能硬塞进那两张表；批次表本身即「哪一批、什么关键词、落在哪个文件」的索引 | N011 | 可低成本变更 |
+| D-16 | 发布线「只填写、不提交」：新增三个离线适配器 `browser.local-fixture`（读夹具采集）、`browser.fill-plan`（只产填写清单，恒 `submitted=false`）、`metrics.local-fixture`（读指标夹具），各插在人工终点之前；`publish_records.status` 只允许 Agent 写 `filled` / `pending` / `failed`，写 `published` 直接报错，真实发布由人在关口③ 完成后经 `browser-publisher mark-published` 回填（C-08 / C-10） | N011 | 可低成本变更 |
 ## 维护提示
 
 - 每次讨论节点收尾时，把新定下来的事项追加到本表（R-D-01、R-D-03）。

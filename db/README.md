@@ -9,6 +9,8 @@
 | ---- | ---- |
 | `schema.sql` | **结构唯一参考**：全部表、索引、触发器、视图；建库与评审都以它为准 |
 | `migrations/0001_init.sql` | 首次建库迁移（内容与 `schema.sql` 一致 + 写 `schema_migrations`）；**已发布的历史不得再改** |
+| `migrations/0002_add_visual_gates.sql` | 视觉线关口迁移（`hitl_events.gate` 由 3 值扩到 5 值，重建表并回填） |
+| `migrations/0003_add_hotspots_and_publish.sql` | 分发数据线迁移：新增 `hotspot_batches` / `hotspot_items` / `publish_records` 三张表与索引 |
 | `seed/0001_platform_templates.sql` | 平台预设模板种子（抖音 / 小红书 / B站 / 视频号） |
 | `app.db` | 运行期数据库文件（**不入库**，用脚本生成） |
 
@@ -40,8 +42,11 @@ python3 tests/test_db.py                      # 28 项结构与约束模拟测�
 | `storyboards` | 分镜 | 24 条（6×4）分镜的画面描述与时长 | `shot_no ∈ 1..24` 且每任务唯一（R-L1-19） |
 | `step_runs` | 步骤流水 | 第几步、哪个 skill、实际用哪个适配器、耗时、失败原因 | `status='failed'` 必须填 `error`（触发器） |
 | `artifacts` | 产物 | 产物类型、路径、大小、指纹、模型版本、提示词版本 | `model_version`/`prompt_version` 非空（R-7-03）；图片视频 `size_bytes>0` |
-| `hitl_events` | 人工介入 | 谁、何时、在哪个关口、确认/拒绝/调整、当时快照 | `gate` 三枚举；不可跳过（R-8-02、C-02） |
+| `hitl_events` | 人工介入 | 谁、何时、在哪个关口、确认/拒绝/调整、当时快照 | `gate` 五枚举；不可跳过（R-8-02、C-02） |
 | `metrics` | 数据指标 | 每期三项指标的数值、统计周期、采集时间 | `metric_key` 三枚举；周期与采集时间非空（R-7-04） |
+| `hotspot_batches` | 热点批次 | 哪一批热点、关键词、来源、周期、条目数、汇总表与导出文件落在哪 | `batch_key` 唯一；`source` 枚举（D-15） |
+| `hotspot_items` | 热点条目 | 每条热点的标题、分类、热度、来源链接 | `batch_id` 外键 + 级联删除；`category` 四枚举 |
+| `publish_records` | 发布记录 | 哪个任务、发到哪个平台与账号、发布包与成片在哪、状态与发布链接 | `status` 四枚举；`published` 只能由人回填（C-08、D-16） |
 | `adapter_registry` | 适配器声明 | 能力、是否要密钥、是否计费、失败特征、降级顺序 | `adapter_id` 唯一；`fallback_order > 0`（R-L2-16） |
 | `platform_templates` | 平台模板 | 各平台字数区间、标题写法、标签数、封面比例 | 平台名唯一；`word_min <= word_max`（R-8-01） |
 | `prompt_versions` | 提示词版本 | 提示词标识 + 版本 + 仓库内文件路径 | `(prompt_key, version)` 唯一（R-7-03） |
@@ -75,6 +80,9 @@ python3 tests/test_db.py                      # 28 项结构与约束模拟测�
 | `hitl_events.action` | `confirm` 确认 / `reject` 拒绝 / `adjust` 调整 |
 | `metrics.metric_key` | `views` 播放量 / `engagements` 互动量（赞+藏+评） / `follower_gain` 涨粉数 |
 | `metrics.source` | `manual` / `browser` / `api` / `export` |
+| `hotspot_batches.source` | `manual` 人工给 / `browser` 浏览器采集 / `fixture` 离线夹具 / `api` 接口 / `export` 导入 |
+| `hotspot_items.category` | `情绪冲突` / `干货教程` / `热点观点` / `其他`（未识别的分类一律归 `其他`） |
+| `publish_records.status` | `filled` 已生成填写清单 / `pending` 待发布 / `published` 已发布（仅真人回填）/ `failed` 发布失败 |
 | `adapter_registry.kind` | `llm` / `image` / `split` / `video` / `browser` / `doc` / `metrics` |
 
 ## 4. 与需求条款的对应

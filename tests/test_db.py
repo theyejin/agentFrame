@@ -113,7 +113,8 @@ class TestStructure(unittest.TestCase):
         names = {n for t, n in structure_of(conn) if t == "table"}
         for expected in ["topics", "tasks", "copy_variants", "storyboards", "step_runs",
                          "artifacts", "hitl_events", "metrics", "adapter_registry",
-                         "platform_templates", "prompt_versions", "versions"]:
+                         "platform_templates", "prompt_versions", "versions",
+                         "hotspot_batches", "hotspot_items", "publish_records"]:
             self.assertIn(expected, names, f"缺表 {expected}")
 
     def test_migrations_match_schema(self):

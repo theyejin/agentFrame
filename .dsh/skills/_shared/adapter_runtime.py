@@ -268,6 +268,88 @@ def _runtime_ffmpeg_render(adapter: dict[str, Any], payload: dict[str, Any]) -> 
     return {"output": output, "model_version": "ffmpeg-render-v1"}
 
 
+def _fixture_path(payload: dict[str, Any]) -> Path | None:
+    """夹具路径：abs_fixture 优先（绝对路径），否则 fixture/rel_fixture 按仓库根解析。"""
+    abs_p = payload.get("abs_fixture")
+    if abs_p:
+        return Path(abs_p)
+    rel = payload.get("fixture") or payload.get("rel_fixture")
+    return (REPO_ROOT / rel) if rel else None
+
+
+def _write_json(target: Path, data: dict[str, Any]) -> None:
+    import json
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _runtime_browser_local_fixture(adapter: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    """离线浏览器源：把一份本地夹具当成「公开源页面」的采集结果（零登录、零网络）。
+
+    用途：让热点采集在没有任何浏览器环境时也能端到端跑通与测试；真实采集仍优先
+    browser.playwright-cdp（需要已登录会话，Q-13）。没有夹具时明确报错，让降级链继续往下走。
+    """
+    import hotspots as hs
+
+    path = _fixture_path(payload)
+    if path is None:
+        raise RuntimeError("browser_local_fixture 需要夹具：payload.fixture（相对仓库根）或 abs_fixture")
+    items = hs.load_fixture(path)
+    return {
+        "output": {"items": items, "count": len(items), "fixture": str(path),
+                   "note": "本地夹具来源，非真实抓取"},
+        "model_version": "fixture-source-v1",
+    }
+
+
+def _runtime_browser_fill_plan(adapter: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    """离线「填写清单」：只产出该往哪个页面填什么，绝不打开浏览器、绝不提交（C-08）。
+
+    真实浏览器填写需要 browser.playwright-cdp + 已登录会话（Q-13）；首版没有，所以这里的产物
+    是给运营人员照着填的清单，`submitted` 恒为 false。
+    """
+    plan = {
+        "platform": str(payload.get("platform") or ""),
+        "account_label": str(payload.get("account_label") or ""),
+        "url": str(payload.get("url") or ""),
+        "video": str(payload.get("video") or ""),
+        "cover": str(payload.get("cover") or ""),
+        "fields": payload.get("fields") or {},
+        "steps": payload.get("steps") or [
+            "打开平台创作页并确认已登录自己的账号",
+            "上传成片，等转码完成",
+            "按清单填写标题、正文与标签",
+            "上传封面并核对封面文案",
+            "人工核对无误后点击发布（Agent 不代点）",
+        ],
+        "submitted": False,
+        "auto_publish": False,
+        "note": "首版不自动提交：运营人员核对后手动发布（C-08）",
+    }
+    abs_out = payload.get("abs_out")
+    out = Path(abs_out) if abs_out else REPO_ROOT / str(
+        payload.get("rel_out") or payload.get("out_path") or "workspace/exports/fill-plan.json")
+    _write_json(out, plan)
+    plan["plan_path"] = str(out)
+    return {"output": plan, "model_version": "fill-plan-v1"}
+
+
+def _runtime_metrics_local_fixture(adapter: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    """离线指标源：从本地夹具读一组平台指标（真实采集走 metrics.browser-scrape，Q-16）。"""
+    import metrics as mt
+
+    path = _fixture_path(payload)
+    if path is None:
+        raise RuntimeError("metrics_local_fixture 需要夹具：payload.fixture（相对仓库根）或 abs_fixture")
+    records = mt.load_fixture(path)
+    return {
+        "output": {"metrics": records, "count": len(records), "fixture": str(path),
+                   "note": "本地夹具来源，非真实平台数据"},
+        "model_version": "fixture-metrics-v1",
+    }
+
+
 class MissingKey(RuntimeError):
     """缺密钥 —— 与「调用失败」区分开，便于运营人员快速定位。"""
 
@@ -281,6 +363,9 @@ RUNTIMES: dict[str, Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]]] 
     "grid_slicer": _runtime_grid_slicer,
     "ffmpeg_slideshow": _runtime_ffmpeg_slideshow,
     "ffmpeg_render": _runtime_ffmpeg_render,
+    "browser_local_fixture": _runtime_browser_local_fixture,
+    "browser_fill_plan": _runtime_browser_fill_plan,
+    "metrics_local_fixture": _runtime_metrics_local_fixture,
 }
 
 
