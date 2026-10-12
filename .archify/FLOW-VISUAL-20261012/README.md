@@ -33,6 +33,11 @@ node <archify-skill>/bin/archify.mjs render architecture \
 
 node <archify-skill>/bin/archify.mjs check \
   .archify/FLOW-VISUAL-20261012/visual-line.html --json   # 必须 ok:true、composition=pass
+
+# 3) 四门全过（含浏览器内检查）：本机 Chrome 需要 --no-sandbox，archify 用环境变量开启（A-09 已关闭）
+ARCHIFY_CHROME_NO_SANDBOX=1 node <archify-skill>/bin/archify.mjs finalize architecture \
+  .archify/FLOW-VISUAL-20261012/visual-line.final.json .archify/FLOW-VISUAL-20261012/visual-line.html --quality showcase --json
+# → ok:true；gates: validate / deliver / check / browser-check 全 pass
 ```
 
 ## 布局经验

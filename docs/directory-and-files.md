@@ -82,7 +82,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | `directory-structure-plan.md` | 目录结构提案与 9 步落地顺序（N005 已确认） | R-L1-13 |
 | `directory-and-files.md` | **本文件**：目录及文件说明正式版 | R-L2-09 |
 | `decision-log.md` | 决议摘要索引（一行一条「现在以什么为准」） | R-D-01、R-D-03 |
-| `acceptance-report.md` | 端到端验收报告（WP-05 步骤 9）：AC-1~AC-7 逐条可复现证据、本版未覆盖项、受限项（A-09） | AC-1~AC-7、R-L2-02 |
+| `acceptance-report.md` | 端到端验收报告（WP-05 步骤 9）：AC-1~AC-7 逐条可复现证据、本版未覆盖项、已知限制（原 A-09 的 Chrome 沙箱问题与其解法） | AC-1~AC-7、R-L2-02 |
 | `evidence/` | 验收截图：控制台总览页、搭建过程报告页（浏览器实操留证；按 `.gitignore`「图片不入仓」规则不入库，属本机证据） | AC-3、R-L3-01 |
 
 ### 3.3 `.archify/`（每张图一个目录）
@@ -219,7 +219,7 @@ agentFrame/                     项目根：一支自媒体创作运营团队的
 | 文件 | 用途 | 对应需求 |
 | ---- | ---- | -------- |
 | `YYYY-MM-DD.jsonl` | 当天执行流水，每行一条 JSON：`{ts, step, actor, skill, action, result, note}` | R-L2-05 |
-| `2026-10-12.jsonl` | 本项目首日记录（N001–N014、WP-05 步骤 1–9 与 WP-07，共 70 行） | R-L2-05 |
+| `2026-10-12.jsonl` | 本项目首日记录（N001–N014、WP-05 步骤 1–9、WP-07 与终版收尾 RELEASE，共 73 行） | R-L2-05 |
 
 ---
 

@@ -68,3 +68,6 @@
 {"ts": "2026-10-12T16:00:00+08:00", "step": "WP-05-9", "actor": "agent", "skill": "", "action": "AC-3 浏览器实测：控制台与报告页截图入库 docs/evidence/", "result": "ok", "note": "127.0.0.1:8791；报告页搜索与切换可用"}
 {"ts": "2026-10-12T16:00:00+08:00", "step": "WP-05-9", "actor": "agent", "skill": "", "action": "五张流程图同步：分发线补 publish-guard、总览图补控制台与报告页", "result": "ok", "note": "render + check 两图 9/9；browser-check 受限 A-09"}
 {"ts": "2026-10-12T16:00:00+08:00", "step": "WP-05-9", "actor": "agent", "skill": "", "action": "文档同步与提交", "result": "ok", "note": "规格 v2.1.12 / README 100% / 台账 WP-05 与 WP-12 收口 / 决议 D-22~D-23 / 讨论节点 N014 / tag v0.13.0-e2e"}
+{"ts": "2026-10-12T17:00:00+08:00", "step": "RELEASE", "actor": "agent", "skill": "", "action": "终版收尾：台账全部收口（WP-05 九步 / WP-10 / WP-12 已完成），规格升 v2.2-frozen、README 定稿 100%", "result": "ok", "note": "需求条款与 v2.1-frozen 逐条一致；仅 A-09 待环境"}
+{"ts": "2026-10-12T17:00:00+08:00", "step": "RELEASE", "actor": "agent", "skill": "", "action": "打 tag v1.0.0 并推送", "result": "ok", "note": "四个工作包收口；远端标签见 origin"}
+{"ts": "2026-10-12T17:20:00+08:00", "step": "RELEASE", "actor": "agent", "skill": "", "action": "关闭 A-09：archify 浏览器校验加 ARCHIFY_CHROME_NO_SANDBOX=1，五张图 finalize 四门全过（D-24）", "result": "ok", "note": "命令写进五张图 README 与 .archify/README.md；AC-7 用例守住"}

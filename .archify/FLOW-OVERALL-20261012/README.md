@@ -35,16 +35,30 @@ node <archify-skill>/bin/archify.mjs render architecture \
 # 2) 静态校验，必须 ok:true
 node <archify-skill>/bin/archify.mjs check \
   .archify/FLOW-OVERALL-20261012/overall-operations.html --json
+
+# 3) 四门全过（含浏览器内检查）：本机 Chrome 需要 --no-sandbox，archify 用环境变量开启（A-09 已关闭）
+ARCHIFY_CHROME_NO_SANDBOX=1 node <archify-skill>/bin/archify.mjs finalize architecture \
+  .archify/FLOW-OVERALL-20261012/overall-operations.final.json .archify/FLOW-OVERALL-20261012/overall-operations.html --quality showcase --json
+# → ok:true；gates: validate / deliver / check / browser-check 全 pass
 ```
 
 `<archify-skill>` = `/Users/yejin/.dsh/profiles/desktop/node_modules/@tt-a1i/archify-dsh/skills/archify`。
 
-## 已知环境限制（登记为 Action A-09）
+## Chrome 沙箱与浏览器校验（Action A-09，已关闭）
 
-`archify finalize` 的最后一关 `browser-check`、以及 `archify visual-check` 需要拉起 Chrome，本机系统沙箱会拦截
+`archify finalize` 的最后一关 `browser-check`、以及 `archify visual-check` 需要拉起 Chrome；本机系统沙箱会拦截
 （`Failed to initialize sandbox` / `GPU process isn't usable` / `sandbox initialization failed: Operation not permitted`）。
-因此本图按 R-L2-18 用 `render` + `check` 交付，并额外用 headless Chrome（`--no-sandbox` + 工作区内 `HOME`/`--user-data-dir`）
-截图人工核对。**不要**因为 `browser-check` 报 runtime 错误而重画图——那是环境问题，不是图的问题。
+
+**解决办法**：archify 支持用环境变量把 Chrome 的 `--no-sandbox` 打开（见 `skills/archify/bin/visual-check.mjs`
+的 `ARCHIFY_CHROME_NO_SANDBOX`）：
+
+```bash
+ARCHIFY_CHROME_NO_SANDBOX=1 node <archify-skill>/bin/archify.mjs finalize architecture \
+  .archify/<FLOW-...>/<slug>.final.json .archify/<FLOW-...>/<slug>.html --quality showcase --json
+# → ok:true；gates: validate / deliver / check / browser-check 全 pass
+```
+
+五张图已于 2026-10-12 用这条命令跑通四门。**不要**因为 `browser-check` 报 runtime 错误而重画图——先加这个环境变量。
 
 ## 为什么不是 workflow 类型（重要教训）
 

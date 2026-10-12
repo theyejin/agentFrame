@@ -13,7 +13,7 @@
 | 项目名    | `wemedia-agent`（自媒体创作运营团队）                            |
 | 工作区根目录 | `/Users/yejin/Documents/deepseek-harness/agentFrame`  |
 | 构建工具   | DeepSeek Harness（以下简称 DSH）                            |
-| 文档版本   | **v2.1.12**（基线 v2.1-frozen + 台账同步；需求条款未变）                          |
+| 文档版本   | **v2.2-frozen**（终版冻结：需求条款与 v2.1-frozen 一致，只收口台账与实现状态）                          |
 | 当前状态   | **已冻结**（2026-10-12 经讨论节点 N002 确认；Q-1～Q-19 全部落定，见 §11；设计决策见附录 A） |
 | 读者     | 执行 Agent（DSH）、运营负责人、后续维护者                             |
 | 语言约定   | 面向人的说明用中文；目录名、文件名、字段名、标识符用英文                          |
@@ -26,6 +26,7 @@
 | v1.0 | 初稿：三层架构、FLOW 1–9、表单字段、待确认问题                                                                                                    | 原始口头需求    |
 | v2.0 | ① 修正基线真实性（v1.0 声称的 `agents/`、`.dsh/skills/`、`db/`、`dashboard/` 磁盘上不存在）；② 新增「讨论机制与留痕」制度（§3）；③ 图表工具由 Mermaid 改为强制 archify；④ 新增 §4.2 编排者与 Agent/Skill 边界分层；⑤ 新增 §5.3.1 文件头注释块规范；⑥ 新增 §7 数据模型要求（话题→内容资产）；⑦ 新增 C-08 发布红线；⑧ 待确认问题扩展至 Q-19 | 本轮讨论 N001 |
 | **v2.1-frozen** | ① 建议 S1～S14 全部采纳并转为强制约束（附录 A）；② Q-1～Q-19 全部落定（§11）；③ 新增 C-09 零付费门禁；④ 补充 §6.5 交接契约、§7 指标口径与版本字段、§8 三类 HITL 形态与处理人字段；⑤ 新增 §15 变更同步检查表；⑥ GitHub 远端确定为 `https://github.com/theyejin/agentFrame.git` | 讨论节点 N002 |
+| **v2.2-frozen** | **终版冻结**：WP-01~WP-12 全部收口（WP-05 九步、WP-10 备份与打 tag 收尾），实现与文档定稿并打 tag `v1.0.0`；需求条款与 v2.1-frozen **逐条一致、无改动**，本版只收口台账、README 与目录说明。环境待办 A-09 也已关闭：给 archify 设 `ARCHIFY_CHROME_NO_SANDBOX=1` 后五张图 `finalize` 四门全过（见 D-23、D-24 与 `docs/acceptance-report.md` §2.7） | 讨论节点 N014 收尾 |
 | **v2.1.12** | 台账同步：WP-05 **步骤 9（端到端验收）完成，WP-05 九步全部收口**——一条真实选题（`打工人春节返乡实录` / 抖音）从派单到复盘全程离线跑通：24 步调用、18 个 skill、43 条产物、三个关口真人决议、成片与封面齐备、发布记录由真人回填（C-08 / C-10）；新增 `tests/test_e2e.py`（13 项，逐条对照 AC-1~AC-7）与 `docs/acceptance-report.md`（可复现证据 + 受限项如实登记）；新增一键测试脚本 `scripts/run_tests.py`（9 套 243 项）；分发线图补入 `publish-guard`、总览图补入控制台与报告页，两图 `render` + `check` 9/9 通过（浏览器校验受本机沙箱限制，见 A-09）；WP-12 随之完成。需求条款本身无改动 | 讨论节点 N014 |
 | **v2.1.11** | 台账同步：WP-05 **步骤 8（运营控制台与搭建过程报告页）完成**——`dashboard/` 五页（总览 / 任务流转 / 文案生成 / 发布操作 / 数据与复盘）落地，配套只读数据层 `_shared/console.py`（环节/状态/关口中文口径、互动率按百分比、轨迹与文案卡）与本地服务 `scripts/serve_dashboard.py`（只监听 127.0.0.1，`/api/*` 取数、`/api/run` 按 skill 白名单调用，页面禁传 `--db` / `--allow-paid`，守住 C-09）；搭建过程报告页由 `scripts/build_log_report.py` 生成在仓库根目录（`build-log.html` + `build-log.data.json`，R-L2-05 / R-L2-06，与控制台是两个独立页面 Q-6）；红线内置：`submitted` 与 `can_auto_publish` 恒 `false`（C-08），账号只存标签不存凭据（R-L3-05）；33 项控制台模拟测试通过（累计 230 项）；WP-08、WP-11 随之完成。需求条款本身无改动 | 讨论节点 N013 |
 | **v2.1.10** | 台账同步：WP-07 **Agent/Skill 落地与单测完成**——五个 Agent 定义（编排者 + 文案 / 视觉 / 视频 / 分发数据线）与 `agents/orchestrator/config.yml` 交接契约（进场校验 / 产出物清单 / 完成判据三段 + 五个关口 + 环节路由）落地；编排者两个专属工具 `task-decomposer`（派单 / 路由 / 契约校验）与 `summary-writer`（只读汇总五项）落地，`.dsh/skills/` 下 25 个目录全部齐；完成判据用最小词汇表写入 config，由运行时校验（R-L1-18 / R-L1-19）；33 项编排者模拟测试通过（累计 197 项）。需求条款本身无改动 | 讨论节点 N012 |
@@ -431,12 +432,12 @@ L3 依赖 L1 的数据表结构，故必须在 L1 数据结构稳定后开工。
 | WP-02  | 建议清单与方案对比       | L1  | **已完成** | R-L1-10              | S1～S14 全部采纳，见附录 A     |
 | WP-03  | 整体与分环节流程图（archify） | L1  | **已完成** | R-L1-11、R-L2-11~13   | 整体图（N003）+ 4 张分环节图（N004）均已校验通过 |
 | WP-04  | Skill 岗位与数量设计   | L1  | **已完成** | R-L1-12              | 18 岗位 + 7 支撑件，见 `docs/skill-roster.md` |
-| WP-05  | 基础环境搭建（目录与文件）   | L1  | **进行中** | R-L1-13              | 用户已确认目录提案（N005）；步骤 1 目录骨架、步骤 2 数据库、步骤 3 适配器层与提示词注册表、步骤 4 文案线、步骤 5 视觉线、步骤 6 视频线、步骤 7 分发数据线、**步骤 8 运营控制台与搭建过程报告页**、**步骤 9 端到端验收**均完成（体检退出码 0、期望文件 98 项、测试 243 项通过；验收报告见 `docs/acceptance-report.md`）；WP-05 九步全部收口 |
+| WP-05  | 基础环境搭建（目录与文件）   | L1  | **已完成** | R-L1-13              | 用户已确认目录提案（N005）；步骤 1 目录骨架、步骤 2 数据库、步骤 3 适配器层与提示词注册表、步骤 4 文案线、步骤 5 视觉线、步骤 6 视频线、步骤 7 分发数据线、**步骤 8 运营控制台与搭建过程报告页**、**步骤 9 端到端验收**均完成（体检退出码 0、期望文件 98 项、测试 243 项通过；验收报告见 `docs/acceptance-report.md`）；WP-05 九步全部收口 |
 | WP-06  | 数据库结构与迁移        | L1  | **已完成** | §7                   | `db/schema.sql`（16 表/2 视图/3 触发器）+ 迁移 0001/0002/0003 + `seed/0001_platform_templates.sql`；`tests/test_db.py` 28 项通过；`scripts/db_init.py` 可重建 |
 | WP-07  | Agent/Skill 落地与单测 | L1  | **已完成** | R-L1-05~09、R-L1-18~19 | 五个 Agent 定义 + `agents/orchestrator/config.yml` 契约 + 编排者工具 `task-decomposer` / `summary-writer`；`.dsh/skills/` 25 个目录全部落地；33 项编排者测试通过（累计 197 项）；见 N012 |
 | WP-08  | build-log 报告页    | L2  | **已完成** | R-L2-05、R-L2-06      | 随 WP-05 步骤 8 一并落地：`scripts/build_log_report.py` 从 `logs/*.jsonl` 生成仓库根 `build-log.html` + `build-log.data.json`；每完成一个实施步骤须在同一次提交内追加一条记录 |
 | WP-09  | 目录及文件说明文档       | L2  | **已完成** | R-L2-09              | `docs/directory-and-files.md`（N005 产出）；此后随每次增删改同步，`structure_check.py` 第 3 项检查覆盖 |
-| WP-10  | GitHub 备份与打 tag | L2  | 进行中   | R-L2-04、Q-8          | 已推 main；每完成一个工作包打一个 tag（v0.1.0-spec-frozen、v0.2.0-flow-overall…） |
+| WP-10  | GitHub 备份与打 tag | L2  | **已完成** | R-L2-04、Q-8          | 已推 main；每完成一个工作包打一个 tag（v0.1.0-spec-frozen、v0.2.0-flow-overall…） |
 | WP-11  | 运营控制台多页面        | L3  | **已完成** | §8                   | 随 WP-05 步骤 8 一并落地：`dashboard/` 五页 + `scripts/serve_dashboard.py`（白名单调用 skill）+ `_shared/console.py` 只读数据层；页面不持有平台凭据（R-L3-05），发布仍由真人手工完成（C-08） |
 | WP-12  | 端到端模拟测试与验收      | 全程  | **已完成** | AC-1~AC-7            | 随 WP-05 步骤 9 落地：`tests/test_e2e.py` 把一条真实选题全程离线跑一遍（24 步 / 18 个 skill / 43 条产物），逐条对照 AC-1~AC-7；结论、证据与受限项见 `docs/acceptance-report.md`；一键复跑 `python3 scripts/run_tests.py`（9 套 243 项） |
 
@@ -544,7 +545,7 @@ L3 依赖 L1 的数据表结构，故必须在 L1 数据结构稳定后开工。
 ### 16.4 图表交付流程（R-L2-18 补充）
 
 `archify render <type> <json> <out.html> --quality showcase` → `archify check <out.html> --json` 必须 `ok:true` 且 `composition=pass` → 人工/截图核对。
-本机 `browser-check` / `visual-check` 受 Chrome 沙箱限制时，允许用「render + check + 截图核对」替代，但必须登记为待办（当前 A-09），**不得静默跳过**。
+本机 `browser-check` / `visual-check` 受 Chrome 沙箱限制时，允许用「render + check + 截图核对」替代，但必须登记为待办（曾为 A-09），**不得静默跳过**。（2026-10-12 收尾：`ARCHIFY_CHROME_NO_SANDBOX=1` 可让 archify 以 `--no-sandbox` 拉起 Chrome，A-09 已关闭、五张图四门全过——但上面的替代与登记规则仍然有效，换机器可能再遇到。）
 
 ### 16.5 Skill 目录三件套与 DSH 发现机制（R-L1-20，N005 实测）
 

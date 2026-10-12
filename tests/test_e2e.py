@@ -284,7 +284,8 @@ class TestAcceptanceCriteria(E2EBaseCase):
         self.assertIn("N001–N014", readme)
 
     def test_ac7_flow_diagrams_synced(self):
-        """AC-7：五份流程图齐备，且分发线的图里能看到步骤 7 落地的 skill（静态校验通过；浏览器校验见 A-09）。"""
+        """AC-7：五份流程图齐备、分发线图里能看到步骤 7 落地的 skill，且每份图 README 都记着四门校验的命令
+        （含让本机 Chrome 可跑 browser-check 的 ARCHIFY_CHROME_NO_SANDBOX=1，A-09 已在收尾时关闭）。"""
         dirs = ("FLOW-OVERALL-20261012", "FLOW-COPY-20261012", "FLOW-VISUAL-20261012",
                 "FLOW-VIDEO-20261012", "FLOW-PUBLISH-20261012")
         for name in dirs:
@@ -296,6 +297,9 @@ class TestAcceptanceCriteria(E2EBaseCase):
             spec = json.loads(list(d.glob("*.final.json"))[0].read_text(encoding="utf-8"))
             self.assertIn("components", spec)
             self.assertTrue(spec["components"], f"{name} 图里没有组件")
+            readme = (d / "README.md").read_text(encoding="utf-8")
+            for token in ("archify.mjs check", "ARCHIFY_CHROME_NO_SANDBOX=1", "browser-check"):
+                self.assertIn(token, readme, f"{name} README 没写四门校验（缺 {token}）")
         publish_html = (ROOT / ".archify" / "FLOW-PUBLISH-20261012" / "publish-line.html").read_text(encoding="utf-8")
         for skill in ("hotspot-collector", "table-builder", "feishu-sync", "browser-publisher",
                       "metrics-collector", "review-reporter", "publish-guard"):

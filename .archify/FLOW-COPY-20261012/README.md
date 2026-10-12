@@ -33,6 +33,11 @@ node <archify-skill>/bin/archify.mjs render architecture \
 
 node <archify-skill>/bin/archify.mjs check \
   .archify/FLOW-COPY-20261012/copy-line.html --json   # 必须 ok:true、composition=pass
+
+# 3) 四门全过（含浏览器内检查）：本机 Chrome 需要 --no-sandbox，archify 用环境变量开启（A-09 已关闭）
+ARCHIFY_CHROME_NO_SANDBOX=1 node <archify-skill>/bin/archify.mjs finalize architecture \
+  .archify/FLOW-COPY-20261012/copy-line.final.json .archify/FLOW-COPY-20261012/copy-line.html --quality showcase --json
+# → ok:true；gates: validate / deliver / check / browser-check 全 pass
 ```
 
 `<archify-skill>` = `/Users/yejin/.dsh/profiles/desktop/node_modules/@tt-a1i/archify-dsh/skills/archify`。
@@ -41,4 +46,4 @@ node <archify-skill>/bin/archify.mjs check \
 
 - 三列 x 坐标固定 `40 / 380 / 720`，行 y 从 120 起、步进 140；列间横向间隙须 ≥113px，否则报 `composition/label-gap`。
 - 正反两条边若走同一段走廊，标签会 0px 相撞（`composition/label-route-clearance`）——本图曾因此把标签缩短为「待抽查」「单张返工」「整组返工」才通过。
-- `browser-check` / `visual-check` 在本机被 Chrome 沙箱拦截（见 `../FLOW-OVERALL-20261012/README.md` 与 Action A-09），本图按 R-L2-18 用 `render` + `check` + 截图核对交付。
+- `browser-check` / `visual-check` 原被本机 Chrome 沙箱拦截（Action A-09）：**已解决** —— 给 archify 设 `ARCHIFY_CHROME_NO_SANDBOX=1`（它转成 Chrome 的 `--no-sandbox`），五张图 `finalize` 四门全过，命令见上。

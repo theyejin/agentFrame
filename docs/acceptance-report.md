@@ -16,10 +16,10 @@
 | AC-3 | 报告页与控制台能在本机浏览器打开并交互 | ✅ | §2.3：本地服务实测 + 浏览器实操（截图 `docs/evidence/*.png`） |
 | AC-4 | 不可逆动作都有人工确认记录 | ✅ | §2.4：三个关口各有 `hitl_events` confirm；关口③ 授权前 live 自检被拦 |
 | AC-5 | 每一步都先过模拟测试 | ✅ | §2.5：九套测试 243 项 + 结构体检 / 适配器 / 提示词登记表 |
-| AC-6 | 两份文档能还原「做到哪 / 为什么 / 还剩什么」 | ✅ | §2.6：讨论记录 N001–N014 + 目录说明 + 需求规格 v2.1.12 |
-| AC-7 | 结构或流程变更后图表同步且通过 archify 校验 | ✅（浏览器校验受限） | §2.7：五张图齐备，`render` + `check` 两图 9/9 通过；`browser-check` 受本机沙箱限制（A-09） |
+| AC-6 | 两份文档能还原「做到哪 / 为什么 / 还剩什么」 | ✅ | §2.6：讨论记录 N001–N014 + 目录说明 + 需求规格 v2.2-frozen |
+| AC-7 | 结构或流程变更后图表同步且通过 archify 校验 | ✅ | §2.7：五张图齐备，`finalize` 四门（`validate` / `deliver` / `check` / `browser-check`）全 pass；原受本机 Chrome 沙箱限制的 A-09 已关闭 |
 
-一句话结论：**四条线（文案 / 视觉 / 视频 / 分发数据）与编排者在一条真实选题上全程离线跑通，人工关口、红线守卫与留痕均可复核；唯一未完成的环境项是 archify 的浏览器校验（`A-09`），不影响交付。**
+一句话结论：**四条线（文案 / 视觉 / 视频 / 分发数据）与编排者在一条真实选题上全程离线跑通，人工关口、红线守卫与留痕均可复核；25 个 skill、5 个 Agent、16 张表、控制台与报告页全部落地，AC-1~AC-7 逐条通过，没有遗留的环境待办。**
 
 ---
 
@@ -131,7 +131,7 @@ C-08（Agent 不得自动发布）另有两条硬证据：`publish_guard.record(
 
 - `docs/discussion-record.md`：N001–N014 逐个记录「当时怎么想、定了什么、留了哪些 Action（A-01~A-78）」。
 - `docs/directory-and-files.md`：顶层目录逐条、`agents/`、`dashboard/`、`db/`、`tests/`、`logs/` 全覆盖，含「现有 243 项测试怎么分布」。
-- `docs/requirements-spec.md`：v2.1.12，台账 WP-01~WP-12 全部收口；`README.md`：留痕 N001–N014、决议 D-01~D-24。
+- `docs/requirements-spec.md`：**v2.2-frozen**（验收时为 v2.1.12，收尾时冻结），台账 WP-01~WP-12 全部收口；`README.md`：留痕 N001–N014、决议 D-01~D-24、进度 100%。
 - `logs/2026-10-12.jsonl`：搭建过程流水（每完成一步追加），`build-log.html` 即由它生成，可搜索、可追溯。
 
 ### 2.7 AC-7：图表同步且通过校验
@@ -148,7 +148,7 @@ node <archify-skill>/bin/archify.mjs check .archify/FLOW-PUBLISH-20261012/publis
 
 `publish-line.html` 与 `overall-operations.html` 均为 **exit=0、ok:true、9/9 检查通过**（`single_svg` / `finite_svg` / `orthogonal_arrows` / `label_route_clearance` 等）。
 
-**受限项（如实登记）**：`finalize` 的 `browser-check` 门在两张图上都返回 `fail`，原文 `viewer/browser-check-runtime: browser-check could not complete its Chrome inspection` —— 本机 Chrome 沙箱限制导致无法完成浏览器内逐项检查，与 `A-09` 一致；`validate` / `deliver` / `check` 三门均 `pass`。该限制不影响交付（图已按 R-L2-18 用 `render` + `check` + 截图交付），待用户环境具备条件时补跑。
+**浏览器校验（原受限项，已解决）**：`finalize` 的最后一关 `browser-check` 最初在本机返回 `fail`，原文 `viewer/browser-check-runtime: browser-check could not complete its Chrome inspection`（根因是 Chrome 沙箱 `Failed to initialize sandbox`）；当时按 R-L2-18 用 `render` + `check` + 截图交付并登记为 `A-09`。收尾时已解决 —— 给 archify 设 `ARCHIFY_CHROME_NO_SANDBOX=1`（其 `bin/visual-check.mjs` 会把它转成 Chrome 的 `--no-sandbox`），五张图重跑 `finalize` 均 `ok:true`，`gates: validate / deliver / check / browser-check` **四门全 pass**；命令记录在五张图的 README 与 `.archify/README.md`。
 
 ---
 
@@ -159,7 +159,7 @@ node <archify-skill>/bin/archify.mjs check .archify/FLOW-PUBLISH-20261012/publis
 | 真实账号与需登录来源 | 未接入 | 采集 / 发布走离线兜底（`browser.local-fixture` / `browser.fill-plan` / `metrics.local-fixture` / `doc.local-export`）；需登录的公开源与平台账号仍由真人提供（Q-13） |
 | 真实模型与生图 / 生视频服务 | 未接入 | 离线跑的是 `llm.mock` 与本地 ffmpeg 合成，接口与降级链已就位（`llm.deepseek` / Flow / 豆包 / ComfyUI 均登记为未接） |
 | 平台自动发布 | 永不自动 | 按 C-08，发布动作永远由真人点击完成；系统只生成填写清单与发布包 |
-| archify 浏览器校验 | 环境受限 | 见 §2.7（`A-09`） |
+| archify 浏览器校验 | 已解决 | 见 §2.7：加 `ARCHIFY_CHROME_NO_SANDBOX=1` 后四门全过，A-09 关闭（换机器仍可能遇到，规则与替代方式见 R-L2-18） |
 
 ---
 

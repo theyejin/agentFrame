@@ -699,7 +699,7 @@
 | 6. 本次结论     | 已达成一致：① 验收 = 可复跑命令 + 实测数值 + 报告文件，不接受口头结论（D-22）；② 受限项如实登记，绝不把没跑成的检查写成通过（D-23）；③ 「每步先过测试」用 `run_tests.py` 固化，收尾前必须 9 套全绿 + 结构体检退出码 0；④ 三类红线（关口③ 未授权被拦、Agent 不能写 `published`、发布只填写）由测试守住，不靠人记；⑤ 图表与实现同步属于收尾前置条件（AC-7）。未达成一致：无。 |
 | 7. 落实事项（Action） | 见下表                                                                      |
 | 8. 完成进度     | **100%**（WP-01~WP-12 全部收口）。本节点新增完成：端到端测试 13 项 + 验收报告 + 一键测试脚本 + AC-3 浏览器实操与截图 + 两张图同步 + 六份文档同步；测试累计 **243 项**，结构体检期望文件扩到 **98 项** |
-| 9. 剩余进度     | 无实现项。仅剩环境待办 A-09（archify 浏览器校验需用户环境）与终版收尾（规格冻结说明 + README 定稿 + tag `v1.0.0`） |
+| 9. 剩余进度     | 无。环境待办 A-09 已于终版收尾时关闭（见 A-85：加 `ARCHIFY_CHROME_NO_SANDBOX=1` 后五张图 `finalize` 四门全过）；终版收尾（台账收口 + 规格 v2.2-frozen + README 100% + tag `v1.0.0`）已随本节点收尾 |
 
 ### 落实事项（Action）
 
@@ -709,7 +709,8 @@
 | A-79 | 验收报告 `docs/acceptance-report.md`     | 执行 Agent | N014    | AC-1~AC-7 逐条给出可复现命令与实测数值；未覆盖项与 A-09 受限项如实写明 | ✅ 完成 |
 | A-80 | 一键测试脚本 `scripts/run_tests.py`        | 执行 Agent | N014    | `python3 scripts/run_tests.py` 一键跑完 9 套并打印合计（243 项）；有失败时退出码 1 | ✅ 完成 |
 | A-81 | AC-3 浏览器实操与截图入库                    | 执行 Agent | N014    | 控制台总览页与报告页在真实浏览器打开并交互；截图落 `docs/evidence/`（结构体检纳入期望文件） | ✅ 完成 |
-| A-82 | 图表同步（分发线补 `publish-guard`、总览图补控制台与报告页） | 执行 Agent | N014    | 五张图与实现一致；两图 `render` + `check` 均 9/9 通过；`browser-check` 受限在 A-09 如实登记 | ✅ 完成 |
+| A-82 | 图表同步（分发线补 `publish-guard`、总览图补控制台与报告页） | 执行 Agent | N014    | 五张图与实现一致；静态校验 9/9 通过；浏览器校验后由 A-85 补跑通过 | ✅ 完成 |
+| A-85 | 关闭 A-09：让 archify 的 `browser-check` / `visual-check` 在本机可用 | 执行 Agent | N014 收尾 | 给 archify 设 `ARCHIFY_CHROME_NO_SANDBOX=1`（其 `visual-check.mjs` 会转成 Chrome `--no-sandbox`）；五张图 `finalize` → `ok:true` 且 `validate`/`deliver`/`check`/`browser-check` 四门全 pass；命令写进五张图的 README 与 `.archify/README.md` | ✅ 完成 |
 | A-83 | 全量门禁                                | 执行 Agent | N014    | 9 套 243 项全绿；`structure_check` 退出码 0、期望文件 98、`problems=[]`；适配器登记表一致、提示词登记表通过 | ✅ 完成 |
 | A-84 | 六份文档同步与提交推送                        | 执行 Agent | N014 收尾 | 规格 v2.1.12 / README 100% / 台账 WP-05 与 WP-12 收口 / 流水追加 / 目录说明与 roster 同步 | ✅ 完成（tag v0.13.0-e2e） |
 | A-06 | 每次讨论后回填本文件与规格 §12 台账的状态              | 执行 Agent | 每次讨论结束  | 台账状态与讨论节点一一对应                                                 | 持续   |

@@ -18,7 +18,7 @@
 - 目录名：`FLOW-<线名>-<YYYYMMDD>`；一张图一个目录。
 - 每个目录固定：`<name>.final.json`（图源，改图只改它）、`<name>.html`（交付产物）、`README.md`（画什么/怎么重新生成校验）。
 - 交付流程（R-L2-18）：`archify render` → `archify check` 必须 `ok:true` 且 `composition=pass` → 人工/截图核对。
-- **本机 `browser-check` / `visual-check` 受 Chrome 沙箱限制**（登记为 Action A-09），替代验证方式见各目录 README，不得静默跳过。
+- **本机 Chrome 沙箱**：`browser-check` / `visual-check` 需要拉起 Chrome，本机要加环境变量 `ARCHIFY_CHROME_NO_SANDBOX=1`（archify 会转成 `--no-sandbox`）；五张图已四门全过（Action A-09 已关闭）。若换机器后仍失败，按各目录 README 的替代方式处理并在讨论记录登记，不得静默跳过。
 
 ## 维护提示
 

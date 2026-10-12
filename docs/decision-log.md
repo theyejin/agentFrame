@@ -33,6 +33,8 @@
 | D-22 | 端到端验收以「一条真实选题离线全链跑通」为准：`tests/test_e2e.py` 在临时库里真跑一遍（24 步 / 18 个 skill），把 AC-1~AC-7 逐条变成可执行断言，结论与证据写进 `docs/acceptance-report.md` —— 验收不靠口头结论，靠可复跑的命令与实测数值（AC-1~AC-7、R-L2-02） | N014 | 结构级 |
 | D-23 | 受限项如实登记、不伪造通过：本机 Chrome 沙箱导致 archify 的 `browser-check` 门跑不完，就在验收报告与决议里写明「`validate` / `deliver` / `check` 三门 pass、`browser-check` fail（A-09）」——图的交付按 R-L2-18 用 `render` + `check` + 截图，绝不把未跑的检查写成通过 | N014 | 可低成本变更 |
 
+| D-24 | archify 的浏览器校验在本机要带 `ARCHIFY_CHROME_NO_SANDBOX=1`：archify 的 `bin/visual-check.mjs` 读这个环境变量给 Chrome 加 `--no-sandbox`，加上之后五张图 `finalize` 的 `validate` / `deliver` / `check` / `browser-check` 四门全过（A-09 关闭）。该命令写进五张图的 README 与 `.archify/README.md`，并由 `tests/test_e2e.py` 的 AC-7 用例守着（README 必须含 `ARCHIFY_CHROME_NO_SANDBOX=1`）——将来换机器若再失败，按 R-L2-18 用替代方式并在讨论记录登记，不得静默跳过 | N014 | 可低成本变更 |
+
 ## 维护提示
 
 - 每次讨论节点收尾时，把新定下来的事项追加到本表（R-D-01、R-D-03）。

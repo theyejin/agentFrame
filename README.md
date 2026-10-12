@@ -9,8 +9,8 @@
 
 | 项      | 值                                                            |
 | ------ | ------------------------------------------------------------ |
-| 阶段     | **基础环境搭建中**：目录骨架（步骤 1）+ 数据库结构与迁移（步骤 2）+ 外部服务适配器层与提示词注册表（步骤 3）+ 文案线（步骤 4）+ 视觉线（步骤 5）+ 视频线（步骤 6）+ 分发数据线（步骤 7）+ Agent 定义与编排者工具（WP-07）+ 运营控制台与搭建过程报告页（步骤 8）+ 端到端验收（步骤 9）已完成，九步全部收口 |
-| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.12） |
+| 阶段     | **已交付 v1.0.0**：目录骨架（步骤 1）+ 数据库结构与迁移（步骤 2）+ 外部服务适配器层与提示词注册表（步骤 3）+ 文案线（步骤 4）+ 视觉线（步骤 5）+ 视频线（步骤 6）+ 分发数据线（步骤 7）+ Agent 定义与编排者工具（WP-07）+ 运营控制台与搭建过程报告页（步骤 8）+ 端到端验收（步骤 9）已完成，九步全部收口，四个工作包（WP-01~WP-12）全部完成，打 tag `v1.0.0` |
+| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.2-frozen） |
 | 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N014） |
 | Skill 名册 | [`docs/skill-roster.md`](docs/skill-roster.md)（18 岗位 + 7 支撑件 = 25 个目录） |
 | 目录与文件  | [`docs/directory-and-files.md`](docs/directory-and-files.md)（增删改必须同步） |
