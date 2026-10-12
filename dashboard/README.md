@@ -1,8 +1,8 @@
 <!--
 文件用途：运营控制台（dashboard/）与搭建过程报告页（仓库根目录 build-log.html）的说明 —— 页面清单、字段口径、流转路径、设计选择理由与自检方式。
-对应需求：R-L3-01（本地可访问）、R-L3-02（页面 + 字段说明）、R-L3-03（页面流转与设计选择理由）、R-L3-04（五类操作可在页面完成）、R-L3-05（只调本地脚本、不持有凭据）、R-L2-05/R-L2-06（过程日志与报告页）、AC-3、Q-6。
+对应需求：R-L3-01（本地可访问）、R-L3-02（页面 + 字段说明）、R-L3-03（页面流转与设计选择理由）、R-L3-04（五类操作可在页面完成）、R-L3-05（只调本地脚本、不持有凭据）、R-L3-06（框架图库栏目）、R-L2-05/R-L2-06（过程日志与报告页）、AC-3、Q-6。
 对应流程图：.archify/FLOW-OVERALL-20261012/overall-operations.html（FLOW-9 运营人员操作面）。
-维护提示：字段口径在 .dsh/skills/_shared/console.py（STAGE_LABELS / STATUS_LABELS / GATE_LABELS / RUN_WHITELIST）；页面改字段、白名单加 skill，都要同步本文件与 tests/test_dashboard.py。
+维护提示：字段口径在 .dsh/skills/_shared/console.py（STAGE_LABELS / STATUS_LABELS / GATE_LABELS / RUN_WHITELIST）；框架图库的图与文档清单在同文件的 DIAGRAMS / FRAMEWORK_DOCS（改清单改数据层，不在页面里写死路径）；页面改字段、白名单加 skill、顶栏加栏目，都要同步本文件与 tests/test_dashboard.py。
 -->
 
 # 运营控制台与搭建过程报告页
@@ -19,7 +19,7 @@ python3 scripts/build_log_report.py           # 重新生成根目录 build-log.
 python3 tests/test_dashboard.py               # 控制台与报告页的模拟测试
 ```
 
-打开 <http://127.0.0.1:8787/> 是控制台；<http://127.0.0.1:8787/build-log.html> 是搭建过程报告页（Q-6：两个独立页面）。控制台只监听 `127.0.0.1`；直接双击 HTML 只能看到静态外壳（页面要靠本地服务取数），页面顶部会给出提示。
+打开 <http://127.0.0.1:8787/> 是控制台；<http://127.0.0.1:8787/build-log.html> 是搭建过程报告页（Q-6：两个独立页面）；控制台的第六个栏目是框架图库：<http://127.0.0.1:8787/pages/diagrams.html>（`?key=overall|copy|visual|video|publish` 可深链到某一张图）。控制台只监听 `127.0.0.1`；直接双击 HTML 只能看到静态外壳（页面要靠本地服务取数），页面顶部会给出提示。
 
 ## 页面与字段说明
 
@@ -30,6 +30,7 @@ python3 tests/test_dashboard.py               # 控制台与报告页的模拟�
 | 文案生成 | `dashboard/pages/copy.html` | 提示词与字数范围是什么、三套候选差在哪、选定哪一套 |
 | 发布操作 | `dashboard/pages/publish.html` | 发布包齐不齐、红线过没过、谁授权的、链接回填了没 |
 | 数据与复盘 | `dashboard/pages/metrics.html` | 三项指标多少、热点从哪来、复盘说了什么 |
+| 框架图库 | `dashboard/pages/diagrams.html` | 整体流程与四条线的流程图长什么样、对应哪些需求、改成什么样算改完（一处集中看） |
 | 搭建过程报告 | `build-log.html`（仓库根目录） | 整个过程哪天做了什么、结果如何 |
 
 ### 总览页字段
@@ -84,6 +85,19 @@ python3 tests/test_dashboard.py               # 控制台与报告页的模拟�
 | 批次 / 分类分布 | 热点从哪一批来、每个分类多少条、热度多少 | `hotspot_batches` / `hotspot_items` |
 | 复盘报告 | 当期数据复盘与下一轮优化建议（只建议，不改提示词） | 产物 `role=review` |
 
+### 框架图库字段
+
+| 字段 | 含义 | 来源 |
+| --- | --- | --- |
+| 登记图数 / 交付 HTML 可打开 | 登记在册的图数、其中交付 HTML 真的在仓库里的张数 | `DIAGRAMS` + 磁盘 |
+| 图上节点合计 / 说明卡片合计 | 五张图的节点总数与卡片总数（图有多大一眼可见） | 图源 `.final.json` 现读 |
+| 框架文档数 / 图源 JSON 齐备 | 可选读的框架资料份数、图源是否都在 | `FRAMEWORK_DOCS` / 磁盘 |
+| 看图顺序 | 「先整体、再逐线、最后看流程图怎么改」的提示 | `diagrams()["rules"]` |
+| 覆盖流程 / 来源与讨论节点 | 这张图对应 FLOW 几、属整体还是分环节、在哪个讨论节点定稿 | `DIAGRAMS` |
+| 节点 · 连线 · 区域 · 卡片 | 图的规模四元组 | 图源 `.final.json` |
+| 交付文件 / 大小 / 生成时间 | 交付 HTML 的路径、体积、最后生成时刻 | 磁盘（缺件时点名为 bad） |
+| 缺件 / 漏登记 | 登记了却没有文件、或 `.archify/` 下没登记的图目录 | `diagrams()["missing"]` / `["unregistered"]` |
+
 ## 页面流转路径
 
 ```
@@ -98,6 +112,8 @@ python3 tests/test_dashboard.py               # 控制台与报告页的模拟�
 
 环节之间「下一步找谁」与交接契约不在页面里写死，页面按任务当前环节去调对应 skill；派单书（`workspace/topic-<id>/plan/`）里带着进场校验、产出物清单与完成判据。
 
+框架图库是旁路栏目（不参与任务流转）：任何页面、任何时刻都可以从顶栏进去看图查需求，改完图按栏目里写明的三条命令（`render` → `check` → `finalize`）重新生成校验，再回本文件与讨论记录登记。
+
 ## 设计选择理由
 
 - **静态 HTML + 本地服务，不用前端框架**：控制台是内网自用的小工具，两三百行原生 JS 足够；不引构建链，任何装了 Python 3 的机器 `python3 scripts/serve_dashboard.py` 就能开，页面文件也能被 `structure_check` 与测试直接检查。
@@ -106,6 +122,9 @@ python3 tests/test_dashboard.py               # 控制台与报告页的模拟�
 - **控制台不持有任何账号凭据**（R-L3-05）：账号只以「标签」形式记录（`publish_records.account_label`），浏览器自动化与飞书同步都是本地脚本里的事，真实账号与密钥不进页面、不进库。
 - **系统不自动发布**（C-08）：填写清单里 `submitted` 恒为 `false`，发布队列里 `can_auto_publish` 恒为 `false`；页面只准备、只记录，发布由真人手工完成后回填链接。
 - **build-log 与库解耦**：报告页的数据源是 `logs/*.jsonl`（每一步都追加），生成器 `scripts/build_log_report.py` 同时写出 `build-log.data.json`（可追溯）并把它内联进 `build-log.html`，所以报告页双击也能看；控制台首页只做入口链接（Q-6：两个独立页面）。
+- **框架图库不复制图的副本**：栏目直接打开 `.archify/` 里的交付 HTML（服务用 `/diagrams/<key>` 把文件读出来喂 iframe）。图只有一份（R-L2-12），不会出现「图更新了、栏目里还是旧副本」；`/diagrams/nope` 这类没登记的名字一律 400，服务不做任意路径读取。
+- **图与文档清单登记在数据层，不写在前端**：`_shared/console.py` 的 `DIAGRAMS` / `FRAMEWORK_DOCS` 是唯一登记处，页面与接口都从 `/api/diagrams` 取；`.archify/` 下多出一个没登记的图目录时，接口的 `unregistered` 会在栏目里点名（C-03 不静默失败）。
+- **顶栏链接带深度前缀**：控制台既在根目录（`index.html`）又在 `/pages/` 下，顶栏统一由 `app.js` 的 `topbar()` 按 `location.pathname` 拼 `up` 前缀渲染（`../index.html` / `../pages/*.html` / `../../build-log.html`），栏目在 `pages` 数组里登记一次即可。
 
 ## 本地服务接口
 
@@ -117,6 +136,9 @@ python3 tests/test_dashboard.py               # 控制台与报告页的模拟�
 | `GET /api/copy?id=N` | 三套候选文案与选定套号 |
 | `GET /api/artifacts?id=N&kind=…&role=…` | 文字类产物正文（对比卡 / 填写清单 / 复盘报告） |
 | `POST /api/run` | 调用白名单里的本地脚本（参数按列表传，无 shell） |
+| `GET /api/diagrams` | 框架图库整包：五张图的登记事实 + 磁盘事实（大小 / 生成时间 / 节点数…）+ 七份框架文档 + 缺件与漏登记（R-L3-06） |
+| `GET /diagrams/<key>` | 某张图的交付 HTML（`overall` / `copy` / `visual` / `video` / `publish`，只认登记 key，用于栏目的内嵌查看器） |
+| `GET /docs/<key>` | 某份框架资料的原文（纯文本，`requirements` / `directory` / `roster` / `grammar` / `decisions` / `acceptance` / `archify`） |
 
 ## 白名单（页面能调的脚本）
 
@@ -136,3 +158,4 @@ python3 tests/test_dashboard.py               # 控制台与报告页的模拟�
 | 日期 | 版本 | 说明 |
 | --- | --- | --- |
 | 2026-10-12 | v0.2.0 | 随 WP-05 步骤 8 落地：总览、任务流转、文案生成、发布操作、数据与复盘五页 + 本地服务（`/api/*` + 白名单）+ build-log 报告页。 |
+| 2026-10-12 | v0.3.0 | N015（R-L3-06）：新增第六个栏目「框架图库」——五张框架图集中查看（点选切换 / 全屏 / 新标签页 / `?key=` 深链）+ 七份框架资料可读原文 + 增改图三条命令；新增 `/api/diagrams`、`/diagrams/<key>`、`/docs/<key>` 三个只读接口；顺带修掉顶栏在根目录与 `/pages/` 之间互跳 404 的既存缺陷（D-27）。 |

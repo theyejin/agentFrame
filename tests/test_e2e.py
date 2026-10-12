@@ -227,6 +227,7 @@ class TestAcceptanceCriteria(E2EBaseCase):
         self.assertTrue(json.loads(r.stdout)["ok"])
         for rel in ("dashboard/index.html", "dashboard/pages/copy.html", "dashboard/pages/tasks.html",
                     "dashboard/pages/publish.html", "dashboard/pages/metrics.html",
+                    "dashboard/pages/diagrams.html",
                     "dashboard/assets/app.js", "dashboard/assets/style.css", "build-log.html"):
             self.assertTrue((ROOT / rel).is_file(), f"缺页面：{rel}")
         html = (ROOT / "build-log.html").read_text(encoding="utf-8")

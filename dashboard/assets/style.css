@@ -86,3 +86,11 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; word-break: break-all; }
 pre.out { background: #0f1420; color: #e6edf3; padding: 10px 12px; border-radius: 8px; max-height: 260px; overflow: auto; font-size: 12px; }
 .flowline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: 12.5px; }
+
+/* 区块：框架图库（内嵌查看器） */
+.picker { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.picker button.active { border-color: var(--accent); color: var(--accent); background: #e8f0ff; }
+.viewer-wrap { position: relative; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--panel); }
+.viewer-wrap iframe { display: block; width: 100%; height: 78vh; min-height: 460px; border: 0; }
+.viewer-wrap:fullscreen iframe { height: 100vh; }
+.figure-note { display: grid; gap: 4px; margin-top: 10px; }

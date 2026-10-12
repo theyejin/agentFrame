@@ -21,8 +21,8 @@
 | 视频线    | 5 个 skill（`asset-packager` / `image-to-video` / `auto-editor` / `video-exporter` / `title-cover-prep`）+ 本地视频能力（`video.ffmpeg`，Remotion 未接时自动降级）；测试 `python3 tests/test_video_line.py` |
 | 分发数据线  | 6 个 skill（`hotspot-collector` / `table-builder` / `feishu-sync` / `browser-publisher` / `metrics-collector` / `review-reporter`）+ 红线守卫 `publish-guard` + 本地兜底（`browser.local-fixture` / `browser.fill-plan` / `metrics.local-fixture`，只填写不提交）；测试 `python3 tests/test_publish_line.py` |
 | Agent/编排者 | 五个 Agent 定义（`agents/`）+ 契约事实源 `agents/orchestrator/config.yml`；编排者工具 `task-decomposer` / `summary-writer`；测试 `python3 tests/test_orchestrator.py` |
-| 控制台/报告页 | `dashboard/` 五页（总览 / 任务流转 / 文案生成 / 发布操作 / 数据与复盘）+ 本地服务 `scripts/serve_dashboard.py`（只监听 127.0.0.1，写操作走 skill 白名单）+ 仓库根搭建过程报告页 `build-log.html`（生成器 `scripts/build_log_report.py`）；打开方式见 [`dashboard/README.md`](dashboard/README.md)；测试 `python3 tests/test_dashboard.py` |
-| 端到端验收  | 一条真实选题离线全链跑通（24 步 / 18 个 skill / 43 条产物，三个关口真人决议）；验收报告 [`docs/acceptance-report.md`](docs/acceptance-report.md)；一键复跑 `python3 scripts/run_tests.py`（9 套 243 项） |
+| 控制台/报告页 | `dashboard/` **六页**（总览 / 任务流转 / 文案生成 / **框架图库** / 发布操作 / 数据与复盘）+ 本地服务 `scripts/serve_dashboard.py`（只监听 127.0.0.1，写操作走 skill 白名单，框架图库三接口只读登记表）+ 仓库根搭建过程报告页 `build-log.html`（生成器 `scripts/build_log_report.py`）；打开方式见 [`dashboard/README.md`](dashboard/README.md)；测试 `python3 tests/test_dashboard.py` |
+| 端到端验收  | 一条真实选题离线全链跑通（24 步 / 18 个 skill / 43 条产物，三个关口真人决议）；验收报告 [`docs/acceptance-report.md`](docs/acceptance-report.md)；一键复跑 `python3 scripts/run_tests.py`（9 套 253 项） |
 | 实施进度   | **100%**（WP-01~WP-12 全部收口，详见需求规格 §12 总进度台账）                                     |
 
 > ✅ 目录方案已确认（N005）并按 9 步顺序落地，**顶层目录已建成**；各步只建「本步真正要用的子目录」，不留空壳。
@@ -155,11 +155,12 @@ python3 tests/test_visual_line.py           # 视觉线相关改动必跑（21 �
 python3 tests/test_video_line.py            # 视频线相关改动必跑（22 项）
 python3 tests/test_publish_line.py          # 分发数据线相关改动必跑（33 项）
 python3 tests/test_orchestrator.py          # Agent 定义 / 编排者工具相关改动必跑（33 项）
-python3 tests/test_dashboard.py             # 控制台 / 报告页相关改动必跑（34 项）
+python3 tests/test_dashboard.py             # 控制台 / 报告页 / 框架图库相关改动必跑（43 项）
 python3 tests/test_e2e.py                   # 端到端验收相关改动必跑（13 项，全程约 4 秒）
-python3 scripts/run_tests.py                # 一键跑完全部 9 套 244 项
+python3 scripts/run_tests.py                # 一键跑完全部 9 套 253 项
 python3 scripts/build_log_report.py         # 有新的实施步骤记录后重生成 build-log 报告页
 python3 scripts/serve_dashboard.py          # 本地打开控制台：http://127.0.0.1:8787/
+                                            #   └ 框架图库栏目：http://127.0.0.1:8787/pages/diagrams.html
 python3 scripts/seed_adapters.py --check    # 改了 registry.json 必跑（登记表与数据库是否一致）
 git add -A && git commit -m "..." && git push origin main --tags
 ```

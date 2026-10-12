@@ -1,13 +1,19 @@
 {
-  "generated_at": "2026-10-12T16:19:25+08:00",
+  "generated_at": "2026-10-12T18:56:39+08:00",
   "generator": "scripts/build_log_report.py",
   "title": "搭建过程记录（build-log）",
-  "total": 75,
+  "total": 76,
   "dates": [
     {
       "date": "2026-10-12",
-      "count": 75,
+      "count": 76,
       "titles": [
+        {
+          "id": "2026-10-12-76",
+          "title": "控制台新增第六个栏目「框架图库」（R-L3-06）：五张框架图集中查看 + 七份框架资料可读原文；顺带修掉顶栏互跳 404",
+          "step": "L3-gallery",
+          "result": "ok"
+        },
         {
           "id": "2026-10-12-75",
           "title": "修复控制台任务流转页整页空白（内联脚本括号失衡），新增语法守卫测试并打 tag v1.0.1",
@@ -462,6 +468,18 @@
     }
   ],
   "entries": [
+    {
+      "id": "2026-10-12-76",
+      "date": "2026-10-12",
+      "ts": "2026-10-12T18:56:37+08:00",
+      "step": "L3-gallery",
+      "category": "L3-gallery",
+      "title": "控制台新增第六个栏目「框架图库」（R-L3-06）：五张框架图集中查看 + 七份框架资料可读原文；顺带修掉顶栏互跳 404",
+      "detail": "数据层登记表 DIAGRAMS/FRAMEWORK_DOCS + diagrams()/diagram_file()/framework_doc()；服务加 /api/diagrams、/diagrams/<key>、/docs/<key>（只认登记 key，未登记一律 400）；新页 dashboard/pages/diagrams.html + 顶栏与首页入口；总览图控制台节点改「六页」并 render+check(9/9)+finalize(四门全过)；结构体检期望文件 99 项，测试累计 9 套 253 项全绿（D-26、D-27、N015）",
+      "result": "ok",
+      "skill": "",
+      "actor": "agent"
+    },
     {
       "id": "2026-10-12-75",
       "date": "2026-10-12",

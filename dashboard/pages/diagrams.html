@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<!-- 文件用途：框架图库页 —— 控制台的新栏目：把 .archify/ 里的五张架构/流程图与 docs/ 下的框架文档集中到一处查看（图就在本页内嵌打开，不用另存副本）。 -->
+<!-- 对应需求：R-L3-06（框架图库栏目：集中查看全部框架图）、R-L3-02（多栏目分页）、R-L1-11（整体 + 各环节操作流程图）、R-L2-11~13（archify 生成、一图一目录、变更后重新校验）、AC-3、AC-7、Q-6。 -->
+<!-- 维护提示：图与文档的清单来自 .dsh/skills/_shared/console.py 的 DIAGRAMS / FRAMEWORK_DOCS 登记表；新图先加登记表，别在本页写死路径；本页只读，不改图也不改文档（R-L3-05）。 -->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>agentFrame 运营控制台 · 框架图库</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+<script src="../assets/app.js"></script>
+<script>
+/* 区块：页面状态 */
+let gallery = null;   // /api/diagrams 的返回：登记表 + 磁盘事实 + 文档清单 + 规则
+let current = "";     // 当前在看的图 key
+
+async function render() {
+  gallery = await get("/api/diagrams");
+  const items = gallery.items || [];
+  const wanted = new URLSearchParams(location.search).get("key");
+  current = items.some((item) => item.key === wanted) ? wanted : ((items[0] || {}).key || "");
+  const main = el("main", {},
+    cardSummary(gallery, items),
+    cardViewer(items),
+    cardList(gallery, items),
+    cardDocs(gallery),
+    cardRules(gallery));
+  shell("diagrams.html", main);
+  if (current) showDiagram(current, false);
+}
+
+/* 区块：概览（登记图数 / 可打开数 / 图上节点与卡片合计 / 框架文档数） */
+function cardSummary(gallery, items) {
+  const sum = (key) => items.reduce((acc, item) => acc + Number(item[key] || 0), 0);
+  return el("div", { class: "card" },
+    el("h2", {}, "框架图库", el("span", { class: "hint", text: "整体运营流程 + 四条环节线，一律 archify 生成的独立可交互 HTML；本栏目只读、不复制副本（R-L2-11、R-L2-12）" })),
+    el("div", { class: "grid cols-4" },
+      stat(gallery.count, "登记图数"),
+      stat(gallery.available, "交付 HTML 可打开"),
+      stat(sum("nodes"), "图上节点合计"),
+      stat(sum("cards"), "说明卡片合计"),
+      stat((gallery.docs || []).length, "框架文档"),
+      stat(items.filter((item) => item.source_exists).length, "图源 JSON 齐备")),
+    el("div", { class: "flowline", style: "margin-top:10px" },
+      el("span", { class: "muted", text: gallery.built_note || "看图顺序建议：先整体、再缺哪一环看哪一张；每张图都能在图上点节点看说明、切明暗主题、导出图片。" })));
+}
+
+/* 区块：内嵌查看器（按钮切换在看的图 + iframe 打开交付 HTML + 新标签页 / 全屏） */
+function cardViewer(items) {
+  const picker = el("div", { class: "picker", id: "picker" },
+    ...items.map((item) => el("button", {
+      "data-key": item.key,
+      text: item.title,
+      title: `${item.group}｜${item.covers}`,
+      onclick: () => showDiagram(item.key),
+    })));
+  return el("div", { class: "card" },
+    el("h2", {}, "在图库内查看", el("span", { class: "hint", text: "点上面的按钮切换；图里可点节点看说明、切明暗主题、导出图片与 SVG；要全屏或另开一个页签用右侧按钮" })),
+    picker,
+    el("div", { class: "viewer-wrap", id: "viewer-wrap" },
+      el("iframe", { id: "frame", title: "框架图预览" })),
+    el("div", { class: "row", style: "margin-top:10px" },
+      el("a", { id: "open-tab", href: "#", target: "_blank" }, el("button", { text: "在新标签页打开" })),
+      el("button", { text: "全屏看图", onclick: () => {
+        const wrap = $("#viewer-wrap");
+        if (wrap && wrap.requestFullscreen) wrap.requestFullscreen();
+        else toast("这个浏览器不支持全屏", true);
+      } }),
+      el("button", { text: "刷新这张图", onclick: () => { const frame = $("#frame"); if (frame) frame.src = frame.src; } })),
+    el("div", { class: "figure-note", id: "frame-caption" }));
+}
+
+/* 区块：切换在看的图（地址栏带 ?key=，方便直接分享到某一张） */
+function showDiagram(key, updateUrl = true) {
+  const item = (gallery.items || []).find((row) => row.key === key);
+  if (!item) return;
+  current = key;
+  const frame = $("#frame");
+  const caption = $("#frame-caption");
+  const open = $("#open-tab");
+  if (item.exists && frame) frame.src = item.view_url;
+  if (open) open.href = item.view_url;
+  if (caption) {
+    const lines = [
+      el("b", { text: `${item.title} · ${item.subtitle}` }),
+      el("div", { class: "muted", text: `${item.group}｜${item.covers}｜需求 ${item.requirement}｜讨论节点 ${item.node}` }),
+      el("div", { text: item.point }),
+      el("div", { class: "mono", text: `${item.html_path} · ${item.size_text} · 生成于 ${item.updated_at}` }),
+    ];
+    if (!item.exists) lines.push(el("div", { class: "tag bad", text: "交付 HTML 不在仓库里：改完图源要重新 render 并校验（R-L2-13）" }));
+    caption.replaceChildren(...lines);
+  }
+  $$("#picker button").forEach((button) => button.classList.toggle("active", button.dataset.key === key));
+  if (updateUrl) {
+    try { history.replaceState(null, "", `${location.pathname}?key=${encodeURIComponent(key)}`); }
+    catch (err) { /* file:// 下改不了地址栏，不影响看图 */ }
+  }
+}
+
+/* 区块：图库一览表（每张图的覆盖流程 / 讨论节点 / 规模 / 文件事实都给出来） */
+function cardList(gallery, items) {
+  return el("div", { class: "card" },
+    el("h2", {}, "图库一览", el("span", { class: "hint", text: "规模与文件事实是现读磁场的：图源里几个节点、HTML 多大、什么时候生成的" })),
+    table(["图", "覆盖流程", "来源", "图上规模", "交付文件", "操作"],
+      items.map((item) => [
+        el("div", {}, el("b", { text: item.title }),
+          el("div", { class: "sub", text: item.source_title || item.subtitle })),
+        el("div", {}, item.covers, el("div", { class: "sub", text: item.requirement })),
+        el("div", {}, tag(item.group, "accent"), el("div", { class: "sub", text: `讨论节点 ${item.node}` })),
+        item.parsed
+          ? `${item.nodes} 节点 / ${item.connections} 连线 / ${item.regions} 区域 / ${item.cards} 卡片`
+          : el("span", { class: "tag bad", text: item.error || "图源读不出来" }),
+        el("div", {}, el("span", { class: "mono", text: item.html_path }),
+          el("div", { class: "sub", text: `${item.size_text} · ${item.updated_at}` })),
+        el("div", { class: "row" },
+          el("button", { text: "在图库内打开", onclick: () => showDiagram(item.key) }),
+          el("a", { href: item.view_url, target: "_blank" }, el("button", { text: "新标签页" }))),
+      ]), "还没有登记任何图"),
+    gallery.unregistered.length
+      ? el("div", { class: "tag warn", style: "margin-top:10px",
+          text: `有 ${gallery.unregistered.length} 个图目录没登记：${gallery.unregistered.map((row) => row.dir).join("、")}（补进 _shared/console.py 的 DIAGRAMS 才会在这里出现）` })
+      : null,
+    gallery.missing.length
+      ? el("div", { class: "tag bad", style: "margin-top:10px",
+          text: `这些图的交付 HTML 不在仓库里：${gallery.missing.join("、")}（改完图源要重新 render 并 check）` })
+      : null);
+}
+
+/* 区块：图源与框架文档（文档按登记表只读打开原文，不复制到 dashboard/ 下） */
+function cardDocs(gallery) {
+  return el("div", { class: "card" },
+    el("h2", {}, "框架资料", el("span", { class: "hint", text: "主流程之外的框架文档：条款口径、目录说明、岗位契约、讨论与决议、验收证据；点「打开原文」按纯文本查看" })),
+    table(["文档", "用途", "仓库路径", "操作"],
+      (gallery.docs || []).map((doc) => [
+        el("b", { text: doc.title }), doc.purpose,
+        el("span", { class: "mono", text: doc.path }),
+        doc.exists
+          ? el("a", { href: doc.view_url, target: "_blank" }, el("button", { text: "打开原文" }))
+          : el("span", { class: "tag bad", text: "文件缺失" }),
+      ]), "还没有登记框架文档"),
+    el("div", { class: "row", style: "margin-top:10px" },
+      el("a", { href: "../index.html" }, el("button", { text: "回总览" })),
+      el("a", { href: "../pages/tasks.html" }, el("button", { text: "去任务流转页" })),
+      el("a", { href: "../../build-log.html" }, el("button", { text: "打开搭建过程报告页" }))));
+}
+
+/* 区块：新增 / 改图的规矩与命令（R-L2-10、R-L2-13：改图必须重新校验，结构变更后受影响的图必须重生成） */
+function cardRules(gallery) {
+  const commands = [
+    "# 1) 出图（render 不走浏览器门，稳定可用）",
+    "node <archify-skill>/bin/archify.mjs render architecture \\",
+    "  .archify/<FLOW-...>/<slug>.final.json .archify/<FLOW-...>/<slug>.html --quality showcase",
+    "",
+    "# 2) 静态校验，必须 ok:true（组合与标签间隙都在这一关查）",
+    "node <archify-skill>/bin/archify.mjs check .archify/<FLOW-...>/<slug>.html --json",
+    "",
+    "# 3) 四门全过（含浏览器内检查）；本机 Chrome 需要关沙箱，用环境变量开",
+    "ARCHIFY_CHROME_NO_SANDBOX=1 node <archify-skill>/bin/archify.mjs finalize architecture \\",
+    "  .archify/<FLOW-...>/<slug>.final.json .archify/<FLOW-...>/<slug>.html --quality showcase --json",
+    "",
+    "# 4) 改完结构（例如控制台多了一个栏目）后，受影响的图必须重跑上面前三步，再补文档与日志",
+  ].join("\n");
+  return el("div", { class: "card" },
+    el("h2", {}, "怎么加一张图 / 改一张图", el("span", { class: "hint", text: "命令与 .archify/README.md 一致；<archify-skill> = 本机 archify skill 目录" })),
+    el("div", { class: "grid cols-2" },
+      el("div", {},
+        el("h3", { text: "规矩" }),
+        el("ul", {}, ...(gallery.rules || []).map((rule) => el("li", { text: rule }))),
+        el("div", { class: "muted", text: "改完还要同步：docs/requirements-spec.md §15 变更同步检查表逐项打勾（规格 / 讨论节点 / 台账 / 图重新校验 / 目录说明 / 目录 README / 代码头注释 / build-log / tag 推送）。" })),
+      el("div", {},
+        el("h3", { text: "命令" }),
+        el("pre", { class: "out", text: commands }))));
+}
+
+boot(render);
+</script>
+</body>
+</html>

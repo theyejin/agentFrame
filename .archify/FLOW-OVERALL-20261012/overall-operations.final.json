@@ -184,7 +184,7 @@
       "id": "console",
       "type": "frontend",
       "label": "运营控制台（dashboard）",
-      "sublabel": "五页：文案 / 任务 / 发布 / 数据 / 日志",
+      "sublabel": "六页：文案 / 任务 / 图库 / 发布 / 数据 / 日志",
       "pos": [
         400,
         840

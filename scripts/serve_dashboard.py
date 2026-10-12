@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # 文件用途：运营控制台的本地服务 —— 只读展示快照 + 调用白名单本地脚本（R-L3-01~05）；不代持任何平台账号凭据，不做自动发布。
-# 对应需求：R-L3-01（本地可访问）、R-L3-04（文案生成/选择/流转/发布/数据五类操作）、R-L3-05（只读库 + 调本地脚本、不持有凭据）、C-08（不自动发布）、C-09（付费调用不在控制台开口子）、AC-3。
+# 对应需求：R-L3-01（本地可访问）、R-L3-04（文案生成/选择/流转/发布/数据五类操作）、R-L3-05（只读库 + 调本地脚本、不持有凭据）、R-L3-06（框架图库栏目：按登记表开图与文档）、C-08（不自动发布）、C-09（付费调用不在控制台开口子）、AC-3。
 # 对应流程图：.archify/FLOW-OVERALL-20261012/overall-operations.html（FLOW-9 运营人员操作面）
-# 维护提示：新增页面或新增可调用脚本时，改 _shared/console.py 的 RUN_WHITELIST 与 dashboard/README.md；本服务只监听 127.0.0.1。
+# 维护提示：新增页面或新增可调用脚本时，改 _shared/console.py 的 RUN_WHITELIST / DIAGRAMS 与 dashboard/README.md；本服务只监听 127.0.0.1，/diagrams/<key> 与 /docs/<key> 只认登记表里的 key，不接受路径。
 """运营控制台本地服务。
 
 用法：
@@ -16,6 +16,9 @@
     GET  /build-log.html      搭建过程报告页（仓库根目录，由 scripts/build_log_report.py 生成）
     GET  /api/health          服务与库状态
     GET  /api/snapshot        整包数据（任务 / 关口待办 / 发布队列 / 指标 / 热点 / 最近日志）
+    GET  /api/diagrams        框架图库（图的登记表 + 磁盘事实：是否存在 / 大小 / 节点与连线计数 + 框架文档清单）
+    GET  /diagrams/<key>      一张框架图的交付 HTML（key 取 _shared/console.py 的 DIAGRAMS，页面传不进路径）
+    GET  /docs/<key>          一份框架文档的原文（纯文本，key 取 FRAMEWORK_DOCS）
     GET  /api/task?id=N       一条任务的完整轨迹
     GET  /api/copy?id=N       三套候选文案与选定套号（关口① 对比卡）
     GET  /api/artifacts?id=N&kind=…&role=…   一条任务的文字产物正文（文案对比卡 / 填写清单 / 复盘报告）
@@ -122,7 +125,7 @@ def _static_file(url_path: str) -> Path | None:
 class Handler(BaseHTTPRequestHandler):
     """极简本地服务：GET 静态与数据、POST 调脚本。故意不支持目录列表与写文件。"""
 
-    server_version = "agentFrame-console/1.0"
+    server_version = "agentFrame-console/1.1"
     db: str | None = None
 
     # ---- 小工具 ----
@@ -151,6 +154,15 @@ class Handler(BaseHTTPRequestHandler):
                                         "whitelist": {k: list(v) for k, v in cs.RUN_WHITELIST.items()}})
             if route == "/api/snapshot":
                 return self._json(200, cs.snapshot(db=self.db))
+            if route == "/api/diagrams":
+                return self._json(200, cs.diagrams())
+            if route.startswith("/diagrams/"):
+                # 只认登记表里的 key：页面拼不出任意路径，也开不到 .archify/ 以外的文件
+                return self._send(200, cs.diagram_file(route[len("/diagrams/"):]).read_bytes(),
+                                  "text/html; charset=utf-8")
+            if route.startswith("/docs/"):
+                return self._send(200, cs.framework_doc(route[len("/docs/"):]).read_bytes(),
+                                  "text/plain; charset=utf-8")
             if route == "/api/task":
                 task_id = int(query.get("id", ["0"])[0])
                 return self._json(200, cs.task_trace(task_id, db=self.db))
@@ -210,18 +222,22 @@ def main(argv: list[str] | None = None) -> int:
     Handler.db = args.db
     if args.check:
         snap = cs.snapshot(db=args.db)
+        gallery = cs.diagrams()
         summary = {"ok": True, "db": snap["db"], "tasks": len(snap["tasks"]),
                    "gate_todos": len(snap["gate_todos"]), "publish_queue": len(snap["publish_queue"]),
-                   "logs": snap["logs"]["count"], "generated_at": snap["generated_at"]}
+                   "logs": snap["logs"]["count"], "diagrams": gallery["available"],
+                   "diagrams_missing": gallery["missing"], "generated_at": snap["generated_at"]}
         print(json.dumps(summary, ensure_ascii=False, indent=2) if args.json
               else f"控制台数据自检通过：任务 {summary['tasks']} 条、待办关口 {summary['gate_todos']} 个、"
-                   f"发布队列 {summary['publish_queue']} 条、日志 {summary['logs']} 条（库：{summary['db']}）")
+                   f"发布队列 {summary['publish_queue']} 条、日志 {summary['logs']} 条、"
+                   f"框架图 {summary['diagrams']}/{gallery['count']} 张可打开（库：{summary['db']}）")
         return 0
     if args.host != "127.0.0.1":
         print("控制台只允许监听 127.0.0.1（R-L3-05：不对外暴露）", file=sys.stderr)
         return 2
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"运营控制台已启动：http://{args.host}:{args.port}/   （Ctrl+C 退出）")
+    print(f"框架图库：http://{args.host}:{args.port}/pages/diagrams.html")
     print(f"搭建过程报告页：http://{args.host}:{args.port}/build-log.html")
     try:
         server.serve_forever()

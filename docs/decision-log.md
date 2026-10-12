@@ -37,6 +37,9 @@
 
 | D-25 | 控制台页面的内联脚本必须过 `node --check`：控制台页面没有静态骨架，整页靠内联脚本渲染，一个括号失衡就是**整页空白**（v1.0.0 后的实际事故：`dashboard/pages/tasks.html` 轨迹表多一个 `)`，页面全白但 HTTP 仍 200、既有测试全绿）。因此 `tests/test_dashboard.py` 增加语法守卫用例（对五页 + `app.js` 跑 `node --check`），并把「HTTP 200 不等于页面能看」写进验收口径 | v1.0.1 补丁 | 可低成本变更 |
 
+| D-26 | 「框架图库」直接开 `.archify/` 里的交付 HTML，不在 `dashboard/` 复制副本：图只有一份（R-L2-12），`/diagrams/<key>` 由服务按登记表把文件读出来喂给 iframe，避免「图更新了、栏目里还是旧副本」。图与框架文档的清单是**数据层的登记表**（`_shared/console.py` 的 `DIAGRAMS` / `FRAMEWORK_DOCS`），页面与接口都从 `/api/diagrams` 取，前端不写死路径；服务只认登记 key，任意路径一律 400，且 `.archify/` 下出现**没登记的图目录**时必须在栏目里点名告警（C-03 不静默） | N015 | 结构级 |
+| D-27 | 控制台顶栏链接一律带深度前缀：顶栏由 `app.js` 的 `topbar()` 统一渲染，而控制台既在根目录（`index.html`）又在 `/pages/` 下，裸文件名一跳就 404（在 `/pages/` 点「总览」→ `/pages/index.html`）。改为 `const up = location.pathname.includes("/pages/") ? "../" : "";` 后按 `up` 拼 href，栏目在 `pages` 数组里登记一次即可；新增栏目必须同时给 `index.html` 加入口，由 `tests/test_dashboard.py` 的可达性与顶栏用例守住 | N015 | 可低成本变更 |
+
 ## 维护提示
 
 - 每次讨论节点收尾时，把新定下来的事项追加到本表（R-D-01、R-D-03）。

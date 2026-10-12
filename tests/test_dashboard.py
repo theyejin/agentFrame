@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # 文件用途：运营控制台与搭建过程报告页的模拟测试 —— 数据层聚合、build-log 生成、本地服务接口与白名单、页面约定。
-# 对应需求：R-L2-05（过程日志与报告页）、R-L2-06（build-log 在根目录且数据可追溯）、R-L3-01~05（本地可访问、只调本地脚本、不持有凭据）、AC-3、Q-6。
-# 维护提示：新增控制台页面或新增白名单 skill 时，本文件的 TestConsolePages / TestServeDashboard 要同步补断言。
+# 对应需求：R-L2-05（过程日志与报告页）、R-L2-06（build-log 在根目录且数据可追溯）、R-L3-01~06（本地可访问、只调本地脚本、不持有凭据、框架图库栏目）、AC-3、Q-6。
+# 维护提示：新增控制台页面、新增框架图或新增白名单 skill 时，本文件的 TestDiagramGallery / TestServeDashboard / TestConsolePages 要同步补断言。
 
 from __future__ import annotations
 
@@ -275,6 +275,76 @@ class TestBuildLog(DashboardBaseCase):
         self.assertTrue((self.tmp / "build-log.html").is_file())
 
 
+class TestDiagramGallery(unittest.TestCase):
+    """框架图库栏目（R-L3-06）：登记表与磁盘图目录一一对应、图源可解析、缺件与未登记都要被点名。"""
+
+    def test_registry_covers_every_diagram_folder(self) -> None:
+        payload = cs.diagrams()
+        self.assertEqual(payload["count"], len(cs.DIAGRAMS))
+        self.assertEqual(payload["count"], 5)
+        registered = {item["dir"] for item in payload["items"]}
+        on_disk = {f".archify/{path.name}" for path in (ROOT / ".archify").iterdir()
+                   if path.is_dir() and path.name.startswith("FLOW-")}
+        self.assertEqual(registered, on_disk, "图目录与登记表必须一一对应")
+        self.assertEqual(payload["unregistered"], [])
+        self.assertEqual(payload["missing"], [])
+        self.assertEqual(payload["available"], payload["count"])
+
+    def test_items_carry_registry_facts_and_disk_facts(self) -> None:
+        payload = cs.diagrams()
+        for item in payload["items"]:
+            label = item["key"]
+            self.assertTrue(item["covers"] and item["node"] and item["point"], label)
+            self.assertIn(item["group"], payload["groups"], label)
+            self.assertTrue(item["exists"] and item["source_exists"] and item["readme_exists"], label)
+            self.assertGreater(item["size_bytes"], 100_000, label)
+            self.assertTrue(item["parsed"], item.get("error", ""))
+            self.assertGreater(item["nodes"], 0, label)
+            self.assertGreater(item["connections"], 0, label)
+            self.assertGreater(item["cards"], 0, label)
+            self.assertTrue(item["source_title"], label)
+            self.assertEqual(item["view_url"], f"/diagrams/{item['key']}")
+            self.assertTrue(item["updated_at"] and item["size_text"] != "—", label)
+
+    def test_images_are_self_contained(self) -> None:
+        """栏目直接开 .archify/ 下的 HTML，所以图必须自包含：不引用外部脚本/样式/图片（R-L2-11）。"""
+        for item in cs.diagrams()["items"]:
+            html = (ROOT / item["html_path"]).read_text(encoding="utf-8")
+            for pattern in ("<link", "<script src=", 'src="', 'href="'):
+                self.assertNotIn(pattern, html, f"{item['key']} 出现外部引用 {pattern}")
+
+    def test_missing_and_unregistered_are_reported(self) -> None:
+        """图不在磁盘上、或目录没登记，都必须被点名，不能悄悄少一张（C-03）。"""
+        with tempfile.TemporaryDirectory() as tmp:
+            empty = cs.diagrams(root=tmp)
+            self.assertEqual(empty["available"], 0)
+            self.assertEqual(sorted(empty["missing"]), sorted(item["key"] for item in cs.DIAGRAMS))
+            (Path(tmp) / ".archify" / "FLOW-X-20260101").mkdir(parents=True)
+            payload = cs.diagrams(root=tmp)
+            self.assertEqual([row["dir"] for row in payload["unregistered"]], [".archify/FLOW-X-20260101"])
+
+    def test_diagram_file_and_framework_doc_only_accept_registered_keys(self) -> None:
+        path = cs.diagram_file("overall")
+        self.assertTrue(path.is_file())
+        self.assertEqual(path.parent.name, "FLOW-OVERALL-20261012")
+        self.assertEqual(path.suffix, ".html")
+        with self.assertRaises(cs.ConsoleError):
+            cs.diagram_file("nope")
+        with self.assertRaises(cs.ConsoleError):
+            cs.diagram_file("../../etc/passwd")
+        self.assertTrue(cs.framework_doc("requirements").is_file())
+        with self.assertRaises(cs.ConsoleError):
+            cs.framework_doc("nope")
+
+    def test_framework_docs_exist(self) -> None:
+        payload = cs.diagrams()
+        self.assertEqual(len(payload["docs"]), len(cs.FRAMEWORK_DOCS))
+        for doc in payload["docs"]:
+            self.assertTrue(doc["exists"], doc["path"])
+            self.assertTrue(doc["purpose"], doc["key"])
+            self.assertEqual(doc["view_url"], f"/docs/{doc['key']}")
+
+
 class TestServeDashboard(DashboardBaseCase):
     """本地服务：白名单、命令行拼装、HTTP 接口与静态页面、控制台动作留痕。"""
 
@@ -352,12 +422,35 @@ class TestServeDashboard(DashboardBaseCase):
     def test_static_pages_served(self) -> None:
         for path in ("/", "/index.html", "/assets/app.js", "/assets/style.css",
                      "/pages/tasks.html", "/pages/copy.html", "/pages/publish.html",
-                     "/pages/metrics.html", "/build-log.html"):
+                     "/pages/metrics.html", "/pages/diagrams.html", "/build-log.html"):
             status, body = self.get(path)
             self.assertEqual(status, 200, path)
             self.assertTrue(body.strip(), path)
         status, body = self.get("/pages/没有这个页面.html")
         self.assertEqual(status, 404)
+
+    def test_diagrams_endpoint_and_viewer(self) -> None:
+        """框架图库栏目：`/api/diagrams` 给数据，`/diagrams/<key>` 与 `/docs/<key>` 给原文。"""
+        status, body = self.get("/api/diagrams")
+        self.assertEqual(status, 200)
+        payload = json.loads(body)
+        self.assertEqual(payload["count"], 5)
+        self.assertEqual(payload["missing"], [])
+        self.assertIn("overall", [item["key"] for item in payload["items"]])
+        status, body = self.get("/diagrams/overall")
+        self.assertEqual(status, 200)
+        self.assertIn("<html", body.lower())
+        status, body = self.get("/docs/requirements")
+        self.assertEqual(status, 200)
+        self.assertIn("需求规格", body)
+
+    def test_diagram_viewer_rejects_unregistered_keys(self) -> None:
+        """只认登记 key：没登记的名字、目录名、图源文件名、相对路径都不给文件（返回可读错误）。"""
+        for path in ("/diagrams/nope", "/diagrams/FLOW-OVERALL-20261012", "/diagrams/overall.final.json",
+                     "/docs/nope", "/docs/requirements-spec.md"):
+            status, body = self.get(path)
+            self.assertEqual(status, 400, path)
+            self.assertIn("没有登记", json.loads(body)["error"], path)
 
     def test_path_traversal_blocked(self) -> None:
         status, _ = self.get("/../../etc/passwd")
@@ -415,7 +508,8 @@ class TestConsolePages(unittest.TestCase):
     """页面约定：区块注释（R-L2-08）、页面互相可达（R-L3-01/03）、不持有凭据（R-L3-05）。"""
 
     PAGES = ["dashboard/index.html", "dashboard/pages/tasks.html", "dashboard/pages/copy.html",
-             "dashboard/pages/publish.html", "dashboard/pages/metrics.html"]
+             "dashboard/pages/publish.html", "dashboard/pages/metrics.html",
+             "dashboard/pages/diagrams.html"]
 
     def test_pages_have_required_header_comments(self) -> None:
         for rel in self.PAGES:
@@ -451,9 +545,18 @@ class TestConsolePages(unittest.TestCase):
 
     def test_pages_are_reachable_from_index(self) -> None:
         text = (ROOT / "dashboard/index.html").read_text(encoding="utf-8")
-        for rel in ("pages/tasks.html", "pages/copy.html", "pages/publish.html", "pages/metrics.html"):
+        for rel in ("pages/tasks.html", "pages/copy.html", "pages/publish.html", "pages/metrics.html",
+                    "pages/diagrams.html"):
             self.assertIn(rel, text, f"首页应能走到 {rel}")
         self.assertIn("../build-log.html", text)
+
+    def test_topbar_lists_every_page_with_depth_aware_href(self) -> None:
+        """顶栏用相对前缀拼 href（曾发生：从 /pages/x.html 点「总览」跳到 /pages/index.html 404）。"""
+        source = (ROOT / "dashboard/assets/app.js").read_text(encoding="utf-8")
+        for key in ("index.html", "tasks.html", "copy.html", "diagrams.html", "publish.html",
+                    "metrics.html", "build-log.html"):
+            self.assertIn(f'"{key}"', source, f"顶栏应登记 {key}")
+        self.assertIn('location.pathname.includes("/pages/")', source)
 
     def test_readme_documents_fields_flow_and_rationale(self) -> None:
         text = (ROOT / "dashboard/README.md").read_text(encoding="utf-8")

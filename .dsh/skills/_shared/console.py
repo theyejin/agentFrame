@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-# 文件用途：运营控制台（dashboard/）与搭建过程报告页（build-log）的共享数据层 —— 只读数据库聚合 + 日志聚合 + 页面生成。
-# 对应需求：R-L2-05（按日期记录执行过程并生成报告页）、R-L2-06（build-log 生成在仓库根目录，数据来源可追溯：生成脚本 + 结构化数据文件）、R-L3-01~05（本地可访问、页面只读库与调本地脚本、不持有账号凭据）、AC-3、Q-6（控制台与 build-log 是两个独立页面）。
+# 文件用途：运营控制台（dashboard/）与搭建过程报告页（build-log）的共享数据层 —— 只读数据库聚合 + 日志聚合 + 页面生成 + 框架图库登记。
+# 对应需求：R-L2-05（按日期记录执行过程并生成报告页）、R-L2-06（build-log 生成在仓库根目录，数据来源可追溯：生成脚本 + 结构化数据文件）、R-L3-01~06（本地可访问、页面只读库与调本地脚本、不持有账号凭据、框架图集中到一个栏目）、AC-3、Q-6（控制台与 build-log 是两个独立页面）。
 # 对应流程图：.archify/FLOW-OVERALL-20261012/overall-operations.html（FLOW-9 运营人员操作面）
-# 维护提示：控制台任何页面字段改动的口径都在本文件（STAGE_LABELS / STATUS_LABELS / GATE_LABELS）；改完必须同步 tests/test_dashboard.py 与 dashboard/README.md。
+# 维护提示：控制台任何页面字段改动的口径都在本文件（STAGE_LABELS / STATUS_LABELS / GATE_LABELS）；画了新图或新增框架文档，先加下面的 DIAGRAMS / FRAMEWORK_DOCS 登记表再改页面；改完必须同步 tests/test_dashboard.py 与 dashboard/README.md。
 """控制台与 build-log 的数据层。
 
-三层职责：
+四层职责：
 1. 只读聚合：`tasks_overview` / `gate_todos` / `publish_queue` / `metrics_summary` / `hotspots_overview` / `task_trace`；
 2. 日志聚合：`logs_entries` 把 `logs/YYYY-MM-DD.jsonl` 读成「按日期倒序 + 每条一个标题与详情」；
-3. 页面生成：`render_build_log` 写出仓库根目录的 `build-log.data.json`（结构化数据，可追溯）与 `build-log.html`（由数据生成，不手写）。
+3. 页面生成：`render_build_log` 写出仓库根目录的 `build-log.data.json`（结构化数据，可追溯）与 `build-log.html`（由数据生成，不手写）；
+4. 框架图库：`diagrams` / `diagram_file` 把 `.archify/` 里的交付图与 `docs/` 里的框架文档登记成一张清单，供控制台的「框架图库」栏目集中查看。
 
 本文件不建立任何数据库写操作：控制台只读库；要动数据一律走 skill（页面通过本地服务调用白名单脚本）。
 """
@@ -16,7 +17,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import db as dbm
@@ -82,6 +83,95 @@ RUN_WHITELIST = {
     "summary-writer": ("summarize",),
     "artifact-recorder": ("topic-create", "task-create", "task-update", "task-show", "list"),
 }
+
+# 框架图库的登记表（控制台「框架图库」栏目，R-L3-06）——图的身份只登记在这里，页面与接口都不写死路径。
+# 登记表只写「这张图是什么」；「文件在不在 / 多大 / 几个节点」一律现读磁盘（diagrams()），不手抄数字。
+DIAGRAM_DIR = ".archify"
+DIAGRAMS: tuple[dict, ...] = (
+    {
+        "key": "overall",
+        "group": "整体",
+        "dir": "FLOW-OVERALL-20261012",
+        "html": "overall-operations.html",
+        "source": "overall-operations.final.json",
+        "title": "整体运营流程图",
+        "subtitle": "三层架构 · 四条环节线 · 三处人工关口",
+        "covers": "全局：FLOW-1~FLOW-9 与 FLOW-9 运营人员操作面",
+        "requirement": "R-L1-11（整体运营流程图）、R-L2-11~13",
+        "node": "N003",
+        "point": "先看这张：一份稿件从选题到复盘怎么串起来、人在哪三处拍板、红线卡在哪一步。",
+    },
+    {
+        "key": "copy",
+        "group": "分环节",
+        "dir": "FLOW-COPY-20261012",
+        "html": "copy-line.html",
+        "source": "copy-line.final.json",
+        "title": "文案线分环节流程图",
+        "subtitle": "流程步骤 / Skill 与依赖 / 产出物与留痕 三列",
+        "covers": "FLOW-1：思路·选题·脚本 → 3 套文案 → 关口①选定 → 24 条分镜",
+        "requirement": "R-L1-11（分环节操作流程图）、R-L2-11~13",
+        "node": "N004",
+        "point": "看文案怎么从一句话变成 3 套候选、人怎么三选一、选完怎么落成 24 条分镜。",
+    },
+    {
+        "key": "visual",
+        "group": "分环节",
+        "dir": "FLOW-VISUAL-20261012",
+        "html": "visual-line.html",
+        "source": "visual-line.final.json",
+        "title": "视觉线分环节流程图",
+        "subtitle": "参考图 → 整图 → 切分 → 抽查",
+        "covers": "FLOW-2 / FLOW-3：参考图 → 6×4 整图 → 切成 24 张独立图",
+        "requirement": "R-L1-11、R-L2-11~13",
+        "node": "N004",
+        "point": "看为什么先出整图再切 24 张（Q-11）、人的风格确认与单张返工卡在哪。",
+    },
+    {
+        "key": "video",
+        "group": "分环节",
+        "dir": "FLOW-VIDEO-20261012",
+        "html": "video-line.html",
+        "source": "video-line.final.json",
+        "title": "视频线分环节流程图",
+        "subtitle": "图文打包 → 图生视频 → 剪辑干预 → 成片",
+        "covers": "FLOW-4 / FLOW-5：图文打包 → 图生视频 → 关口②剪辑 → 导出成片",
+        "requirement": "R-L1-11、R-L2-11~13",
+        "node": "N004",
+        "point": "看剪辑为什么做成「参数化 + 可回退」（Q-7）、人工干预怎么落成可复现的参数记录。",
+    },
+    {
+        "key": "publish",
+        "group": "分环节",
+        "dir": "FLOW-PUBLISH-20261012",
+        "html": "publish-line.html",
+        "source": "publish-line.final.json",
+        "title": "分发数据线分环节流程图",
+        "subtitle": "热点 → 发布准备 → 授权 → 采集 → 复盘",
+        "covers": "FLOW-6 / FLOW-7 / FLOW-8：账号准备 → 热点表 → 发布准备 → 关口③授权 → 采集 → 复盘",
+        "requirement": "R-L1-11、R-L2-11~13、C-01（不自动发布）",
+        "node": "N004",
+        "point": "看红线怎么守住（agent 只填不发）、发布授权与指标回收、复盘怎么回写下一轮。",
+    },
+)
+
+# 框架文档登记表（同一栏目下半区「框架资料」）：控制台只读展示原文，不改文档，也不复制副本。
+FRAMEWORK_DOCS: tuple[dict, ...] = (
+    {"key": "requirements", "title": "需求规格说明（冻结版）", "path": "docs/requirements-spec.md",
+     "purpose": "条款、红线、台账与变更同步检查表 —— 所有口径的源头"},
+    {"key": "directory", "title": "目录及文件说明", "path": "docs/directory-and-files.md",
+     "purpose": "每个目录与文件放什么、不放什么，改完要动哪些文件"},
+    {"key": "roster", "title": "Skill 岗位与 README 契约", "path": "docs/skill-roster.md",
+     "purpose": "18 个岗位 + 7 个支撑件、交接契约与完成判据"},
+    {"key": "grammar", "title": "讨论记录", "path": "docs/discussion-record.md",
+     "purpose": "N001 起的讨论节点与落实事项（历史节点不改）"},
+    {"key": "decisions", "title": "决策台账", "path": "docs/decision-log.md",
+     "purpose": "D-01 起的历次决议与可变更层级"},
+    {"key": "acceptance", "title": "验收报告", "path": "docs/acceptance-report.md",
+     "purpose": "AC-1~AC-7 的可复现证据与受限项"},
+    {"key": "archify", "title": "图表区说明", "path": f"{DIAGRAM_DIR}/README.md",
+     "purpose": "五张图的命名约定、重新生成与浏览器校验流程"},
+)
 
 
 class ConsoleError(ValueError):
@@ -626,3 +716,140 @@ init();
 </body>
 </html>
 """
+
+
+# ---------------------------------------------------------------------------
+# 4. 框架图库（控制台「框架图库」栏目：图的登记 + 磁盘事实，R-L3-06）
+# ---------------------------------------------------------------------------
+
+CST = timezone(timedelta(hours=8))
+
+
+def _human_size(num: int) -> str:
+    """把字节数写成给人看的大小；0 表示文件还不在。"""
+    if num <= 0:
+        return "—"
+    if num < 1024:
+        return f"{num} B"
+    if num < 1024 * 1024:
+        return f"{num / 1024:.0f} KB"
+    return f"{num / 1024 / 1024:.1f} MB"
+
+
+def _mtime_text(path: Path) -> str:
+    """交付 HTML 的生成时刻（按东八区显示，与 logs 的时间口径一致）。"""
+    try:
+        return datetime.fromtimestamp(path.stat().st_mtime, tz=CST).strftime("%Y-%m-%d %H:%M")
+    except OSError:
+        return "—"
+
+
+def _read_diagram_source(path: Path) -> dict:
+    """读图源 JSON 的结构计数（节点 / 连线 / 区域 / 卡片）；读不出来就如实报错，不编数字（C-03）。"""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        return {"parsed": False, "error": f"图源读不到：{exc.strerror or exc}"}
+    except ValueError as exc:
+        return {"parsed": False, "error": f"图源不是合法 JSON：{exc}"}
+    meta = data.get("meta") or {}
+    if isinstance(meta.get("meta"), dict):  # 兼容 archify 把元信息再嵌一层的老写法
+        meta = meta["meta"]
+    return {
+        "parsed": True,
+        "error": "",
+        "source_title": meta.get("title", ""),
+        "source_subtitle": meta.get("subtitle", ""),
+        "nodes": len(data.get("components") or []),
+        "connections": len(data.get("connections") or []),
+        "regions": len(data.get("boundaries") or []),
+        "cards": len(data.get("cards") or []),
+    }
+
+
+def diagrams(*, root: str | Path | None = None) -> dict:
+    """框架图库栏目的全部数据 = 登记表（这是什么）× 磁盘事实（在不在 / 多大 / 几个节点）。
+
+    - 事实现读磁盘，不在登记表里手抄数字；图源读不出来时给出 `error` 而不是静默留空（C-03）；
+    - `.archify/` 下出现**没登记**的图目录时进 `unregistered`，页面照实提示，不会悄悄看不见；
+    - 每张图都带 `view_url`（`/diagrams/<key>`），页面只拿 key 取图，拼不出任意路径。
+    """
+    base = Path(root) if root else ROOT
+    archive = base / DIAGRAM_DIR
+    items: list[dict] = []
+    for entry in DIAGRAMS:
+        folder = archive / entry["dir"]
+        html_path = folder / entry["html"]
+        source_path = folder / entry["source"]
+        readme_path = folder / "README.md"
+        stats = (_read_diagram_source(source_path) if source_path.is_file()
+                 else {"parsed": False, "error": "图源文件缺失", "nodes": 0, "connections": 0,
+                       "regions": 0, "cards": 0, "source_title": "", "source_subtitle": ""})
+        size = html_path.stat().st_size if html_path.is_file() else 0
+        item = dict(entry)
+        item.update(stats)
+        item.update({
+            "dir": f"{DIAGRAM_DIR}/{entry['dir']}",
+            "html_path": f"{DIAGRAM_DIR}/{entry['dir']}/{entry['html']}",
+            "source_path": f"{DIAGRAM_DIR}/{entry['dir']}/{entry['source']}",
+            "readme_path": f"{DIAGRAM_DIR}/{entry['dir']}/README.md",
+            "exists": html_path.is_file(),
+            "source_exists": source_path.is_file(),
+            "readme_exists": readme_path.is_file(),
+            "size_bytes": size,
+            "size_text": _human_size(size),
+            "updated_at": _mtime_text(html_path),
+            "view_url": f"/diagrams/{entry['key']}",
+        })
+        items.append(item)
+
+    registered = {entry["dir"] for entry in DIAGRAMS}
+    unregistered: list[dict] = []
+    if archive.is_dir():
+        for folder in sorted(archive.iterdir()):
+            if not folder.is_dir() or folder.name in registered:
+                continue
+            html_files = sorted(path.name for path in folder.glob("*.html"))
+            unregistered.append({"dir": f"{DIAGRAM_DIR}/{folder.name}", "files": html_files,
+                                 "note": "目录里存在但没登记进 DIAGRAMS：加登记表后才会在栏目里出现"})
+    missing = [item["key"] for item in items if not item["exists"]]
+    return {
+        "generated_at": dbm.now_iso(),
+        "dir": DIAGRAM_DIR,
+        "count": len(items),
+        "available": len(items) - len(missing),
+        "groups": ["整体", "分环节"],
+        "items": items,
+        "missing": missing,
+        "unregistered": unregistered,
+        "docs": [dict(doc, exists=(base / doc["path"]).is_file(),
+                      view_url=f"/docs/{doc['key']}") for doc in FRAMEWORK_DOCS],
+        "rules": [
+            "图不复制副本：栏目直接开 .archify/ 下的交付 HTML，图源与页面永远同源（R-L2-12）。",
+            "改图只改 <图>.final.json，再 render + check（必须 ok:true）；结构变更后受影响的图必须重生成校验（R-L2-13、规格 §15 第 4 项）。",
+            "新图先在本文件 DIAGRAMS 登记，再在 dashboard/README.md 与 docs/directory-and-files.md 补一行；漏登记的目录会出现在本页的「未登记」提示里。",
+        ],
+    }
+
+
+def diagram_file(key: str, *, root: str | Path | None = None) -> Path:
+    """按登记的 key 取一张图的交付 HTML；只认登记过的 key，页面传不进任意路径。"""
+    entry = next((item for item in DIAGRAMS if item["key"] == key), None)
+    if entry is None:
+        raise ConsoleError(f"没有登记这张图：{key or '（空）'}（可用：{'、'.join(i['key'] for i in DIAGRAMS)}）")
+    path = (Path(root) if root else ROOT) / DIAGRAM_DIR / entry["dir"] / entry["html"]
+    if not path.is_file():
+        raise ConsoleError(f"这张图还没有生成：{DIAGRAM_DIR}/{entry['dir']}/{entry['html']}"
+                           f"（改完图源要重新 render 并校验）")
+    return path
+
+
+def framework_doc(key: str, *, root: str | Path | None = None) -> Path:
+    """按登记的 key 取一份框架文档的原文；同样只认登记表里的 key。"""
+    entry = next((doc for doc in FRAMEWORK_DOCS if doc["key"] == key), None)
+    if entry is None:
+        raise ConsoleError(f"没有登记这份文档：{key or '（空）'}（可用：{'、'.join(d['key'] for d in FRAMEWORK_DOCS)}）")
+    path = (Path(root) if root else ROOT) / entry["path"]
+    if not path.is_file():
+        raise ConsoleError(f"这份文档不在仓库里：{entry['path']}")
+    return path

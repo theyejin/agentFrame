@@ -1,6 +1,7 @@
 /* 文件用途：控制台前端公共库 —— 调本地服务接口、渲染通用组件、调用白名单脚本（R-L3-04）。 */
 /* 对应需求：R-L3-01~05（页面只通过 /api/* 与本地服务交互，不越过服务直连数据库或外部平台）、R-L2-08（页面代码区块注释）、AC-3。 */
-/* 维护提示：所有写动作都走 run()；它只把参数转给 /api/run，白名单与红线由本地服务把关（scripts/serve_dashboard.py）。 */
+/* 维护提示：所有写动作都走 run()；它只把参数转给 /api/run，白名单与红线由本地服务把关（scripts/serve_dashboard.py）。
+   顶栏栏目在 topbar() 的 pages 里登记（键 = 页面文件名，页面调 shell(active) 传同一个键），新增栏目要同时给 index.html 加入口。 */
 
 /* 区块：基础选择器与状态 */
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -127,13 +128,20 @@ async function boot(render) {
 
 /* 区块：顶栏（各页面共用；active 传当前文件名） */
 function topbar(active) {
-  const pages = [["index.html", "总览"], ["tasks.html", "任务流转"], ["copy.html", "文案生成"],
-                 ["publish.html", "发布操作"], ["metrics.html", "数据与复盘"],
-                 ["../build-log.html", "搭建过程报告"]];
+  // 首页挂在 /（或 dashboard/）下，功能页挂在 pages/ 下：href 按当前层级补前缀，
+  // 否则从首页点「任务流转」会跳到 /tasks.html、从功能页点「总览」会跳到 /pages/index.html（都是 404）。
+  const up = location.pathname.includes("/pages/") ? "../" : "";
+  const pages = [["index.html", up + "index.html", "总览"],
+                 ["tasks.html", up + "pages/tasks.html", "任务流转"],
+                 ["copy.html", up + "pages/copy.html", "文案生成"],
+                 ["diagrams.html", up + "pages/diagrams.html", "框架图库"],
+                 ["publish.html", up + "pages/publish.html", "发布操作"],
+                 ["metrics.html", up + "pages/metrics.html", "数据与复盘"],
+                 ["build-log.html", up + "../build-log.html", "搭建过程报告"]];
   return el("header", { class: "topbar" },
     el("h1", { text: "agentFrame 运营控制台" }),
-    el("nav", {}, ...pages.map(([href, label]) =>
-      el("a", { href: active === href ? "#" : href, class: active === href ? "active" : "", text: label }))),
+    el("nav", {}, ...pages.map(([key, href, label]) =>
+      el("a", { href: active === key ? "#" : href, class: active === key ? "active" : "", text: label }))),
     el("div", { class: "right" },
       el("span", { id: "db-path", class: "mono", text: state.health ? state.health.db : "" }),
       el("button", { text: "刷新", onclick: () => location.reload() })));

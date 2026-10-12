@@ -140,6 +140,7 @@ EXPECTED_ROOT_FILES = [
     "dashboard/pages/tasks.html",
     "dashboard/pages/publish.html",
     "dashboard/pages/metrics.html",
+    "dashboard/pages/diagrams.html",
     "build-log.html",
     "build-log.data.json",
     # —— WP-05 步骤 9（端到端验收）——
