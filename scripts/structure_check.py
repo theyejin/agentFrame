@@ -114,6 +114,20 @@ EXPECTED_ROOT_FILES = [
     "templates/mock/metrics.v1.json",
     "templates/mock/review-report.v1.txt",
     "tests/test_publish_line.py",
+    "tests/test_orchestrator.py",
+    "agents/README.md",
+    "agents/orchestrator/README.md",
+    "agents/orchestrator/config.yml",
+    "agents/copy-agent/README.md",
+    "agents/visual-agent/README.md",
+    "agents/video-agent/README.md",
+    "agents/publish-agent/README.md",
+    ".dsh/skills/task-decomposer/SKILL.md",
+    ".dsh/skills/task-decomposer/README.md",
+    ".dsh/skills/task-decomposer/run.py",
+    ".dsh/skills/summary-writer/SKILL.md",
+    ".dsh/skills/summary-writer/README.md",
+    ".dsh/skills/summary-writer/run.py",
 ]
 
 # 非 skill 的共享目录前缀（允许没有 SKILL.md）

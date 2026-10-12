@@ -23,6 +23,10 @@
 
 | D-15 | 话题级留痕自建两张表：热点批次与条目（`hotspot_batches` / `hotspot_items`）—— `artifacts.task_id` 与 `step_runs.task_id` 都是 NOT NULL，热点采集发生在选题之前、没有 task_id 可挂，所以不能硬塞进那两张表；批次表本身即「哪一批、什么关键词、落在哪个文件」的索引 | N011 | 可低成本变更 |
 | D-16 | 发布线「只填写、不提交」：新增三个离线适配器 `browser.local-fixture`（读夹具采集）、`browser.fill-plan`（只产填写清单，恒 `submitted=false`）、`metrics.local-fixture`（读指标夹具），各插在人工终点之前；`publish_records.status` 只允许 Agent 写 `filled` / `pending` / `failed`，写 `published` 直接报错，真实发布由人在关口③ 完成后经 `browser-publisher mark-published` 回填（C-08 / C-10） | N011 | 可低成本变更 |
+| D-17 | Agent 定义的唯一事实源是 `agents/orchestrator/config.yml`：五个 Agent 的档案、可派单 Skill、交接契约三段（`input_check` / `outputs` / `done`）、五个关口、环节路由都写在这一处；`agents/*/README.md` 只给人读，运行时校验由 `task-decomposer agents`（内部 `check_contract`）执行 —— 声明与校验分离，避免两处口径漂移（R-L1-18 / R-L1-19） | N012 | 结构级 |
+| D-18 | 完成判据必须用最小词汇表写（`count` / `ids_continuous` / `unique` / `in_range` / `all_resolution_equal` / `file_exists` / `non_empty` / `enum_in` / `no_auto_publish`），不许自由发挥文字 —— 这样「什么算完成」可以被机器读，而不是只靠人理解 | N012 | 结构级 |
+| D-19 | 编排者的两个工具各只有一个实现：`task-decomposer`（建话题与任务、产派单书、按任务当前环节路由）与 `summary-writer`（只读汇总五项：当前环节 / 已完成步骤 / 待办关口 / 关键产物 / 下一步找谁）。派单书按 `kind=manifest` + `meta.role=dispatch` + `prompt_version='none'` 留痕，并**不算内容产物**（汇总回报里按 kind 排除 `manifest`）；汇总缺口照实写（没指标就写「本期还没有指标」，挂在关口上写「有 N 个关口待人工决议」但绝不代答） | N012 | 可低成本变更 |
+
 ## 维护提示
 
 - 每次讨论节点收尾时，把新定下来的事项追加到本表（R-D-01、R-D-03）。

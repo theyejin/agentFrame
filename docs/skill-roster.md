@@ -68,10 +68,10 @@
 | — | `storyboard-validator` | 分镜校验 | 质量门 | 24 条 + 编号连续 | ✅ | ✅ 步骤 4 |
 | — | `image-consistency-checker` | 图片一致性校验 | 质量门 | 24 张齐全 + 编号连续 + 分辨率一致 | ✅ | ✅ 步骤 5 |
 | — | `publish-guard` | 发布红线守卫 | 质量门 | 拦下任何自动发布（C-01 / C-08） | ✅ | ✅ 步骤 7 |
-| — | `task-decomposer` | 任务拆解 | 编排者工具 | topic → task，派单给环节 | ✅ | — |
-| — | `summary-writer` | 汇总回报 | 编排者工具 | 四条线结果汇总成一条回报 | ✅ | — |
+| — | `task-decomposer` | 任务拆解 | 编排者工具 | topic → task，派单给环节 | ✅ | ✅ WP-07 |
+| — | `summary-writer` | 汇总回报 | 编排者工具 | 四条线结果汇总成一条回报 | ✅ | ✅ WP-07 |
 
-> 落地进度：**「已落地」列**记录 `.dsh/skills/` 下真实存在的目录（三件套齐全、`run.py` 可跑）。截至 WP-05 步骤 7 已落地 **23 个**：基础设施 `llm-adapter`、`prompt-registry`；文案线 `copy-writer`、`storyboard-builder`；视觉线 `reference-image-builder`、`grid-image-builder`、`image-splitter`；视频线 `asset-packager`、`image-to-video`、`auto-editor`、`video-exporter`、`title-cover-prep`；分发数据线 `hotspot-collector`、`table-builder`、`feishu-sync`、`browser-publisher`、`metrics-collector`、`review-reporter`；支撑件 `artifact-recorder`、`hitl-gate`、`storyboard-validator`、`image-consistency-checker`、`publish-guard`。其余 2 个（支撑件 `task-decomposer`、`summary-writer`）在 WP-07 落地，未落地前不在磁盘上（避免空壳目录）。
+> 落地进度：**「已落地」列**记录 `.dsh/skills/` 下真实存在的目录（三件套齐全、`run.py` 可跑）。截至 WP-07 **25 个目录全部落地**：基础设施 `llm-adapter`、`prompt-registry`；文案线 `copy-writer`、`storyboard-builder`；视觉线 `reference-image-builder`、`grid-image-builder`、`image-splitter`；视频线 `asset-packager`、`image-to-video`、`auto-editor`、`video-exporter`、`title-cover-prep`；分发数据线 `hotspot-collector`、`table-builder`、`feishu-sync`、`browser-publisher`、`metrics-collector`、`review-reporter`；支撑件 `artifact-recorder`、`hitl-gate`、`storyboard-validator`、`image-consistency-checker`、`publish-guard`、`task-decomposer`、`summary-writer`。
 
 > 计数说明：上表 18 个「岗位」指**业务执行能力**；`artifact-recorder` / `hitl-gate` / 3 个校验器 / 2 个编排者工具是**支撑件**，合计 7 个目录，因此 `.dsh/skills/` 下最终是 **25 个 skill 目录**。这个数字写进目录提案，避免后面数来数去对不上。
 
@@ -278,3 +278,4 @@
 | ---- | ---- | ---- |
 | 2026-10-12 | 首版：18 岗位 + 7 支撑件，命名规则、接口字段、统一执行流程、与图对应关系 | N004 |
 | 2026-10-12 | WP-05 步骤 7：分发数据线 6 个 skill 与支撑件 `publish-guard` 落地；口径修正为「16 执行 + 2 基础设施 = 18 岗位，另 7 支撑件（25 目录）」 | N011 |
+| 2026-10-12 | WP-07：编排者工具 `task-decomposer`、`summary-writer` 落地，25 个 skill 目录全部齐；五个 Agent 定义与 `agents/orchestrator/config.yml` 契约由运行时校验 | N012 |

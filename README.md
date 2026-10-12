@@ -9,9 +9,9 @@
 
 | 项      | 值                                                            |
 | ------ | ------------------------------------------------------------ |
-| 阶段     | **基础环境搭建中**：目录骨架（步骤 1）+ 数据库结构与迁移（步骤 2）+ 外部服务适配器层与提示词注册表（步骤 3）+ 文案线（步骤 4）+ 视觉线（步骤 5）+ 视频线（步骤 6）+ 分发数据线（步骤 7）已完成，按 9 步顺序继续 |
-| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.9） |
-| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N011） |
+| 阶段     | **基础环境搭建中**：目录骨架（步骤 1）+ 数据库结构与迁移（步骤 2）+ 外部服务适配器层与提示词注册表（步骤 3）+ 文案线（步骤 4）+ 视觉线（步骤 5）+ 视频线（步骤 6）+ 分发数据线（步骤 7）+ Agent 定义与编排者工具（WP-07）已完成，按 9 步顺序继续 |
+| 已冻结基线  | [`docs/requirements-spec.md`](docs/requirements-spec.md)（v2.1.10） |
+| 过程留痕   | [`docs/discussion-record.md`](docs/discussion-record.md)（N001–N012） |
 | Skill 名册 | [`docs/skill-roster.md`](docs/skill-roster.md)（18 岗位 + 7 支撑件 = 25 个目录） |
 | 目录与文件  | [`docs/directory-and-files.md`](docs/directory-and-files.md)（增删改必须同步） |
 | 数据模型   | [`db/README.md`](db/README.md)（16 表 / 2 视图 / 枚举取值总表）；模拟测试 `python3 tests/test_db.py` |
@@ -20,7 +20,8 @@
 | 视觉线    | 4 个 skill（`reference-image-builder` / `grid-image-builder` / `image-splitter` / `image-consistency-checker`）+ 离线图像能力（`image.placeholder` / `split.grid-slicer`）；测试 `python3 tests/test_visual_line.py` |
 | 视频线    | 5 个 skill（`asset-packager` / `image-to-video` / `auto-editor` / `video-exporter` / `title-cover-prep`）+ 本地视频能力（`video.ffmpeg`，Remotion 未接时自动降级）；测试 `python3 tests/test_video_line.py` |
 | 分发数据线  | 6 个 skill（`hotspot-collector` / `table-builder` / `feishu-sync` / `browser-publisher` / `metrics-collector` / `review-reporter`）+ 红线守卫 `publish-guard` + 本地兜底（`browser.local-fixture` / `browser.fill-plan` / `metrics.local-fixture`，只填写不提交）；测试 `python3 tests/test_publish_line.py` |
-| 实施进度   | 约 95%（详见需求规格 §12 总进度台账）                                     |
+| Agent/编排者 | 五个 Agent 定义（`agents/`）+ 契约事实源 `agents/orchestrator/config.yml`；编排者工具 `task-decomposer` / `summary-writer`；测试 `python3 tests/test_orchestrator.py` |
+| 实施进度   | 约 97%（详见需求规格 §12 总进度台账）                                     |
 
 > ✅ 目录方案已确认（N005）并按 9 步顺序落地，**顶层目录已建成**；各步只建「本步真正要用的子目录」，不留空壳。
 > 每一步的完成门：`python3 scripts/structure_check.py` 退出码 0（目录 / 各目录 README / 目录说明三者一致）**且**该步模拟测试通过，才进入下一步。
@@ -35,7 +36,7 @@
 4. [`docs/skill-readme-contract.md`](docs/skill-readme-contract.md) — 每个 skill 的 README 必须怎么写（含机器可判定的校验表达式）。
 5. [`docs/directory-structure-plan.md`](docs/directory-structure-plan.md) — 目录树与分步落地顺序（N005 已确认）。
 6. [`docs/directory-and-files.md`](docs/directory-and-files.md) — 《目录及文件说明》：每个目录/文件是干什么的，改东西要同步哪些地方。
-7. [`docs/decision-log.md`](docs/decision-log.md) — 决议摘要（D-01～D-16）：现在以什么为准。
+7. [`docs/decision-log.md`](docs/decision-log.md) — 决议摘要（D-01～D-19）：现在以什么为准。
 
 前两份合起来可完整还原项目状态（成功判据 AC-6）。
 
@@ -151,6 +152,7 @@ python3 tests/test_copy_line.py             # 文案线相关改动必跑（24 �
 python3 tests/test_visual_line.py           # 视觉线相关改动必跑（21 项）
 python3 tests/test_video_line.py            # 视频线相关改动必跑（22 项）
 python3 tests/test_publish_line.py          # 分发数据线相关改动必跑（33 项）
+python3 tests/test_orchestrator.py          # Agent 定义 / 编排者工具相关改动必跑（33 项）
 python3 scripts/seed_adapters.py --check    # 改了 registry.json 必跑（登记表与数据库是否一致）
 git add -A && git commit -m "..." && git push origin main --tags
 ```

@@ -13,7 +13,7 @@
 | 项目名    | `wemedia-agent`（自媒体创作运营团队）                            |
 | 工作区根目录 | `/Users/yejin/Documents/deepseek-harness/agentFrame`  |
 | 构建工具   | DeepSeek Harness（以下简称 DSH）                            |
-| 文档版本   | **v2.1.9**（基线 v2.1-frozen + 台账同步；需求条款未变）                          |
+| 文档版本   | **v2.1.10**（基线 v2.1-frozen + 台账同步；需求条款未变）                          |
 | 当前状态   | **已冻结**（2026-10-12 经讨论节点 N002 确认；Q-1～Q-19 全部落定，见 §11；设计决策见附录 A） |
 | 读者     | 执行 Agent（DSH）、运营负责人、后续维护者                             |
 | 语言约定   | 面向人的说明用中文；目录名、文件名、字段名、标识符用英文                          |
@@ -26,6 +26,7 @@
 | v1.0 | 初稿：三层架构、FLOW 1–9、表单字段、待确认问题                                                                                                    | 原始口头需求    |
 | v2.0 | ① 修正基线真实性（v1.0 声称的 `agents/`、`.dsh/skills/`、`db/`、`dashboard/` 磁盘上不存在）；② 新增「讨论机制与留痕」制度（§3）；③ 图表工具由 Mermaid 改为强制 archify；④ 新增 §4.2 编排者与 Agent/Skill 边界分层；⑤ 新增 §5.3.1 文件头注释块规范；⑥ 新增 §7 数据模型要求（话题→内容资产）；⑦ 新增 C-08 发布红线；⑧ 待确认问题扩展至 Q-19 | 本轮讨论 N001 |
 | **v2.1-frozen** | ① 建议 S1～S14 全部采纳并转为强制约束（附录 A）；② Q-1～Q-19 全部落定（§11）；③ 新增 C-09 零付费门禁；④ 补充 §6.5 交接契约、§7 指标口径与版本字段、§8 三类 HITL 形态与处理人字段；⑤ 新增 §15 变更同步检查表；⑥ GitHub 远端确定为 `https://github.com/theyejin/agentFrame.git` | 讨论节点 N002 |
+| **v2.1.10** | 台账同步：WP-07 **Agent/Skill 落地与单测完成**——五个 Agent 定义（编排者 + 文案 / 视觉 / 视频 / 分发数据线）与 `agents/orchestrator/config.yml` 交接契约（进场校验 / 产出物清单 / 完成判据三段 + 五个关口 + 环节路由）落地；编排者两个专属工具 `task-decomposer`（派单 / 路由 / 契约校验）与 `summary-writer`（只读汇总五项）落地，`.dsh/skills/` 下 25 个目录全部齐；完成判据用最小词汇表写入 config，由运行时校验（R-L1-18 / R-L1-19）；33 项编排者模拟测试通过（累计 197 项）。需求条款本身无改动 | 讨论节点 N012 |
 | **v2.1.9** | 台账同步：WP-05 **步骤 7（分发数据线）完成**——热点采集 → 分类汇总表 → 飞书文档同步（未接 API 时降级本地导出）→ 发布包与填写清单（**只填写不提交**，C-08）→ 关口③ 授权 → 指标采集（播放 / 互动 / 涨粉）→ 复盘报告与优化建议 落地 6 个 skill（`hotspot-collector`、`table-builder`、`feishu-sync`、`browser-publisher`、`metrics-collector`、`review-reporter`）与红线守卫 `publish-guard`；迁移 0003 新增 `hotspot_batches` / `hotspot_items` / `publish_records` 三张表（库表 13→16）；新增三个离线兜底适配器（`browser.local-fixture`、`browser.fill-plan`、`metrics.local-fixture`）与热点摘要提示词 v1（库内 7 份模板）；33 项分发数据线模拟测试通过（累计 164 项）。需求条款本身无改动 | 讨论节点 N011 |
 | **v2.1.8** | 台账同步：WP-05 **步骤 6（视频线）完成**——图文打包 → 图生视频草稿 → 关口② 剪辑干预 → 参数化剪辑 → 导出成片与封面帧 → 发布准备 落地 5 个 skill（`asset-packager`、`image-to-video`、`auto-editor`、`video-exporter`、`title-cover-prep`）；本地视频能力由 `video.ffmpeg` 提供（Remotion 未接时自动降级，离线免费）；新增发布准备提示词 v1（库内 6 份模板）；统一 CLI（`--json` 写在子命令前后都行）；22 项视频线模拟测试通过。需求条款本身无改动 | 讨论节点 N010 |
 | **v2.1.7** | 台账同步：WP-05 **步骤 5（视觉线）完成**——参考图 → 人的风格确认 → 6×4 整图 → 切 24 张 → 一致性体检 → 人工修图关口 落地 4 个 skill（`reference-image-builder`、`grid-image-builder`、`image-splitter`、`image-consistency-checker`），关口枚举扩到五个（迁移 0002），新增离线图像能力（`image.placeholder` 运行时 + `split.grid-slicer`），21 项视觉线模拟测试通过。需求条款本身无改动 | 讨论节点 N009 |
@@ -430,7 +431,7 @@ L3 依赖 L1 的数据表结构，故必须在 L1 数据结构稳定后开工。
 | WP-04  | Skill 岗位与数量设计   | L1  | **已完成** | R-L1-12              | 18 岗位 + 7 支撑件，见 `docs/skill-roster.md` |
 | WP-05  | 基础环境搭建（目录与文件）   | L1  | **进行中** | R-L1-13              | 用户已确认目录提案（N005）；步骤 1 目录骨架、步骤 2 数据库、步骤 3 适配器层与提示词注册表、步骤 4 文案线、步骤 5 视觉线、步骤 6 视频线、**步骤 7 分发数据线**均完成（体检退出码 0、期望文件 68 项、测试 164 项通过）；步骤 8–9 待做 |
 | WP-06  | 数据库结构与迁移        | L1  | **已完成** | §7                   | `db/schema.sql`（16 表/2 视图/3 触发器）+ 迁移 0001/0002/0003 + `seed/0001_platform_templates.sql`；`tests/test_db.py` 28 项通过；`scripts/db_init.py` 可重建 |
-| WP-07  | Agent/Skill 落地与单测 | L1  | 未开始   | R-L1-05~09、R-L1-18~19 | 依赖 WP-06；WP-05 已提前落地 23 个 skill（基础设施 2、文案线 2、视觉线 3、视频线 5、分发数据线 6、支撑件 5），其余 2 个（`task-decomposer`、`summary-writer`）待落地 |
+| WP-07  | Agent/Skill 落地与单测 | L1  | **已完成** | R-L1-05~09、R-L1-18~19 | 五个 Agent 定义 + `agents/orchestrator/config.yml` 契约 + 编排者工具 `task-decomposer` / `summary-writer`；`.dsh/skills/` 25 个目录全部落地；33 项编排者测试通过（累计 197 项）；见 N012 |
 | WP-08  | build-log 报告页    | L2  | 未开始   | R-L2-05、R-L2-06      | 依赖 WP-05              |
 | WP-09  | 目录及文件说明文档       | L2  | **已完成** | R-L2-09              | `docs/directory-and-files.md`（N005 产出）；此后随每次增删改同步，`structure_check.py` 第 3 项检查覆盖 |
 | WP-10  | GitHub 备份与打 tag | L2  | 进行中   | R-L2-04、Q-8          | 已推 main；每完成一个工作包打一个 tag（v0.1.0-spec-frozen、v0.2.0-flow-overall…） |

@@ -1,0 +1,127 @@
+# 文件用途：编排者配置——可派单的 skill 白名单、环节路由与五个 Agent 的交接契约（机器可读的单一事实源）。
+# 对应需求：R-L1-05（Agent 定义）、R-L1-06（职责边界）、R-L1-18（交接契约）、R-L1-19（校验失败退回）。
+# 对应流程图：.archify/FLOW-OVERALL-20261012/overall-operations.html
+# 维护提示：改 Agent 职责或派单范围只改本文件，再同步同目录与各 Agent 的 README.md；task-decomposer 运行时读本文件。
+
+version: 1
+updated_at: "2026-10-12"
+
+orchestrator:
+  agent_id: orchestrator
+  name: 编排者（唯一）
+  tools: [task-decomposer, summary-writer]
+  max_parallel: 1
+  boundaries:
+    - 只持有「任务当前状态 + 下一步该找谁」，不并行处理环节内部细节
+    - 不直接写文件、不直接调用外部 API、不做内容加工（§5.2.1）
+
+# 五个关口一律由真人拍板：Agent 只能挂待办、不能代答（C-10）
+human_gates:
+  - gate1_select_copy
+  - gate2_edit_video
+  - gate3_publish_auth
+  - gate_visual_style
+  - gate_visual_fix
+
+agents:
+  - agent_id: copy-agent
+    name: 文案线 Agent
+    flow: .archify/FLOW-COPY-20261012/copy-line.html
+    entry_stage: copy
+    exit_stage: visual
+    skills: [copy-writer, storyboard-builder, storyboard-validator, hitl-gate, artifact-recorder]
+    gates: [gate1_select_copy]
+    handoff:
+      input_check:
+        - 话题已建（topics 有一行）且 tasks.stage == copy
+        - 平台 enum_in platform_templates.platform；内容类型 enum_in [情绪冲突, 干货教程, 热点观点, 其他]
+        - 字数区间 in_range：100 <= word_min <= word_max <= 2000
+      outputs:
+        - 候选文案 3 套（kind=copy，每套 non_empty）
+        - 关口① 决议（hitl_events.gate=gate1_select_copy，selected_plan in 1..3）
+        - 分镜 24 条（kind=storyboard，ids_continuous 1..24）
+      done:
+        - count(kind=copy) == 3
+        - selected_plan in_range 1..3
+        - count(storyboard) == 24 and ids_continuous(1..24)
+        - tasks.stage == visual
+
+  - agent_id: visual-agent
+    name: 视觉线 Agent
+    flow: .archify/FLOW-VISUAL-20261012/visual-line.html
+    entry_stage: visual
+    exit_stage: video
+    skills: [reference-image-builder, grid-image-builder, image-splitter, image-consistency-checker, hitl-gate, artifact-recorder]
+    gates: [gate_visual_style, gate_visual_fix]
+    handoff:
+      input_check:
+        - tasks.stage == visual 且 selected_plan in 1..3（文案已选定）
+        - 分镜 non_empty 且 count == 24 且 ids_continuous 1..24
+      outputs:
+        - 参考图 1–3 张（kind=image，role=reference）
+        - 整图 1 张（kind=image，role=grid，尺寸 == cols×cell_w 与 rows×cell_h）
+        - 独立图 24 张（kind=image，role=shot，shot-01..shot-24）
+        - 图片体检结论（kind=report，role=image-check）
+      done:
+        - count(role=shot) == 24 and ids_continuous(1..24)
+        - all_resolution_equal(role=shot)
+        - 每张 file_exists 且 non_empty
+        - tasks.stage == video
+
+  - agent_id: video-agent
+    name: 视频线 Agent
+    flow: .archify/FLOW-VIDEO-20261012/video-line.html
+    entry_stage: video
+    exit_stage: publish
+    skills: [asset-packager, image-to-video, auto-editor, video-exporter, title-cover-prep, hitl-gate, artifact-recorder]
+    gates: [gate2_edit_video]
+    handoff:
+      input_check:
+        - tasks.stage == video 且 24 张独立图齐备（count==24、ids_continuous、all_resolution_equal）
+      outputs:
+        - 图文包（kind=manifest，role=package）
+        - 草稿视频（kind=video，role=draft）
+        - 关口② 决议（hitl_events.gate=gate2_edit_video）
+        - 剪辑版（kind=video，role=edited）+ 参数留痕（kind=manifest，role=edit-params）
+        - 成片（kind=video，role=final，model_version=ffmpeg-render-v1）
+        - 封面（kind=image，role=cover）
+        - 发布准备（kind=manifest，role=publish-prep）
+      done:
+        - file_exists(role=final) and file_exists(role=cover)
+        - 成片时长 in_range 0.5..1800 秒
+        - file_exists(role=publish-prep)
+        - tasks.stage == publish
+
+  - agent_id: publish-agent
+    name: 分发数据线 Agent
+    flow: .archify/FLOW-PUBLISH-20261012/publish-line.html
+    entry_stage: publish
+    exit_stage: review
+    skills: [hotspot-collector, table-builder, feishu-sync, browser-publisher, publish-guard, metrics-collector, review-reporter, hitl-gate, artifact-recorder]
+    gates: [gate3_publish_auth]
+    handoff:
+      input_check:
+        - tasks.stage enum_in [publish, metrics, review]
+        - 成片（role=final）与封面（role=cover）file_exists 且 non_empty
+        - 平台 enum_in platform_templates.platform
+      outputs:
+        - 发布包 + 填写清单（kind=publish_package，role=package，submitted=false）
+        - 关口③ 决议（hitl_events.gate=gate3_publish_auth）
+        - 发布记录（publish_records 一行，status filled/pending/published/failed）
+        - 指标三项（metrics：views / engagements / follower_gain）
+        - 复盘报告（kind=report，role=review）
+      done:
+        - no_auto_publish：任何由 Agent 写入的记录不得为 published（C-08）
+        - count(metrics.metric_key) == 3（或按 Q-16 显式允许部分口径）
+        - file_exists(role=review)
+        - tasks.stage == review
+
+# 任务环节 → 该找哪个 Agent（task-decomposer plan 按此表给下一步）
+stage_routing:
+  copy: copy-agent
+  visual: visual-agent
+  video: video-agent
+  publish: publish-agent
+  metrics: publish-agent
+  review: publish-agent
+  closed: orchestrator
